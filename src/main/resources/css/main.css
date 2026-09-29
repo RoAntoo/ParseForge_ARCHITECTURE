@@ -1,0 +1,40 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-background-color: #f7f8fa;
+}
+
+.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.drop-zone {
+    -fx-border-color: #7c8aa5;
+    -fx-border-style: dashed;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 28;
+}
+
+.drop-zone-active {
+    -fx-border-color: #356ae6;
+    -fx-background-color: #edf3ff;
+}
+
+.primary-button {
+    -fx-background-color: #356ae6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 9 24;
+}
+
+.status-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #e0e3e8;
+    -fx-border-radius: 8;
+    -fx-padding: 16;
+}
