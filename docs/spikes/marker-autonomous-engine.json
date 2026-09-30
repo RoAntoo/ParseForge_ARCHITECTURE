@@ -1,0 +1,385 @@
+{
+  "id": "marker",
+  "displayName": "Marker (Stage 3B spike)",
+  "platform": "windows-x64",
+  "markerVersion": "2.0.0",
+  "suryaVersion": "0.22.1",
+  "torchVersion": "2.14.0+cpu",
+  "torchvisionVersion": "0.29.0+cpu",
+  "python": {
+    "version": "3.12.10",
+    "architecture": "x64",
+    "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+    "sha256": "4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3",
+    "executable": "runtime/python/python.exe",
+    "executableSha256": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a"
+  },
+  "llamaCpp": {
+    "version": "b11149",
+    "architecture": "x64",
+    "backend": "cpu",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11149/llama-b11149-bin-win-cpu-x64.zip",
+    "sha256": "d1cb5f9ef7bbb7068954b4c9767d5b5309e20bcefeb61d4aafc47f9581f38752",
+    "executable": "runtime/llamacpp/llama-server.exe",
+    "executableSha256": "36e2803d3bc1c87ff21180dc1f1be1e53c6f04c515e91b46a480c1e1285471b4"
+  },
+  "pip": {
+    "version": "25.0.1",
+    "url": "https://files.pythonhosted.org/packages/c9/bc/b7db44f5f39f9d0494071bddae6880eb645970366d0a200022a1a93d57f5/pip-25.0.1-py3-none-any.whl",
+    "sha256": "c46efd13b6aa8279f33f2864459c8ce587ea6a1a59ee20de055868d8f7688f7f"
+  },
+  "criticalFiles": [
+    {
+      "path": "runtime/python/_asyncio.pyd",
+      "sha256": "c77de90cad749087a0c5dc5e19d78d24f6ef44e7e5ac19b8420cfc0cea62395d"
+    },
+    {
+      "path": "runtime/python/_bz2.pyd",
+      "sha256": "65f610646d10d5babea080e060d244b546ec52c54012e5e937dc72dcc2e2e7bc"
+    },
+    {
+      "path": "runtime/python/_ctypes.pyd",
+      "sha256": "0e56107a891100535f2da79d85a5ae65ff1227b4765bd108f8593ac1a1110d81"
+    },
+    {
+      "path": "runtime/python/_decimal.pyd",
+      "sha256": "aeacfead2befcc0768063a037bb64bd32109ae09cb144e5f571b04dd7965db9d"
+    },
+    {
+      "path": "runtime/python/_elementtree.pyd",
+      "sha256": "5009a9a53c03ef8387443b5cf6ce08e5c3a79727466a0b931c5bbca915bf89ca"
+    },
+    {
+      "path": "runtime/python/_hashlib.pyd",
+      "sha256": "03d233dbace599168eaffec823de6ed7beec8c2a4ebfe9b8a3d8e042a59af3ba"
+    },
+    {
+      "path": "runtime/python/_lzma.pyd",
+      "sha256": "e3deecc1f59a3b811c608861decd84de1e8df8bafd5e2b39188861318c5a38cf"
+    },
+    {
+      "path": "runtime/python/_msi.pyd",
+      "sha256": "b49332bae154ebdd8c3d5e7ddfdde336d9c47f91ba028dc67bafb2420b3dbb5c"
+    },
+    {
+      "path": "runtime/python/_multiprocessing.pyd",
+      "sha256": "2c636df7059cb0dd7e978dd735c7c5c8ddb09cf94754cf9e232296b96c5c545a"
+    },
+    {
+      "path": "runtime/python/_overlapped.pyd",
+      "sha256": "662126ff80c3a1b4cedf74074029c12ae4743e6d3b37376e39ac70aacb7d4d3c"
+    },
+    {
+      "path": "runtime/python/_queue.pyd",
+      "sha256": "48e76e0ad63f6932b4a77b5819f41c1e7595636ca8d9e824f0943a14b8bb5035"
+    },
+    {
+      "path": "runtime/python/_socket.pyd",
+      "sha256": "3efa4636cf9e350856f6927d67a4c2564bf9bd2758a00bbf17d3aece5b60016d"
+    },
+    {
+      "path": "runtime/python/_sqlite3.pyd",
+      "sha256": "64b51df2805c58b023a875e8ae3be7ac7f61ef664f32ca6c90f6315da47ef0bc"
+    },
+    {
+      "path": "runtime/python/_ssl.pyd",
+      "sha256": "0bc527d2dbc50009f43b2ed5d5982c4f63f4b647647ffa9eda612dcda80f6040"
+    },
+    {
+      "path": "runtime/python/_uuid.pyd",
+      "sha256": "acce4f281d7ffb2dec0997527faf25b1df62ad7bd3032c568ddcf65c90edc867"
+    },
+    {
+      "path": "runtime/python/_wmi.pyd",
+      "sha256": "a980f1e7a29842bd946863fc2693fbeb555a9dc0f9e1630dfed9a2fcdef3ece2"
+    },
+    {
+      "path": "runtime/python/_zoneinfo.pyd",
+      "sha256": "76f1439cda82ab6976df6ba505c4079444703f6d44d8b0259ce59c0ff4279fb4"
+    },
+    {
+      "path": "runtime/python/libcrypto-3.dll",
+      "sha256": "ccfffddcd3defb8d899026298af9af43bc186130f8483d77e97c93233d5f27d7"
+    },
+    {
+      "path": "runtime/python/libffi-8.dll",
+      "sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a"
+    },
+    {
+      "path": "runtime/python/libssl-3.dll",
+      "sha256": "007142039f04d04e0ed607bda53de095e5bc6a8a10d26ecedde94ea7d2d7eefe"
+    },
+    {
+      "path": "runtime/python/LICENSE.txt",
+      "sha256": "e502c6b880ff58d614901495a9009c136539cd0b1e2a2abb8fc00b934c203419"
+    },
+    {
+      "path": "runtime/python/pyexpat.pyd",
+      "sha256": "d615e193d1affcdbfe504e90d3621cbdcff94bf72b79d899126534507fd6d27a"
+    },
+    {
+      "path": "runtime/python/python.cat",
+      "sha256": "5d85439736ae088d9680b391e2bca55ca7e9cc5b41a12ebe8e2f554506c7e72e"
+    },
+    {
+      "path": "runtime/python/python.exe",
+      "sha256": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a"
+    },
+    {
+      "path": "runtime/python/python3.dll",
+      "sha256": "fb975a606e7fbf74f64260e3f60c3490b4f74a183c0926fd6ed1ac4c52ac7b1c"
+    },
+    {
+      "path": "runtime/python/python312._pth",
+      "sha256": "718bfe566a206a3f79c19a251c63ce1c50e85a788234cd11c1fa8f2f5de32bfc"
+    },
+    {
+      "path": "runtime/python/python312.dll",
+      "sha256": "9a0e3435aaa680d868150f87ab3e388ad2eebc22f87e036155c7b4eda8cd2120"
+    },
+    {
+      "path": "runtime/python/python312.zip",
+      "sha256": "fb131c0ef7e35cc5250a74c8cd18744bf4115fb8163710711f3758d7df3d1f88"
+    },
+    {
+      "path": "runtime/python/pythonw.exe",
+      "sha256": "d72294fb338bc2fc8896d25a7395a4db466425427e1559e77185d5135a830681"
+    },
+    {
+      "path": "runtime/python/select.pyd",
+      "sha256": "d4d7181b11db0bd22a6cd5cda6f8583d1f5c77615fd0a6ca33350619d6e0438a"
+    },
+    {
+      "path": "runtime/python/sqlite3.dll",
+      "sha256": "8daa45684bf6688fca28d956b2e8942f2fa98f656675ce68e6d61dd869848a7a"
+    },
+    {
+      "path": "runtime/python/unicodedata.pyd",
+      "sha256": "208ee1cd3cbad0828433ca7246b05be2b1ff5569983d27d296c0b38888585488"
+    },
+    {
+      "path": "runtime/python/vcruntime140.dll",
+      "sha256": "052ad6a20d375957e82aa6a3c441ea548d89be0981516ca7eb306e063d5027f4"
+    },
+    {
+      "path": "runtime/python/vcruntime140_1.dll",
+      "sha256": "6a99bc0128e0c7d6cbbf615fcc26909565e17d4ca3451b97f8987f9c6acbc6c8"
+    },
+    {
+      "path": "runtime/python/winsound.pyd",
+      "sha256": "100e8d676777603c7258daf9b2f23ef001f09f1596d8708de359326fff72bddd"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-base.dll",
+      "sha256": "397edc222547ae62cc3b61d6a8122c925c961ab69c2949bfe003fd00d524a280"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-alderlake.dll",
+      "sha256": "b9c171ea9529bf632553701e572aef20d6be3d979098733d204be97f62117232"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-cannonlake.dll",
+      "sha256": "8946d3b975780eded8a993b94c0a81c9e8196984c94d152568972ede6fb5f077"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-cascadelake.dll",
+      "sha256": "517b7c7fc9db8be7c98dbc2d94b896f575e2556c4146cc47b1438fc84fddb749"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-cooperlake.dll",
+      "sha256": "a1948154ce70b4cffad41f7ee0484bd29bc78bddf8aeb04d29805bceff08939d"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-haswell.dll",
+      "sha256": "8b26c96aa6d59ea358d92314a3deb54c5bcb4ade5de0b31eb1da3ffb7d37ed6f"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-icelake.dll",
+      "sha256": "a51c45bb7422c6b194614d2e566b289d46f4897f54ee49a9ef5598a0d9002668"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-ivybridge.dll",
+      "sha256": "168a963d4f1ab021c0fd964cd293be4bd8854a4f8d29976172dbfa388ee2786a"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-piledriver.dll",
+      "sha256": "615702d2f4ffcd1b4e8639c2d66419ba8cf029edac9ef62882a71ecba108cbd0"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-sandybridge.dll",
+      "sha256": "c328aa75f421f18671bc9122c32d42815e598040c258c2a3939b4e5408a1667f"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-sapphirerapids.dll",
+      "sha256": "88fce6966d87ceee3b546f8781aa67f54a8985f63afc1efac7189287098f8835"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-skylakex.dll",
+      "sha256": "d34c96addd678142987262b77b9175ff8db3658d1423580aba9eeccd52c869ad"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-sse42.dll",
+      "sha256": "b571efd43d66ef08653d76b4e86f2ea2d7a2109b1b74216056f301176d52e5c8"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-x64.dll",
+      "sha256": "b286e8f4f5f172a6dbc66ebf518523cfdec96824ed732cc559f85e184a0e5bc2"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-cpu-zen4.dll",
+      "sha256": "c002d6813d8cf885586d6e22e87a5934d50de2a777ea20df1505e5932f0ac9a5"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-rpc-server.exe",
+      "sha256": "6e103d4b3fd0abe4918261d69010bf063a6e0f28147f721cfb58e0d8f7694224"
+    },
+    {
+      "path": "runtime/llamacpp/ggml-rpc.dll",
+      "sha256": "6d2569ec070f6daedd4377dda9256b7f85852bf8566d0e481f46346d55429b2a"
+    },
+    {
+      "path": "runtime/llamacpp/ggml.dll",
+      "sha256": "e64c3d350364dcf0b787cb2118519f9402d8afa4c8b7381b66aa39f1f2dc9b50"
+    },
+    {
+      "path": "runtime/llamacpp/libomp.dll",
+      "sha256": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c"
+    },
+    {
+      "path": "runtime/llamacpp/LICENSE-LLVM-OpenMP",
+      "sha256": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4"
+    },
+    {
+      "path": "runtime/llamacpp/llama-batched-bench-impl.dll",
+      "sha256": "3140d7f13d485327360684de8c48e383d09de5f1e8fae2f844d2f3c70e302f97"
+    },
+    {
+      "path": "runtime/llamacpp/llama-batched-bench.exe",
+      "sha256": "914111e3077d3f16a3ed474e4e4f018e607aa5bf78a6380d77dddf30d45b5d2b"
+    },
+    {
+      "path": "runtime/llamacpp/llama-bench-impl.dll",
+      "sha256": "8efb508c0d4bf98b381672021d0d76c658ffa83a0ad132fbe0be7862f786d24a"
+    },
+    {
+      "path": "runtime/llamacpp/llama-bench.exe",
+      "sha256": "e2deb51092748b5a3a5f47be73dc1b7db4eec16c4c67832aa230f7b6a5a3fdf7"
+    },
+    {
+      "path": "runtime/llamacpp/llama-cli-impl.dll",
+      "sha256": "f1f65b006e40e89d84bb26e7cbf2fa39eaab22038ee3fd0eb595f532dda90b43"
+    },
+    {
+      "path": "runtime/llamacpp/llama-cli.exe",
+      "sha256": "8226f3f294702e393480394240202219052e16739f3aeab959181852234325e0"
+    },
+    {
+      "path": "runtime/llamacpp/llama-common.dll",
+      "sha256": "22c40f7446f143fd14ce8ca2cba99e387c41eb13cb9bfb1b2bc6efec4aa1d00c"
+    },
+    {
+      "path": "runtime/llamacpp/llama-completion-impl.dll",
+      "sha256": "38ca9f2f615309622d041378b3975232ad358c5f2a280e5452643484a94442f8"
+    },
+    {
+      "path": "runtime/llamacpp/llama-completion.exe",
+      "sha256": "59e89637f91eef5acf71cae68ce2237d77ec2b5aa6487d884d3a7363bad1feea"
+    },
+    {
+      "path": "runtime/llamacpp/llama-fit-params-impl.dll",
+      "sha256": "83927c09b076922aac7127a9ca9db0b114f98fab96b945c5162800161645a31c"
+    },
+    {
+      "path": "runtime/llamacpp/llama-fit-params.exe",
+      "sha256": "c0323a8db3c76616f0e596c54ced49092602d6127c505eb130ba4a288980a162"
+    },
+    {
+      "path": "runtime/llamacpp/llama-gemma3-cli.exe",
+      "sha256": "215e4d0f70fef507183672f3a824b6c8d80ed0079e663c0a5c0db9f8ba7faa05"
+    },
+    {
+      "path": "runtime/llamacpp/llama-gguf-split.exe",
+      "sha256": "aa2182720edb5f1ad5cfb1111116f733e2c977490743f6812b19f1b440dfaeec"
+    },
+    {
+      "path": "runtime/llamacpp/llama-imatrix.exe",
+      "sha256": "c2584f41042116e94a4f0ea2f4e956649aabf5bec6a59a55b344cf1f175681dc"
+    },
+    {
+      "path": "runtime/llamacpp/llama-llava-cli.exe",
+      "sha256": "215e4d0f70fef507183672f3a824b6c8d80ed0079e663c0a5c0db9f8ba7faa05"
+    },
+    {
+      "path": "runtime/llamacpp/llama-minicpmv-cli.exe",
+      "sha256": "215e4d0f70fef507183672f3a824b6c8d80ed0079e663c0a5c0db9f8ba7faa05"
+    },
+    {
+      "path": "runtime/llamacpp/llama-mtmd-cli.exe",
+      "sha256": "3eea2afa1bcc904952306dd1ea87fa768cbca2c5df9f9fdcbd58287042ed7966"
+    },
+    {
+      "path": "runtime/llamacpp/llama-mtmd-debug.exe",
+      "sha256": "3a399fa3ecbabb94bc9ff4028c28eac6ff8fbefab165c29a7be8b553d42f491f"
+    },
+    {
+      "path": "runtime/llamacpp/llama-perplexity-impl.dll",
+      "sha256": "9b1c3ee4f9a52c18577ecf07af936fd073b730727ec8a9f7468f3384f50b1180"
+    },
+    {
+      "path": "runtime/llamacpp/llama-perplexity.exe",
+      "sha256": "823f392db2614d5e9c29641a4e2b4e951aaf2252d8ef38df997b680aef2f2945"
+    },
+    {
+      "path": "runtime/llamacpp/llama-quantize-impl.dll",
+      "sha256": "bbfa0996cb85ddd6008e8c8bb4d53ad1ae19bc2ae30e159c952f01548ee4b026"
+    },
+    {
+      "path": "runtime/llamacpp/llama-quantize.exe",
+      "sha256": "7a4c834524bdcb7b1998488f885d62308121eb8f08684b0386bc989e5102cb5b"
+    },
+    {
+      "path": "runtime/llamacpp/llama-qwen2vl-cli.exe",
+      "sha256": "215e4d0f70fef507183672f3a824b6c8d80ed0079e663c0a5c0db9f8ba7faa05"
+    },
+    {
+      "path": "runtime/llamacpp/llama-results.exe",
+      "sha256": "ff6dabf5d887c3077f1ad62c24ed68f95e30bf65045abbd1a5741208394fbc42"
+    },
+    {
+      "path": "runtime/llamacpp/llama-server-impl.dll",
+      "sha256": "2b1c2b110ba4c8091e5f1be3248241657215be7fc83d6e27abfe57db864b4112"
+    },
+    {
+      "path": "runtime/llamacpp/llama-server.exe",
+      "sha256": "36e2803d3bc1c87ff21180dc1f1be1e53c6f04c515e91b46a480c1e1285471b4"
+    },
+    {
+      "path": "runtime/llamacpp/llama-tokenize.exe",
+      "sha256": "81a4eb7d275475c81e85df6019e9e1fb8e0caa9257ec2cf18c4f07aacf5ab968"
+    },
+    {
+      "path": "runtime/llamacpp/llama-tts.exe",
+      "sha256": "aa137448596f62f56f88977495c97c57b47e669e9230a31897538274b9471734"
+    },
+    {
+      "path": "runtime/llamacpp/llama.dll",
+      "sha256": "844907d3809fc7fa274761bb607e6ff300f3f53e6c0f0a0f23b8d5c58148d5c6"
+    },
+    {
+      "path": "runtime/llamacpp/llama.exe",
+      "sha256": "bd205ba6d65431b3b7212bd09ec2e8c970c0d23d2371c5f49dabe442f6cc2ef5"
+    },
+    {
+      "path": "runtime/llamacpp/mtmd.dll",
+      "sha256": "6bfb01ea979503ffa404d6ea7e51629d935921ff7a2729aa80a82db45ee91714"
+    },
+    {
+      "path": "downloads/requirements.lock",
+      "sha256": "cb00a399f01ce64d087562a6e9d613d8f5b319c72994b66a2db7fc4c6f564def"
+    },
+    {
+      "path": "downloads/wheels.json",
+      "sha256": "e8aecfe9c3e9c6b109947842bed501d18dc44aba4ea5f57f8674e9a6394676c5"
+    }
+  ]
+}

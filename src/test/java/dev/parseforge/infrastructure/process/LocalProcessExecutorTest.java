@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -91,6 +92,69 @@ class LocalProcessExecutorTest {
         assertFalse(result.timedOut());
         assertEquals(1, stdoutCalls.get());
         assertTrue(stderrCalls.get() > 0);
+    }
+
+    @Test
+    void closesPersistentChildrenOnNormalExit() {
+        AtomicLong childPid = new AtomicLong();
+        ProcessResult result = new LocalProcessExecutor().execute(javaProcess("child-normal"), (stream, line) -> {
+            if (line.startsWith("child-pid:")) { childPid.set(Long.parseLong(line.substring(10))); }
+        });
+        assertEquals(0, result.exitCode());
+        assertTrue(childPid.get() > 0);
+        assertFalse(ProcessHandle.of(childPid.get()).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
+    void cancellationClosesChildren() throws Exception {
+        LocalProcessExecutor executor = new LocalProcessExecutor();
+        CountDownLatch childReady = new CountDownLatch(1);
+        AtomicLong childPid = new AtomicLong();
+        var running = CompletableFuture.supplyAsync(() -> executor.execute(javaProcess("child-cancel"), (stream, line) -> {
+            if (line.startsWith("child-pid:")) {
+                childPid.set(Long.parseLong(line.substring(10))); childReady.countDown();
+            }
+        }));
+        assertTrue(childReady.await(5, TimeUnit.SECONDS));
+        executor.cancel();
+        assertTrue(running.get(8, TimeUnit.SECONDS).cancelled());
+        assertFalse(ProcessHandle.of(childPid.get()).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
+    void canUseAnExplicitEnvironmentWithoutInheritedPath() {
+        var original = javaProcess("environment");
+        var clean = new ProcessSpec(original.executable(), original.arguments(), Map.of("PARSEFORGE_TEST_ENV", "private"),
+                original.workingDirectory(), original.timeout(), false);
+        List<String> output = Collections.synchronizedList(new ArrayList<>());
+        var result = new LocalProcessExecutor().execute(clean, (stream, line) -> output.add(line));
+        assertEquals(0, result.exitCode());
+        assertTrue(output.contains("ONLY:private"));
+        assertTrue(output.contains("PATH:null"));
+    }
+
+    @Test
+    void timeoutClosesChildren() {
+        AtomicLong childPid = new AtomicLong();
+        var result = new LocalProcessExecutor().execute(javaProcess(Duration.ofSeconds(2), "child-cancel"), (stream, line) -> {
+            if (line.startsWith("child-pid:")) { childPid.set(Long.parseLong(line.substring(10))); }
+        });
+        assertTrue(result.timedOut());
+        assertTrue(childPid.get() > 0);
+        assertFalse(ProcessHandle.of(childPid.get()).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
+    void doesNotTerminateAnUnrelatedProcess() throws Exception {
+        var unrelatedSpec = javaProcess("wait");
+        List<String> command = new ArrayList<>(List.of(unrelatedSpec.executable().toString()));
+        command.addAll(unrelatedSpec.arguments());
+        Process unrelated = new ProcessBuilder(command).start();
+        try {
+            var result = new LocalProcessExecutor().execute(javaProcess("child-normal"), (stream, line) -> { });
+            assertEquals(0, result.exitCode());
+            assertTrue(unrelated.isAlive());
+        } finally { unrelated.destroyForcibly().waitFor(); }
     }
 
     private ProcessSpec javaProcess(String... fixtureArguments) {

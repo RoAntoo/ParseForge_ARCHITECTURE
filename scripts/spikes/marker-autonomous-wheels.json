@@ -1,0 +1,422 @@
+[
+  {
+    "file": "annotated_doc-0.0.5-py3-none-any.whl",
+    "bytes": 5302,
+    "sha256": "117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101"
+  },
+  {
+    "file": "annotated_types-0.8.0-py3-none-any.whl",
+    "bytes": 13427,
+    "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0"
+  },
+  {
+    "file": "anthropic-0.125.0-py3-none-any.whl",
+    "bytes": 1184067,
+    "sha256": "3486013602eca76d8b12540764e53654f02cf4951110bca86cf06e67428a9f21"
+  },
+  {
+    "file": "anyio-4.15.1-py3-none-any.whl",
+    "bytes": 132079,
+    "sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101"
+  },
+  {
+    "file": "beautifulsoup4-4.15.0-py3-none-any.whl",
+    "bytes": 109924,
+    "sha256": "d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9"
+  },
+  {
+    "file": "certifi-2026.7.22-py3-none-any.whl",
+    "bytes": 136983,
+    "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775"
+  },
+  {
+    "file": "cffi-2.1.1-cp312-cp312-win_amd64.whl",
+    "bytes": 185919,
+    "sha256": "f53e442b08449d42821fa4a4fba000095af9f62742a500f978a9f557ec44339a"
+  },
+  {
+    "file": "charset_normalizer-3.5.1-cp312-cp312-win_amd64.whl",
+    "bytes": 200551,
+    "sha256": "3617ac3cfd8b9888f145ad89dd6e692285834b0201c6074a5eeaad3fd4d668c2"
+  },
+  {
+    "file": "click-8.5.0-py3-none-any.whl",
+    "bytes": 125251,
+    "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+  },
+  {
+    "file": "cloudpickle-3.1.2-py3-none-any.whl",
+    "bytes": 22228,
+    "sha256": "9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a"
+  },
+  {
+    "file": "colorama-0.4.6-py2.py3-none-any.whl",
+    "bytes": 25335,
+    "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"
+  },
+  {
+    "file": "cryptography-50.0.1-cp311-abi3-win_amd64.whl",
+    "bytes": 3842826,
+    "sha256": "aed8db4f6d71c51efb89530e12d9464e7bf2923d46c3205dc794a2a93f8c0648"
+  },
+  {
+    "file": "distro-1.9.0-py3-none-any.whl",
+    "bytes": 20277,
+    "sha256": "7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"
+  },
+  {
+    "file": "docstring_parser-0.18.0-py3-none-any.whl",
+    "bytes": 22484,
+    "sha256": "b3fcbed555c47d8479be0796ef7e19c2670d428d72e96da63f3a40122860374b"
+  },
+  {
+    "file": "filelock-3.32.7-py3-none-any.whl",
+    "bytes": 100157,
+    "sha256": "65ff0d0190ea42038b32bda4b77834fb05be2cad4c5b9b01aa4dfb3614536e52"
+  },
+  {
+    "file": "filetype-1.2.0-py2.py3-none-any.whl",
+    "bytes": 19970,
+    "sha256": "7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25"
+  },
+  {
+    "file": "fsspec-2026.9.0-py3-none-any.whl",
+    "bytes": 221738,
+    "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+  },
+  {
+    "file": "ftfy-6.3.1-py3-none-any.whl",
+    "bytes": 44821,
+    "sha256": "7c70eb532015cd2f9adb53f101fb6c7945988d023a085d127d1573dc49dd0083"
+  },
+  {
+    "file": "google_auth-2.58.1-py3-none-any.whl",
+    "bytes": 262483,
+    "sha256": "66a63572d0ab629554768544df04018d79178c0bd7439ba31683ac576b79024d"
+  },
+  {
+    "file": "google_genai-2.25.0-py3-none-any.whl",
+    "bytes": 1159631,
+    "sha256": "2e8f3a5f76ed00d5ffc3153f6089bc7d3511054eed53ad9cfc6095a7dc59b028"
+  },
+  {
+    "file": "h11-0.16.0-py3-none-any.whl",
+    "bytes": 37515,
+    "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"
+  },
+  {
+    "file": "hf_xet-1.6.0-cp38-abi3-win_amd64.whl",
+    "bytes": 4033128,
+    "sha256": "fb4fadde1b2b70bf4c0c14a6dccbe7194b1c28947fefd5bbe3fed9d940676c3b"
+  },
+  {
+    "file": "httpcore-1.0.9-py3-none-any.whl",
+    "bytes": 78784,
+    "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"
+  },
+  {
+    "file": "httpx-0.28.1-py3-none-any.whl",
+    "bytes": 73517,
+    "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"
+  },
+  {
+    "file": "huggingface_hub-1.33.0-py3-none-any.whl",
+    "bytes": 846435,
+    "sha256": "04e434b06e100eddbce9a6e817d72693a7884b10a79bd67ab48080d5c07eb899"
+  },
+  {
+    "file": "idna-3.20-py3-none-any.whl",
+    "bytes": 69583,
+    "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
+  },
+  {
+    "file": "jinja2-3.1.6-py3-none-any.whl",
+    "bytes": 134899,
+    "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+  },
+  {
+    "file": "jiter-0.17.0-cp312-cp312-win_amd64.whl",
+    "bytes": 227381,
+    "sha256": "9bd3caac219df476dd0cc3fe01d2f1581ed588906feac767abd9614c1c12f8b3"
+  },
+  {
+    "file": "joblib-1.6.0-py3-none-any.whl",
+    "bytes": 306115,
+    "sha256": "3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba"
+  },
+  {
+    "file": "markdown2-2.5.5-py3-none-any.whl",
+    "bytes": 56250,
+    "sha256": "be798587e09d1f52d2e4d96a649c4b82a778c75f9929aad52a2c95747fa26941"
+  },
+  {
+    "file": "markdown_it_py-4.2.0-py3-none-any.whl",
+    "bytes": 91687,
+    "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a"
+  },
+  {
+    "file": "markdownify-1.2.3-py3-none-any.whl",
+    "bytes": 15732,
+    "sha256": "a189a0bedfd14009030fde5f85bb6f77c56897cb839b5c25315dd7d4e3e290ba"
+  },
+  {
+    "file": "marker_pdf-2.0.0-py3-none-any.whl",
+    "bytes": 195742,
+    "sha256": "aa31f6a31990a6b7ac277aaea0df486b9314a9c1cd6fe0c1262dc162ed3f8e72"
+  },
+  {
+    "file": "markupsafe-3.0.3-cp312-cp312-win_amd64.whl",
+    "bytes": 15105,
+    "sha256": "26a5784ded40c9e318cfc2bdb30fe164bdb8665ded9cd64d500a34fb42067b1c"
+  },
+  {
+    "file": "mdurl-0.1.2-py3-none-any.whl",
+    "bytes": 9979,
+    "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"
+  },
+  {
+    "file": "mpmath-1.3.0-py3-none-any.whl",
+    "bytes": 536198,
+    "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"
+  },
+  {
+    "file": "narwhals-2.26.0-py3-none-any.whl",
+    "bytes": 474034,
+    "sha256": "29326d74f107c347fd1009bd58e38d9f7c7c5b51e6de97bc93dbc325d9038b54"
+  },
+  {
+    "file": "networkx-3.7-py3-none-any.whl",
+    "bytes": 2142205,
+    "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0"
+  },
+  {
+    "file": "numpy-2.5.3-cp312-cp312-win_amd64.whl",
+    "bytes": 12567828,
+    "sha256": "0a59a421a32580a009e8a1751345bf829631b990dc1794b80514ab722b435def"
+  },
+  {
+    "file": "openai-2.54.0-py3-none-any.whl",
+    "bytes": 1660351,
+    "sha256": "89089789197ccdb87f173a03145ed1598d00795220c93e96cf712b1cbf5e5f2b"
+  },
+  {
+    "file": "opencv_python_headless-4.11.0.86-cp37-abi3-win_amd64.whl",
+    "bytes": 39402386,
+    "sha256": "6c304df9caa7a6a5710b91709dd4786bf20a74d57672b3c31f7033cc638174ca"
+  },
+  {
+    "file": "packaging-26.3-py3-none-any.whl",
+    "bytes": 129956,
+    "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+  },
+  {
+    "file": "pdftext-0.7.1-py3-none-any.whl",
+    "bytes": 29712,
+    "sha256": "ffb47a36e7f0c9a295e16c0e0a9f6a323026f88416f8045330746604f7212986"
+  },
+  {
+    "file": "pillow-10.4.0-cp312-cp312-win_amd64.whl",
+    "bytes": 2554951,
+    "sha256": "1d846aea995ad352d4bdcc847535bd56e0fd88d36829d2c90be880ef1ee4668a"
+  },
+  {
+    "file": "platformdirs-4.11.14-py3-none-any.whl",
+    "bytes": 26700,
+    "sha256": "c1b1a1eab4f4d1b0eb81754593f1c38de88e84ebe6f93bf6714706a6759074b1"
+  },
+  {
+    "file": "psutil-7.2.2-cp37-abi3-win_amd64.whl",
+    "bytes": 137737,
+    "sha256": "eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988"
+  },
+  {
+    "file": "pyasn1-0.6.4-py3-none-any.whl",
+    "bytes": 84410,
+    "sha256": "deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b"
+  },
+  {
+    "file": "pyasn1_modules-0.4.2-py3-none-any.whl",
+    "bytes": 181259,
+    "sha256": "29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a"
+  },
+  {
+    "file": "pycparser-3.0-py3-none-any.whl",
+    "bytes": 48172,
+    "sha256": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"
+  },
+  {
+    "file": "pydantic-2.13.5-py3-none-any.whl",
+    "bytes": 472589,
+    "sha256": "346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73"
+  },
+  {
+    "file": "pydantic_core-2.46.5-cp312-cp312-win_amd64.whl",
+    "bytes": 2043140,
+    "sha256": "5e81740c09e310f5aa5cbd3e434a01c154d4bef93241c7877b39f211d2b78ba8"
+  },
+  {
+    "file": "pydantic_settings-2.15.0-py3-none-any.whl",
+    "bytes": 69413,
+    "sha256": "0ba092c291c94baceb5eff768aa0d56400a457585bc0175925a5a5510303da42"
+  },
+  {
+    "file": "pygments-2.21.0-py3-none-any.whl",
+    "bytes": 1250147,
+    "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+  },
+  {
+    "file": "pypdfium2-5.10.1-py3-none-win_amd64.whl",
+    "bytes": 3812105,
+    "sha256": "58da5b51fb7884c7d21a05062ab13edb011d1a08dfd9694f3d5d685df62796b9"
+  },
+  {
+    "file": "python_dotenv-1.2.3-py3-none-any.whl",
+    "bytes": 22780,
+    "sha256": "904552145e8bfed22162c09dab1c2b9b54fefa7b23ba780f4f26ca0316b0f0d9"
+  },
+  {
+    "file": "pyyaml-6.0.3-cp312-cp312-win_amd64.whl",
+    "bytes": 154003,
+    "sha256": "5fcd34e47f6e0b794d17de1b4ff496c00986e1c83f7ab2fb8fcfe9616ff7477b"
+  },
+  {
+    "file": "rapidfuzz-3.14.6-cp312-cp312-win_amd64.whl",
+    "bytes": 1731992,
+    "sha256": "cfca36e4612208875e08611a779164b6cb8900ab8bbd3d82d4cfdfae9efbfac9"
+  },
+  {
+    "file": "regex-2026.9.10-cp312-cp312-win_amd64.whl",
+    "bytes": 277933,
+    "sha256": "4db7d00c4afbfbb55b8e17b1e371da11418ea9389b030acec63c1fa4c7ad4b86"
+  },
+  {
+    "file": "requests-2.34.2-py3-none-any.whl",
+    "bytes": 73075,
+    "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+  },
+  {
+    "file": "rich-15.0.0-py3-none-any.whl",
+    "bytes": 310654,
+    "sha256": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb"
+  },
+  {
+    "file": "safetensors-0.8.0-cp310-abi3-win_amd64.whl",
+    "bytes": 355540,
+    "sha256": "096ec1a98435df7beb08853bb5aa9081a84f23d0adc67ed1a0a10550f608373f"
+  },
+  {
+    "file": "scikit_learn-1.9.1-cp312-cp312-win_amd64.whl",
+    "bytes": 8262238,
+    "sha256": "4b59abb30618121cc46b45972d6bf53a7128b4df4cd346c6ca6f4d5f9031e49c"
+  },
+  {
+    "file": "scipy-1.18.1-cp312-cp312-win_amd64.whl",
+    "bytes": 36658278,
+    "sha256": "5e4d44984abc0020154ea81b247adeddcc3ac5527b975ff798bd1ba0adc513c2"
+  },
+  {
+    "file": "setuptools-84.0.0-py3-none-any.whl",
+    "bytes": 818216,
+    "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"
+  },
+  {
+    "file": "shellingham-1.5.4-py2.py3-none-any.whl",
+    "bytes": 9755,
+    "sha256": "7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"
+  },
+  {
+    "file": "six-1.17.0-py2.py3-none-any.whl",
+    "bytes": 11050,
+    "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+  },
+  {
+    "file": "sniffio-1.3.1-py3-none-any.whl",
+    "bytes": 10235,
+    "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"
+  },
+  {
+    "file": "soupsieve-2.10-py3-none-any.whl",
+    "bytes": 38019,
+    "sha256": "8596eb8967d744174820280fa62b4542a2e955bfaccca73ed8a13c6eb8e9b502"
+  },
+  {
+    "file": "surya_ocr-0.22.1-py3-none-any.whl",
+    "bytes": 191800,
+    "sha256": "f84cdba18b99cd8d010d19db8b89d79cdcd3d0cd4e3bdba52a473023ccd69a2d"
+  },
+  {
+    "file": "sympy-1.14.0-py3-none-any.whl",
+    "bytes": 6299353,
+    "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5"
+  },
+  {
+    "file": "tenacity-9.1.4-py3-none-any.whl",
+    "bytes": 28926,
+    "sha256": "6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55"
+  },
+  {
+    "file": "threadpoolctl-3.7.0-py3-none-any.whl",
+    "bytes": 26362,
+    "sha256": "cd8b60b5641b45c67bbf73c64c843235fc2d8a480c87389f52f5dbee893b86be"
+  },
+  {
+    "file": "tokenizers-0.23.2-cp310-abi3-win_amd64.whl",
+    "bytes": 2863236,
+    "sha256": "2e96f5699d5249c9c64aa8412e044f727aae3a4098cf830f9901ec1afc361cde"
+  },
+  {
+    "file": "torch-2.14.0+cpu-cp312-cp312-win_amd64.whl",
+    "bytes": 123996119,
+    "sha256": "738cd9237bf63443a5e5f9652e5115f7b0510b089636a43d4011e9fccede714f"
+  },
+  {
+    "file": "torchvision-0.29.0+cpu-cp312-cp312-win_amd64.whl",
+    "bytes": 1376907,
+    "sha256": "7fa995dff29396950418ced2f21c9bfee8b7b71e9e324a18a4b0489be762dd07"
+  },
+  {
+    "file": "tqdm-4.70.1-py3-none-any.whl",
+    "bytes": 80199,
+    "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73"
+  },
+  {
+    "file": "transformers-5.17.0-py3-none-any.whl",
+    "bytes": 12295140,
+    "sha256": "78ec1ce21579b38dfb83950a0658cd119f87212a2fcfdff478096ce9d6c03801"
+  },
+  {
+    "file": "typer-0.27.2-py3-none-any.whl",
+    "bytes": 123130,
+    "sha256": "b3a5fc4342d5fc8fda8fc3010b1cf117e9249aab7fae800c2eff62fd3842d97d"
+  },
+  {
+    "file": "typing_extensions-4.16.0-py3-none-any.whl",
+    "bytes": 45571,
+    "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+  },
+  {
+    "file": "typing_inspection-0.4.4-py3-none-any.whl",
+    "bytes": 14750,
+    "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147"
+  },
+  {
+    "file": "urllib3-2.8.0-py3-none-any.whl",
+    "bytes": 135717,
+    "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+  },
+  {
+    "file": "wcwidth-0.9.1-cp310-abi3-win_amd64.whl",
+    "bytes": 596738,
+    "sha256": "991d1c8834f548e9c1f16432075ee84638e122312556bbf1ed595ea8fffc4673"
+  },
+  {
+    "file": "websockets-16.1.1-cp312-cp312-win_amd64.whl",
+    "bytes": 180243,
+    "sha256": "b436f6ec4fc3a6b4237c84d3f83170ed2b40bb584222f0ac47a0c8a5921980c7"
+  },
+  {
+    "file": "wheel-0.48.0-py3-none-any.whl",
+    "bytes": 33320,
+    "sha256": "3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab"
+  }
+]
