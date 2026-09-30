@@ -139,8 +139,18 @@ public final class LocalProcessExecutor implements ProcessExecutor {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(input, StandardCharsets.UTF_8))) {
             String line;
+            boolean listenerFailed = false;
             while ((line = reader.readLine()) != null) {
-                listener.onLine(stream, line);
+                if (listenerFailed) {
+                    continue;
+                }
+                try {
+                    listener.onLine(stream, line);
+                } catch (RuntimeException error) {
+                    listenerFailed = true;
+                    log.warn("Process output listener failed for {}; further lines will be discarded",
+                            stream, error);
+                }
             }
         } catch (IOException error) {
             if (!execution.cancellationRequested.get()) {

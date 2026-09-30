@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,7 +71,30 @@ class LocalProcessExecutorTest {
         assertFalse(result.cancelled());
     }
 
+    @Test
+    void keepsDrainingAStreamAfterTheOutputListenerFails() {
+        LocalProcessExecutor executor = new LocalProcessExecutor();
+        AtomicInteger stdoutCalls = new AtomicInteger();
+
+        ProcessResult result = executor.execute(
+                javaProcess(Duration.ofSeconds(3), "many-lines"),
+                (stream, line) -> {
+                    if (stream == ProcessStream.STDOUT) {
+                        stdoutCalls.incrementAndGet();
+                        throw new IllegalStateException("listener failure");
+                    }
+                });
+
+        assertEquals(0, result.exitCode());
+        assertFalse(result.timedOut());
+        assertEquals(1, stdoutCalls.get());
+    }
+
     private ProcessSpec javaProcess(String... fixtureArguments) {
+        return javaProcess(Duration.ofSeconds(10), fixtureArguments);
+    }
+
+    private ProcessSpec javaProcess(Duration timeout, String... fixtureArguments) {
         String executableName = System.getProperty("os.name").toLowerCase().contains("win")
                 ? "java.exe"
                 : "java";
@@ -80,6 +104,6 @@ class LocalProcessExecutorTest {
                 Path.of("target", "test-classes").toAbsolutePath().toString(),
                 ProcessTestFixture.class.getName()));
         arguments.addAll(List.of(fixtureArguments));
-        return new ProcessSpec(executable, arguments, Map.of(), workingDirectory, Duration.ofSeconds(10));
+        return new ProcessSpec(executable, arguments, Map.of(), workingDirectory, timeout);
     }
 }
