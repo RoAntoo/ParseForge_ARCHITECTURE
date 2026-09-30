@@ -90,7 +90,12 @@ public final class StartConversionUseCase {
                 }
                 job.transitionTo(ConversionStatus.RUNNING);
             }
-            ConversionResult result = conversion.engine().convert(request, listener);
+            // Cancellation can arrive between RUNNING and the engine registering
+            // its process. Re-deliver it when the engine becomes observable.
+            ConversionResult result = conversion.engine().convert(request, event -> {
+                listener.onEvent(event);
+                if (job.status() == ConversionStatus.CANCELLING) conversion.engine().cancel();
+            });
             finishJob(job, result);
             return result;
         } catch (RuntimeException error) {

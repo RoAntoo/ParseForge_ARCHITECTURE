@@ -7,8 +7,12 @@ public record ConversionRequest(
         Path inputFile,
         Path outputDirectory,
         EngineId engineId,
-        OutputFormat outputFormat
+        OutputFormat outputFormat,
+        boolean forceOcr
 ) {
+    public ConversionRequest(Path inputFile, Path outputDirectory, EngineId engineId, OutputFormat outputFormat) {
+        this(inputFile, outputDirectory, engineId, outputFormat, false);
+    }
     public ConversionRequest {
         inputFile = Objects.requireNonNull(inputFile, "inputFile").toAbsolutePath().normalize();
         outputDirectory = Objects.requireNonNull(outputDirectory, "outputDirectory").toAbsolutePath().normalize();

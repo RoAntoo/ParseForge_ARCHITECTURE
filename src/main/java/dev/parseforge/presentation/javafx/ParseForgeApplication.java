@@ -10,6 +10,9 @@ import dev.parseforge.infrastructure.engine.marker.MarkerCommandBuilder;
 import dev.parseforge.infrastructure.engine.marker.MarkerEngine;
 import dev.parseforge.infrastructure.process.LocalProcessExecutor;
 import dev.parseforge.presentation.javafx.controller.MainController;
+import dev.parseforge.application.usecase.*;
+import dev.parseforge.infrastructure.engine.*;
+import dev.parseforge.infrastructure.engine.marker.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -18,23 +21,35 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class ParseForgeApplication extends Application {
     private ExecutorService backgroundExecutor;
     private CancelConversionUseCase cancelConversion;
+    private ManagedEngineManager engineManager;
+    private ExecutorService engineExecutor;
+    MainController controller;
 
     @Override
-    public void start(Stage stage) {
-        Path configDirectory = applicationDataDirectory();
+    public void start(Stage stage) throws Exception {
+        EnginePathResolver paths = new EnginePathResolver();
         UserSettingsRepository settingsRepository = new JsonUserSettingsRepository(
-                configDirectory.resolve("config.json"));
+                paths.configFile());
         UserSettings settings = settingsRepository.load();
-
-        AtomicReference<Path> markerExecutable = new AtomicReference<>(pathOrNull(settings.markerExecutable()));
+        if (settings.equals(UserSettings.empty())) {
+            settings = new JsonUserSettingsRepository(applicationDataDirectory().resolve("config.json")).load();
+        }
+        EngineManifestRepository manifests = new EngineManifestRepository();
+        ChecksumVerifier checksums = new ChecksumVerifier();
+        var verifier = new MarkerEngineVerifier(manifests, checksums, new LocalProcessExecutor());
+        var installer = new MarkerInstaller(paths, manifests, new HttpsDownloadClient(checksums),
+                verifier, new LocalProcessExecutor());
+        engineManager = new ManagedEngineManager(paths, manifests, installer, verifier);
         LocalProcessExecutor processExecutor = new LocalProcessExecutor();
-        MarkerEngine markerEngine = new MarkerEngine(
-                markerExecutable::get, processExecutor, new MarkerCommandBuilder());
+        String override = System.getProperty("parseforge.marker.override");
+        MarkerEngine markerEngine = override == null || override.isBlank()
+                ? new MarkerEngine(processExecutor, engineManager)
+                : new MarkerEngine(() -> Path.of(override), processExecutor, new MarkerCommandBuilder());
+        engineExecutor = Executors.newSingleThreadExecutor(Thread.ofVirtual().name("engine-worker-", 0).factory());
 
         backgroundExecutor = Executors.newSingleThreadExecutor(Thread.ofVirtual()
                 .name("conversion-worker-", 0).factory());
@@ -42,16 +57,21 @@ public final class ParseForgeApplication extends Application {
                 new SimpleEngineRegistry(List.of(markerEngine)), backgroundExecutor);
         cancelConversion = new CancelConversionUseCase(startConversion);
 
-        MainController controller = new MainController(
+        controller = new MainController(
                 stage,
                 startConversion,
                 cancelConversion,
                 settingsRepository,
-                markerExecutable::set,
+                new InstallEngineUseCase(engineManager, engineExecutor),
+                new RepairEngineUseCase(engineManager, engineExecutor),
+                new UninstallEngineUseCase(engineManager, engineExecutor),
+                new CheckEngineStatusUseCase(engineManager, engineExecutor),
+                new CancelEngineOperationUseCase(engineManager),
                 MarkerEngine.ID,
-                settings);
+                settings,
+                override != null && !override.isBlank() && java.nio.file.Files.isRegularFile(Path.of(override)));
 
-        Scene scene = new Scene(controller.view(), 820, 720);
+        Scene scene = new Scene(controller.view(), 880, 900);
         scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
         stage.setTitle("ParseForge");
         stage.setMinWidth(700);
@@ -68,6 +88,8 @@ public final class ParseForgeApplication extends Application {
         if (backgroundExecutor != null) {
             backgroundExecutor.shutdownNow();
         }
+        if (engineManager != null) engineManager.cancelCurrentOperation(MarkerEngine.ID);
+        if (engineExecutor != null) engineExecutor.shutdownNow();
     }
 
     public static void main(String[] args) {
@@ -82,7 +104,4 @@ public final class ParseForgeApplication extends Application {
         return Path.of(System.getProperty("user.home"), ".parseforge");
     }
 
-    private Path pathOrNull(String value) {
-        return value == null || value.isBlank() ? null : Path.of(value);
-    }
 }

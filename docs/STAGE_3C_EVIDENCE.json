@@ -1,0 +1,15 @@
+{
+  "logicalDataRoot" : "C:\\Users\\<USER>\\AppData\\Local\\ParseForge-3c-validation",
+  "javaRealDataRoot" : "C:\\Users\\<USER>\\AppData\\Local\\ParseForge-3c-validation",
+  "state" : "READY",
+  "version" : "2.0.0",
+  "outputs" : [ {
+    "path" : "C:\\Users\\<USER>\\AppData\\Local\\ParseForge-3c-validation\\validation\\output-digital-e37729c3-37c2-4f64-a264-5ea20cac5049\\stage3c-digital\\stage3c-digital.md",
+    "content" : "## ParseForge Stage 3A\r\n\r\nIsolated Marker conversion smoke test.\r\n\r\nThe expected result is readable Markdown."
+  }, {
+    "path" : "C:\\Users\\<USER>\\AppData\\Local\\ParseForge-3c-validation\\validation\\ui-output-ocr-5de98820-6352-44b2-ac29-c4a9aaed6b8b\\stage3c-digital\\stage3c-digital.md",
+    "content" : "# ParseForge Stage 3A\r\n\r\nIsolated Marker conversion smoke test.\r\n\r\nThe expected result is readable Markdown."
+  } ],
+  "installedBytes" : 2950552940,
+  "directChildrenAlive" : 0
+}

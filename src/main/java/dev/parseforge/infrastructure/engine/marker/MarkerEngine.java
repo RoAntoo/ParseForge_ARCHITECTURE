@@ -7,6 +7,12 @@ import dev.parseforge.application.port.out.ProcessExecutor;
 import dev.parseforge.application.port.out.ProcessResult;
 import dev.parseforge.application.port.out.ProcessSpec;
 import dev.parseforge.application.port.out.ProcessStream;
+import dev.parseforge.application.port.out.EngineRuntimeLocator;
+import dev.parseforge.application.port.out.OperationCancellation;
+import dev.parseforge.infrastructure.engine.CancellableProcessRunner;
+import dev.parseforge.domain.exception.EngineInstallException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.time.Duration;
 import dev.parseforge.domain.exception.ConversionException;
 import dev.parseforge.domain.exception.ErrorCode;
 import dev.parseforge.domain.model.ConversionRequest;
@@ -31,6 +37,15 @@ public final class MarkerEngine implements ConversionEngine {
     private final Supplier<Path> executableSupplier;
     private final ProcessExecutor processExecutor;
     private final MarkerCommandBuilder commandBuilder;
+    private final EngineRuntimeLocator locator;
+    private final AtomicReference<OperationCancellation> managedConversion = new AtomicReference<>();
+
+    public MarkerEngine(ProcessExecutor executor, EngineRuntimeLocator locator) {
+        this.processExecutor = Objects.requireNonNull(executor);
+        this.locator = Objects.requireNonNull(locator);
+        this.executableSupplier = null;
+        this.commandBuilder = null;
+    }
 
     public MarkerEngine(
             Supplier<Path> executableSupplier,
@@ -40,15 +55,17 @@ public final class MarkerEngine implements ConversionEngine {
         this.executableSupplier = Objects.requireNonNull(executableSupplier, "executableSupplier");
         this.processExecutor = Objects.requireNonNull(processExecutor, "processExecutor");
         this.commandBuilder = Objects.requireNonNull(commandBuilder, "commandBuilder");
+        this.locator = null;
     }
 
     @Override
     public EngineDescriptor descriptor() {
-        return new EngineDescriptor(ID, "Marker", "external");
+        return locator == null ? new EngineDescriptor(ID, "Marker", "external") : locator.descriptor(ID);
     }
 
     @Override
     public EngineState state() {
+        if (locator != null) return locator.state(ID);
         Path executable = executableSupplier.get();
         return executable != null && Files.isRegularFile(executable)
                 ? EngineState.AVAILABLE
@@ -57,19 +74,35 @@ public final class MarkerEngine implements ConversionEngine {
 
     @Override
     public ConversionResult convert(ConversionRequest request, ConversionEventListener listener) {
+        if (locator != null) {
+            var cancellation = new OperationCancellation();
+            if (!managedConversion.compareAndSet(null, cancellation)) throw new IllegalStateException("Marker está ocupado.");
+            Instant started = Instant.now();
+            try (var runtime = locator.acquire(request)) {
+                cancellation.check();
+                return convert(request, listener, runtime.command(), cancellation);
+            } catch (EngineInstallException error) {
+                if (error.code() != EngineInstallException.Code.INSTALL_CANCELLED) throw error;
+                return new ConversionResult(ConversionStatus.CANCELLED, -1, List.of(), "Conversión cancelada", Duration.between(started, Instant.now()));
+            } finally { managedConversion.compareAndSet(cancellation, null); }
+        }
         Path executable = executableSupplier.get();
         if (executable == null || !Files.isRegularFile(executable)) {
             throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED,
                     "Seleccioná un ejecutable válido de Marker.");
         }
+        return convert(request, listener, commandBuilder.build(executable, request), null);
+    }
+
+    private ConversionResult convert(ConversionRequest request, ConversionEventListener listener, ProcessSpec spec, OperationCancellation cancellation) {
         Instant outputScanStart = Instant.now();
         listener.onEvent(new ConversionEvent.EngineStarted(descriptor().displayName()));
         listener.onEvent(new ConversionEvent.PhaseChanged("Procesando documento con Marker..."));
 
-        ProcessSpec spec = commandBuilder.build(executable, request);
-        ProcessResult processResult = processExecutor.execute(spec,
-                (stream, line) -> listener.onEvent(new ConversionEvent.LogReceived(
-                        toConversionStream(stream), line)));
+        dev.parseforge.application.port.out.ProcessOutputListener output = (stream, line) -> listener.onEvent(
+                new ConversionEvent.LogReceived(toConversionStream(stream), line));
+        ProcessResult processResult = cancellation == null ? processExecutor.execute(spec, output)
+                : CancellableProcessRunner.execute(processExecutor, spec, output, cancellation);
         listener.onEvent(new ConversionEvent.EngineStopped(processResult.exitCode()));
 
         if (processResult.cancelled()) {
@@ -93,6 +126,8 @@ public final class MarkerEngine implements ConversionEngine {
 
     @Override
     public void cancel() {
+        var cancellation = managedConversion.get();
+        if (cancellation != null) cancellation.cancel();
         processExecutor.cancel();
     }
 
