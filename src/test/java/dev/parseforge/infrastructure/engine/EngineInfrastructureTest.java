@@ -13,6 +13,7 @@ import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.zip.*;
+import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -47,17 +48,109 @@ class EngineInfrastructureTest {
         assertTrue(Files.exists(zip));
     }
     private HttpsDownloadClient client(int status, byte[] data, String redirect) {
+        return client(status, new ByteArrayInputStream(data), data.length, redirect, Duration.ofSeconds(60));
+    }
+    private HttpsDownloadClient client(int status, InputStream body, long total, String redirect, Duration idleTimeout) {
         return new HttpsDownloadClient(request -> CompletableFuture.completedFuture(new HttpResponse<InputStream>() {
             public int statusCode() { return status; }
             public HttpRequest request() { return request; }
             public Optional<HttpResponse<InputStream>> previousResponse() { return Optional.empty(); }
             public HttpHeaders headers() { return HttpHeaders.of(redirect == null
-                    ? Map.of("Content-Length", List.of("" + data.length)) : Map.of("location", List.of(redirect)), (a,b) -> true); }
-            public InputStream body() { return new ByteArrayInputStream(data); }
+                    ? Map.of("Content-Length", List.of("" + total)) : Map.of("location", List.of(redirect)), (a,b) -> true); }
+            public InputStream body() { return body; }
             public Optional<javax.net.ssl.SSLSession> sslSession() { return Optional.empty(); }
             public URI uri() { return request.uri(); }
             public HttpClient.Version version() { return HttpClient.Version.HTTP_1_1; }
-        }), new ChecksumVerifier());
+        }), new ChecksumVerifier(), idleTimeout);
+    }
+    private static final class StalledBody extends InputStream {
+        private final boolean throwOnClose;
+        private final CountDownLatch closed = new CountDownLatch(1);
+        final CountDownLatch blocked = new CountDownLatch(1);
+        private boolean received;
+        StalledBody(boolean throwOnClose) { this.throwOnClose = throwOnClose; }
+        @Override public int read() { throw new UnsupportedOperationException(); }
+        @Override public int read(byte[] buffer, int offset, int length) throws IOException {
+            if (!received) {
+                received = true; System.arraycopy(DATA, 0, buffer, offset, DATA.length); return DATA.length;
+            }
+            blocked.countDown();
+            try {
+                if (!closed.await(5, TimeUnit.SECONDS)) throw new IOException("Body was never closed");
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt(); throw new IOException(interrupted);
+            }
+            if (throwOnClose) throw new IOException("Stream closed");
+            return -1;
+        }
+        @Override public void close() { closed.countDown(); }
+    }
+    @Test void idleReadTimeoutFailsEvenWhenClosureReturnsEofAndCleansPartial() {
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            for (boolean throwOnClose : List.of(false, true)) {
+                Path target = temp.resolve("stalled-" + throwOnClose);
+                var body = new StalledBody(throwOnClose);
+                var error = assertThrows(EngineInstallException.class, () -> client(200, body, DATA.length, null, Duration.ofMillis(125))
+                        .download(new DownloadRequest(URI.create("https://example.test/file"), target, hash(DATA), DATA.length),
+                                (a,b) -> {}, new OperationCancellation()));
+                assertEquals(EngineInstallException.Code.DOWNLOAD_FAILED, error.code());
+                assertTrue(error.getCause().getMessage().contains("inactividad"));
+                assertFalse(Files.exists(target));
+                assertFalse(Files.exists(target.resolveSibling(target.getFileName() + ".part")));
+            }
+        });
+    }
+    @Test void cancellationOfBlockedReadKeepsCancellationClassification() {
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            Path target = temp.resolve("cancelled-read");
+            var body = new StalledBody(true); var token = new OperationCancellation();
+            Thread cancel = Thread.startVirtualThread(() -> {
+                try { body.blocked.await(); token.cancel(); }
+                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+            });
+            try {
+                var error = assertThrows(EngineInstallException.class, () -> client(200, body, DATA.length, null, Duration.ofSeconds(2))
+                        .download(new DownloadRequest(URI.create("https://example.test/file"), target, hash(DATA), DATA.length),
+                                (a,b) -> {}, token));
+                assertEquals(EngineInstallException.Code.INSTALL_CANCELLED, error.code());
+                assertFalse(Files.exists(target)); assertFalse(Files.exists(temp.resolve("cancelled-read.part")));
+            } finally { cancel.interrupt(); cancel.join(); }
+        });
+    }
+    @Test void successfulTransferStopsIdleWatchdogBeforeItCanCloseAgain() throws Exception {
+        var closes = new java.util.concurrent.atomic.AtomicInteger();
+        var body = new ByteArrayInputStream(DATA) {
+            @Override public void close() throws IOException { closes.incrementAndGet(); super.close(); }
+        };
+        Path target = temp.resolve("completed");
+        client(200, body, DATA.length, null, Duration.ofMillis(250)).download(
+                new DownloadRequest(URI.create("https://example.test/file"), target, hash(DATA), DATA.length),
+                (a,b) -> {}, new OperationCancellation());
+        Thread.sleep(600);
+        assertEquals(1, closes.get());
+        assertArrayEquals(DATA, Files.readAllBytes(target));
+    }
+    @Test void receivingBytesRefreshesIdleDeadlineDuringLongerTransfer() throws Exception {
+        var body = new InputStream() {
+            private int offset;
+            private volatile boolean closed;
+            public int read() { throw new UnsupportedOperationException(); }
+            public int read(byte[] buffer, int start, int length) throws IOException {
+                if (offset == DATA.length) return -1;
+                try { Thread.sleep(80); }
+                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IOException(interrupted); }
+                if (closed) throw new IOException("Closed while receiving bytes");
+                int count = Math.min(4, DATA.length - offset);
+                System.arraycopy(DATA, offset, buffer, start, count); offset += count;
+                return count;
+            }
+            public void close() { closed = true; }
+        };
+        Path target = temp.resolve("receiving");
+        client(200, body, DATA.length, null, Duration.ofMillis(250)).download(
+                new DownloadRequest(URI.create("https://example.test/file"), target, hash(DATA), DATA.length),
+                (a,b) -> {}, new OperationCancellation());
+        assertArrayEquals(DATA, Files.readAllBytes(target));
     }
     @Test void downloadCommitsOnlyVerifiedContentAndReportsActualBytes() throws Exception {
         Path target = temp.resolve("archive"); List<Long> bytes = new ArrayList<>();

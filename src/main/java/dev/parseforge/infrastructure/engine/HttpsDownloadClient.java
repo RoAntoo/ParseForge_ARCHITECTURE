@@ -8,19 +8,29 @@ import java.net.http.*;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import static dev.parseforge.domain.exception.EngineInstallException.Code.*;
 
 public final class HttpsDownloadClient implements DownloadClient {
     @FunctionalInterface interface Transport { CompletableFuture<HttpResponse<InputStream>> send(HttpRequest request); }
     private final Transport transport;
     private final ChecksumVerifier checksums;
+    private final Duration idleReadTimeout;
     public HttpsDownloadClient(ChecksumVerifier checksums) {
         HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER)
                 .connectTimeout(Duration.ofSeconds(30)).build();
         this.transport = request -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());
         this.checksums = checksums;
+        this.idleReadTimeout = Duration.ofSeconds(60);
     }
-    HttpsDownloadClient(Transport transport, ChecksumVerifier checksums) { this.transport = transport; this.checksums = checksums; }
+    HttpsDownloadClient(Transport transport, ChecksumVerifier checksums) {
+        this(transport, checksums, Duration.ofSeconds(60));
+    }
+    HttpsDownloadClient(Transport transport, ChecksumVerifier checksums, Duration idleReadTimeout) {
+        if (idleReadTimeout.isZero() || idleReadTimeout.isNegative()) throw new IllegalArgumentException("Idle timeout must be positive");
+        this.transport = transport; this.checksums = checksums; this.idleReadTimeout = idleReadTimeout;
+    }
     @Override public DownloadResult download(DownloadRequest request, DownloadProgressListener listener,
                                              OperationCancellation cancellation) {
         Path destination = request.destination();
@@ -68,11 +78,34 @@ public final class HttpsDownloadClient implements DownloadClient {
                 int count;
                 long lastProgress = 0;
                 listener.onProgress(0, total);
-                while ((count = input.read(buffer)) != -1) {
-                    cancellation.check(); output.write(buffer, 0, count); bytes += count;
-                    if (System.nanoTime() - lastProgress > 100_000_000L) {
-                        listener.onProgress(bytes, total); lastProgress = System.nanoTime();
+                AtomicLong lastReceived = new AtomicLong(System.nanoTime());
+                AtomicBoolean timedOut = new AtomicBoolean();
+                ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(
+                        Thread.ofVirtual().name("download-idle-watchdog").factory());
+                long pollNanos = Math.min(idleReadTimeout.toNanos(), TimeUnit.SECONDS.toNanos(1));
+                var task = watchdog.scheduleWithFixedDelay(() -> {
+                    if (System.nanoTime() - lastReceived.get() >= idleReadTimeout.toNanos()) {
+                        timedOut.set(true);
+                        try { input.close(); } catch (IOException ignored) { }
                     }
+                }, pollNanos, pollNanos, TimeUnit.NANOSECONDS);
+                try {
+                    while ((count = input.read(buffer)) != -1) {
+                        cancellation.check();
+                        if (timedOut.get()) throw new IOException("Timeout de lectura por inactividad");
+                        if (count > 0) lastReceived.set(System.nanoTime());
+                        output.write(buffer, 0, count); bytes += count;
+                        if (System.nanoTime() - lastProgress > 100_000_000L) {
+                            listener.onProgress(bytes, total); lastProgress = System.nanoTime();
+                        }
+                    }
+                    if (timedOut.get()) throw new IOException("Timeout de lectura por inactividad");
+                } catch (IOException error) {
+                    if (timedOut.get()) throw new IOException("Timeout de lectura por inactividad", error);
+                    throw error;
+                } finally {
+                    task.cancel(true);
+                    watchdog.shutdownNow();
                 }
             }
             cancellation.check();

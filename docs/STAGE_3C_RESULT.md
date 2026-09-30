@@ -124,7 +124,7 @@ cancelación en la ventana anterior al registro del proceso.
 
 Las pruebas reales se ejecutaron sobre JavaFX y procesos reales mediante drivers
 opt-in en src/test; no fueron clics humanos manuales. Root aislado:
-`C:/Users/rochi/AppData/Local/ParseForge-3c-validation`.
+`C:/Users/<USER>/AppData/Local/ParseForge-3c-validation`.
 
 | Prueba real | Resultado |
 | --- | --- |
@@ -147,7 +147,7 @@ para planificación. No incluye outputs de validación.
 
 Resumen versionable: [STAGE_3C_EVIDENCE.json](STAGE_3C_EVIDENCE.json).
 Logs, capturas, PDF y salida completa de Maven están fuera de Git, en
-`C:/Users/rochi/Documents/ParseForge-validation/stage3c`.
+`C:/Users/<USER>/Documents/ParseForge-validation/stage3c`.
 Los drivers ManagedEngineRealSmoke y ManagedEngineUiSmoke nunca se ejecutan
 durante mvn test automáticamente; descargan GB y modifican únicamente el root
 que se les proporciona explícitamente.

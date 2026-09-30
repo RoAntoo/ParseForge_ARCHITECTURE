@@ -7,6 +7,8 @@ import dev.parseforge.domain.model.*;
 import dev.parseforge.infrastructure.engine.marker.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import java.nio.file.*;
 import java.time.Duration;
 import java.io.*;
@@ -16,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
+@EnabledOnOs(value = OS.WINDOWS, architectures = {"amd64", "x86_64"})
 class MarkerInstallationTest {
     @TempDir Path temp;
     private EnginePathResolver paths;
