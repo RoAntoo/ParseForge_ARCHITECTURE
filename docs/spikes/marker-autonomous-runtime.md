@@ -139,7 +139,11 @@ El inventario queda en [marker-autonomous-evidence.json](marker-autonomous-evide
 Los hashes de wheels se validan antes/durante instalación; los hashes críticos
 del runtime se validan antes de cada lanzamiento Java. Los modelos se auditan
 después de descargar; aún no existe instalador que fuerce sus revisiones.
-No se hashea cada archivo instalado en site-packages.
+El manifiesto regenerado tras revisión incluye también la biblioteca estándar
+extraída y los archivos instalados en site-packages: 29.201 archivos críticos,
+de los cuales 28.476 pertenecen a paquetes y 598 a la biblioteca estándar.
+Se excluyen los directorios `__pycache__` generados; los `.pyc` de la biblioteca
+estándar embeddable sí se verifican, porque son necesarios para ejecutar Python.
 
 ## Entorno aislado y health check
 
@@ -303,6 +307,27 @@ Scripts son experimentales. No se elimina ni sobrescribe un runtime existente.
 El engine.json generado usa rutas relativas; el launcher recibe explícitamente
 la raíz administrada. La verificación opcional de OLD requiere la baseline de
 3A y se limita a leer archivos, sin instalar ni ejecutar OLD.
+
+## Validación de correcciones de revisión
+
+Los tres hallazgos se confirmaron contra el código y se corrigieron:
+
+- El sellado incluye módulos y bibliotecas instalados. Una prueba Java confirma
+  que modificar un módulo de Marker instalado hace fallar `verifyHashes()`;
+  una prueba Python valida la selección de stdlib, paquetes, DLLs y cachés.
+- Si falta un archivo de los hashes de OLD, se registra la diferencia y se
+  continúa: el informe se escribe y la salida es distinta de cero. Una prueba
+  también confirma que se verifican los hashes restantes después del faltante.
+- Cada conversión limpia y recrea su directorio de salida antes de ejecutar
+  Marker, y usa ese mismo directorio para validar el Markdown actual. Se
+  verifican las rutas resueltas antes de borrar; una prueba conserva las salidas
+  de otros modos y comprueba que desaparece el Markdown anterior.
+
+Revalidación: `mvn -B -ntp clean verify`, **27 tests aprobados**; pruebas Python
+de scripts: **2 aprobadas**; health check Java con el manifiesto regenerado:
+**READY**. La evidencia original conserva los resultados y
+tamaños de la ejecución inicial; el manifiesto capturado fue regenerado con la
+selección ampliada de archivos.
 
 ## Evidencia y recomendación para 3C
 

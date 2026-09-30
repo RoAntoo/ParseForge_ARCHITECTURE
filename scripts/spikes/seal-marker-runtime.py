@@ -31,7 +31,9 @@ else:
     critical = []
     for folder in [root / 'runtime/python', root / 'runtime/llamacpp']:
         for item in sorted(folder.rglob('*')):
-            if item.is_file() and (item.parent == folder or folder.name == 'llamacpp'):
+            # Extracted stdlib .pyc files are runtime artifacts; only generated
+            # cache directories are mutable and excluded from the seal.
+            if item.is_file() and '__pycache__' not in item.relative_to(folder).parts:
                 critical.append({'path': item.relative_to(root).as_posix(), 'sha256': sha(item)})
     for item in [root / 'downloads/requirements.lock', root / 'downloads/wheels.json']:
         critical.append({'path': item.relative_to(root).as_posix(), 'sha256': sha(item)})

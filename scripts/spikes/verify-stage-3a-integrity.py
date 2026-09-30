@@ -22,7 +22,11 @@ for record in files:
     if stat.st_size != record['size'] or stat.st_mtime_ns != record['mtime_ns']:
         diffs.append({'path': record['path'], 'reason': 'size or modification time'})
 for name, expected in hashes.items():
-    with (old / name).open('rb') as stream:
+    file = old / name
+    if not file.is_file():
+        diffs.append({'path': name, 'reason': 'missing critical file'})
+        continue
+    with file.open('rb') as stream:
         actual = hashlib.file_digest(stream, 'sha256').hexdigest()
     if expected != actual:
         diffs.append({'path': name, 'reason': 'sha256'})

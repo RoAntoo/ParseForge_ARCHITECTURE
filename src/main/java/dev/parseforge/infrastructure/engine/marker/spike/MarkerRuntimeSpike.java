@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,7 @@ public final class MarkerRuntimeSpike {
             }
         });
         List<String> output = Collections.synchronizedList(new ArrayList<>());
+        Path outputDir = null;
         try (var stdout = Files.newBufferedWriter(logs.resolve(mode + ".stdout.log"), StandardCharsets.UTF_8);
              var stderr = Files.newBufferedWriter(logs.resolve(mode + ".stderr.log"), StandardCharsets.UTF_8)) {
             dev.parseforge.application.port.out.ProcessOutputListener listener = (stream, line) -> {
@@ -111,7 +113,8 @@ public final class MarkerRuntimeSpike {
                         List.of("--version"), runtime.environment(), runtime.root(), Duration.ofSeconds(30), false), listener));
             } else {
                 Path pdf = runtime.root().resolve("temp/" + (mode.equals("digital") ? "digital.pdf" : "ocr.pdf"));
-                results.add(executor.execute(runtime.conversion(pdf, runtime.root().resolve("temp/output-" + mode),
+                outputDir = prepareOutputDirectory(runtime.root(), mode);
+                results.add(executor.execute(runtime.conversion(pdf, outputDir,
                         !mode.equals("digital")), listener));
             }
         } finally {
@@ -128,13 +131,44 @@ public final class MarkerRuntimeSpike {
         if (mode.equals("health")) {
             valid &= output.stream().anyMatch(line -> line.contains("Usage:"));
         } else if (!mode.equals("cancel")) {
-            try (var files = Files.walk(runtime.root().resolve("temp/output-" + mode))) {
+            try (var files = Files.walk(outputDir)) {
                 valid &= files.anyMatch(p -> p.toString().endsWith(".md") && nonEmpty(p));
             }
         } else { valid &= cancellationSent.get(); }
         valid &= observed.values().stream().noneMatch(ProcessHandle::isAlive);
         System.out.println(valid ? (mode.equals("health") ? "READY" : "PASS: " + mode) : "BROKEN: " + mode);
         if (!valid) { throw new IllegalStateException("Spike validation failed; see " + logs.resolve(mode + ".json")); }
+    }
+
+    static Path prepareOutputDirectory(Path root, String mode) throws java.io.IOException {
+        if (!List.of("digital", "ocr", "cancel").contains(mode)) {
+            throw new IllegalArgumentException("Unsupported conversion mode: " + mode);
+        }
+        Path engineRoot = root.toRealPath();
+        Path temp = engineRoot.resolve("temp");
+        Files.createDirectories(temp);
+        if (!temp.toRealPath().equals(temp)) {
+            throw new java.io.IOException("Output parent redirects outside the expected engine directory");
+        }
+        Path outputDir = temp.resolve("output-" + mode);
+        if (Files.exists(outputDir)) {
+            if (!outputDir.toRealPath().equals(outputDir)) {
+                throw new java.io.IOException("Output directory redirects from its expected location");
+            }
+            List<Path> stale;
+            try (var files = Files.walk(outputDir)) {
+                stale = files.sorted(Comparator.reverseOrder()).toList();
+            }
+            // Check every resolved target before deleting anything. Never follow
+            // redirected paths into another engine, runtime, or user directory.
+            for (Path path : stale) {
+                if (!path.toRealPath().startsWith(outputDir)) {
+                    throw new java.io.IOException("Output entry escapes the conversion directory: " + path);
+                }
+            }
+            for (Path path : stale) { Files.delete(path); }
+        }
+        return Files.createDirectories(outputDir);
     }
 
     private static boolean nonEmpty(Path file) {

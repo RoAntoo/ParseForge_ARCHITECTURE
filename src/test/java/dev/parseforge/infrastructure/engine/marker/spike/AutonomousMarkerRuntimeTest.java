@@ -17,13 +17,16 @@ class AutonomousMarkerRuntimeTest {
         Files.createDirectories(root.resolve("runtime/llamacpp"));
         Files.writeString(root.resolve("runtime/python/python.exe"), "fixture");
         Files.writeString(root.resolve("runtime/llamacpp/llama-server.exe"), "fixture");
+        Files.createDirectories(root.resolve("runtime/python/Lib/site-packages/marker"));
+        Files.writeString(root.resolve("runtime/python/Lib/site-packages/marker/module.py"), "fixture");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest("fixture".getBytes()));
         Files.writeString(root.resolve("engine.json"), """
                 {"id":"marker","platform":"windows-x64",
                  "python":{"executable":"runtime/python/python.exe","executableSha256":"%s"},
                  "llamaCpp":{"executable":"runtime/llamacpp/llama-server.exe","executableSha256":"%s"},
-                 "criticalFiles":[{"path":"runtime/python/python.exe","sha256":"%s"}]}
-                """.formatted(hash, hash, hash));
+                 "criticalFiles":[{"path":"runtime/python/python.exe","sha256":"%s"},
+                                  {"path":"runtime/python/Lib/site-packages/marker/module.py","sha256":"%s"}]}
+                """.formatted(hash, hash, hash, hash));
         return new AutonomousMarkerRuntime(root);
     }
 
@@ -39,6 +42,14 @@ class AutonomousMarkerRuntimeTest {
         runtime.verifyHashes();
         Files.writeString(root.resolve("runtime/llamacpp/llama-server.exe"), "tampered");
         assertThrows(IOException.class, runtime::verifyHashes);
+    }
+
+    @Test void detectsTamperedInstalledModule() throws Exception {
+        var runtime = runtime();
+        runtime.verifyHashes();
+        Files.writeString(root.resolve("runtime/python/Lib/site-packages/marker/module.py"), "tampered");
+        var error = assertThrows(IOException.class, runtime::verifyHashes);
+        assertTrue(error.getMessage().contains("module.py"));
     }
 
     @Test void environmentAndConversionStayPrivate() throws Exception {
