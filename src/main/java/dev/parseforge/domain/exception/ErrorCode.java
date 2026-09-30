@@ -1,0 +1,12 @@
+package dev.parseforge.domain.exception;
+
+public enum ErrorCode {
+    ENGINE_NOT_INSTALLED,
+    ENGINE_CORRUPTED,
+    PROCESS_START_FAILED,
+    PROCESS_TIMEOUT,
+    PROCESS_CRASHED,
+    OUTPUT_NOT_CREATED,
+    PERMISSION_DENIED,
+    USER_CANCELLED
+}
