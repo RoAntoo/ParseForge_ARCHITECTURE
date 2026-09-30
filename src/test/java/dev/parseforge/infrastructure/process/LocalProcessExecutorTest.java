@@ -59,6 +59,17 @@ class LocalProcessExecutorTest {
         assertFalse(result.timedOut());
     }
 
+    @Test
+    void cancellationWithoutAnActiveRunDoesNotCancelTheNextRun() {
+        LocalProcessExecutor executor = new LocalProcessExecutor();
+
+        executor.cancel();
+        ProcessResult result = executor.execute(javaProcess(), (stream, line) -> { });
+
+        assertEquals(0, result.exitCode());
+        assertFalse(result.cancelled());
+    }
+
     private ProcessSpec javaProcess(String... fixtureArguments) {
         String executableName = System.getProperty("os.name").toLowerCase().contains("win")
                 ? "java.exe"

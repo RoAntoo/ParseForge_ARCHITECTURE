@@ -32,84 +32,90 @@ public final class LocalProcessExecutor implements ProcessExecutor {
     private static final Logger log = LoggerFactory.getLogger(LocalProcessExecutor.class);
     private static final Duration GRACEFUL_SHUTDOWN = Duration.ofSeconds(2);
 
-    private final AtomicReference<Process> activeProcess = new AtomicReference<>();
-    private final AtomicBoolean cancellationRequested = new AtomicBoolean();
+    private final AtomicReference<Execution> activeExecution = new AtomicReference<>();
 
     @Override
     public ProcessResult execute(ProcessSpec spec, ProcessOutputListener listener) {
         Objects.requireNonNull(spec, "spec");
         Objects.requireNonNull(listener, "listener");
-        Instant startedAt = Instant.now();
-        if (cancellationRequested.get()) {
-            cancellationRequested.set(false);
-            return new ProcessResult(-1, true, false, Duration.ZERO);
-        }
-        if (!Files.isRegularFile(spec.executable())) {
-            throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED,
-                    "No se encontró el ejecutable del motor: " + spec.executable());
-        }
-
-        List<String> command = new ArrayList<>(spec.arguments().size() + 1);
-        command.add(spec.executable().toString());
-        command.addAll(spec.arguments());
-
-        ProcessBuilder builder = new ProcessBuilder(command);
-        builder.redirectErrorStream(false);
-        if (spec.workingDirectory() != null) {
-            builder.directory(spec.workingDirectory().toFile());
-        }
-        builder.environment().putAll(spec.environment());
-
-        Process process;
-        try {
-            process = builder.start();
-        } catch (IOException error) {
-            throw new ConversionException(ErrorCode.PROCESS_START_FAILED,
-                    "No fue posible iniciar el motor.", error);
-        }
-        if (!activeProcess.compareAndSet(null, process)) {
-            terminateTree(process, true);
+        Execution execution = new Execution();
+        if (!activeExecution.compareAndSet(null, execution)) {
             throw new IllegalStateException("The process executor is already busy");
         }
-        if (cancellationRequested.get()) {
-            terminateTree(process, true);
-        }
-
-        try (var readers = Executors.newVirtualThreadPerTaskExecutor()) {
-            Future<?> stdout = readers.submit(() -> readLines(
-                    process.getInputStream(), ProcessStream.STDOUT, listener));
-            Future<?> stderr = readers.submit(() -> readLines(
-                    process.getErrorStream(), ProcessStream.STDERR, listener));
-
-            boolean finished = waitFor(process, spec.timeout());
-            if (!finished) {
-                terminateTree(process, true);
+        Instant startedAt = Instant.now();
+        try {
+            if (!Files.isRegularFile(spec.executable())) {
+                throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED,
+                        "No se encontró el ejecutable del motor: " + spec.executable());
             }
-            awaitReader(stdout);
-            awaitReader(stderr);
 
-            int exitCode = safeExitCode(process);
-            return new ProcessResult(
-                    exitCode,
-                    cancellationRequested.get(),
-                    !finished && !cancellationRequested.get(),
-                    Duration.between(startedAt, Instant.now()));
+            List<String> command = new ArrayList<>(spec.arguments().size() + 1);
+            command.add(spec.executable().toString());
+            command.addAll(spec.arguments());
+
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(false);
+            if (spec.workingDirectory() != null) {
+                builder.directory(spec.workingDirectory().toFile());
+            }
+            builder.environment().putAll(spec.environment());
+
+            if (execution.cancellationRequested.get()) {
+                return cancelledBeforeStart(startedAt);
+            }
+
+            Process process;
+            try {
+                process = builder.start();
+            } catch (IOException error) {
+                throw new ConversionException(ErrorCode.PROCESS_START_FAILED,
+                        "No fue posible iniciar el motor.", error);
+            }
+            execution.process.set(process);
+            if (execution.cancellationRequested.get()) {
+                terminateAsync(execution, process);
+            }
+
+            try (var readers = Executors.newVirtualThreadPerTaskExecutor()) {
+                Future<?> stdout = readers.submit(() -> readLines(
+                        process.getInputStream(), ProcessStream.STDOUT, listener, execution));
+                Future<?> stderr = readers.submit(() -> readLines(
+                        process.getErrorStream(), ProcessStream.STDERR, listener, execution));
+
+                boolean finished = waitFor(process, spec.timeout(), execution);
+                if (!finished) {
+                    terminateTree(process, true);
+                }
+                awaitReader(stdout);
+                awaitReader(stderr);
+
+                int exitCode = safeExitCode(process);
+                boolean cancelled = execution.cancellationRequested.get() && exitCode != 0;
+                return new ProcessResult(
+                        exitCode,
+                        cancelled,
+                        !finished && !execution.cancellationRequested.get(),
+                        Duration.between(startedAt, Instant.now()));
+            }
         } finally {
-            activeProcess.compareAndSet(process, null);
-            cancellationRequested.set(false);
+            activeExecution.compareAndSet(execution, null);
         }
     }
 
     @Override
     public void cancel() {
-        cancellationRequested.set(true);
-        Process process = activeProcess.get();
+        Execution execution = activeExecution.get();
+        if (execution == null) {
+            return;
+        }
+        execution.cancellationRequested.set(true);
+        Process process = execution.process.get();
         if (process != null) {
-            terminateTree(process, false);
+            terminateAsync(execution, process);
         }
     }
 
-    private boolean waitFor(Process process, Duration timeout) {
+    private boolean waitFor(Process process, Duration timeout, Execution execution) {
         try {
             if (timeout == null) {
                 process.waitFor();
@@ -118,13 +124,18 @@ public final class LocalProcessExecutor implements ProcessExecutor {
             return process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-            cancellationRequested.set(true);
+            execution.cancellationRequested.set(true);
             terminateTree(process, true);
             return false;
         }
     }
 
-    private void readLines(InputStream input, ProcessStream stream, ProcessOutputListener listener) {
+    private void readLines(
+            InputStream input,
+            ProcessStream stream,
+            ProcessOutputListener listener,
+            Execution execution
+    ) {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(input, StandardCharsets.UTF_8))) {
             String line;
@@ -132,9 +143,19 @@ public final class LocalProcessExecutor implements ProcessExecutor {
                 listener.onLine(stream, line);
             }
         } catch (IOException error) {
-            if (!cancellationRequested.get()) {
+            if (!execution.cancellationRequested.get()) {
                 log.warn("Could not read process {}", stream, error);
             }
+        }
+    }
+
+    private ProcessResult cancelledBeforeStart(Instant startedAt) {
+        return new ProcessResult(-1, true, false, Duration.between(startedAt, Instant.now()));
+    }
+
+    private void terminateAsync(Execution execution, Process process) {
+        if (execution.terminationStarted.compareAndSet(false, true)) {
+            Thread.startVirtualThread(() -> terminateTree(process, false));
         }
     }
 
@@ -173,5 +194,11 @@ public final class LocalProcessExecutor implements ProcessExecutor {
         } catch (IllegalThreadStateException stillRunning) {
             return -1;
         }
+    }
+
+    private static final class Execution {
+        private final AtomicReference<Process> process = new AtomicReference<>();
+        private final AtomicBoolean cancellationRequested = new AtomicBoolean();
+        private final AtomicBoolean terminationStarted = new AtomicBoolean();
     }
 }

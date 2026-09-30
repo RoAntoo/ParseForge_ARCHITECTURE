@@ -50,6 +50,9 @@ public final class StartConversionUseCase {
         }
         synchronized (conversion.job()) {
             ConversionStatus status = conversion.job().status();
+            if (status.isTerminal()) {
+                return false;
+            }
             if (status == ConversionStatus.PENDING) {
                 conversion.job().transitionTo(ConversionStatus.CANCELLED);
             } else if (status == ConversionStatus.PREPARING || status == ConversionStatus.RUNNING) {

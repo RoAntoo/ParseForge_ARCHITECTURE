@@ -36,4 +36,16 @@ class ConversionJobTest {
         assertThrows(IllegalStateException.class,
                 () -> job.transitionTo(ConversionStatus.COMPLETED));
     }
+
+    @Test
+    void canCompleteWhenCancellationRacesWithSuccessfulEngineResult() {
+        ConversionJob job = new ConversionJob(request);
+        job.transitionTo(ConversionStatus.PREPARING);
+        job.transitionTo(ConversionStatus.RUNNING);
+        job.transitionTo(ConversionStatus.CANCELLING);
+
+        job.complete(java.util.List.of(Path.of("output/result.md")));
+
+        assertEquals(ConversionStatus.COMPLETED, job.status());
+    }
 }

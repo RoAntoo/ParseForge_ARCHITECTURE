@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -62,6 +63,41 @@ class StartConversionUseCaseTest {
         }
     }
 
+    @Test
+    void doesNotCancelTheEngineAgainWhenTheActiveJobIsAlreadyTerminal() {
+        AtomicReference<Runnable> scheduled = new AtomicReference<>();
+        FakeEngine engine = new FakeEngine(new ConversionResult(
+                ConversionStatus.COMPLETED, 0, List.of(), null, Duration.ZERO));
+        StartConversionUseCase useCase = new StartConversionUseCase(
+                ignored -> engine, scheduled::set);
+        CompletableFuture<ConversionResult> result = useCase.start(request(), ignored -> { });
+
+        assertTrue(useCase.cancelActive());
+        assertFalse(useCase.cancelActive());
+        assertEquals(1, engine.cancellations);
+
+        scheduled.get().run();
+        assertEquals(ConversionStatus.CANCELLED, result.join().status());
+    }
+
+    @Test
+    void preservesSuccessfulEngineResultAfterCancellationBegins() throws Exception {
+        CountDownLatch conversionStarted = new CountDownLatch(1);
+        CountDownLatch releaseConversion = new CountDownLatch(1);
+        BlockingEngine engine = new BlockingEngine(
+                conversionStarted, releaseConversion, true);
+        try (var worker = Executors.newSingleThreadExecutor()) {
+            StartConversionUseCase useCase = new StartConversionUseCase(ignored -> engine, worker);
+            CompletableFuture<ConversionResult> result = useCase.start(request(), ignored -> { });
+
+            assertTrue(conversionStarted.await(2, TimeUnit.SECONDS));
+            assertTrue(useCase.cancelActive());
+            releaseConversion.countDown();
+
+            assertEquals(ConversionStatus.COMPLETED, result.get(2, TimeUnit.SECONDS).status());
+        }
+    }
+
     private ConversionRequest request() {
         return new ConversionRequest(
                 Path.of("input.pdf"), Path.of("output"), ENGINE_ID, OutputFormat.MARKDOWN);
@@ -70,6 +106,7 @@ class StartConversionUseCaseTest {
     private static final class FakeEngine implements ConversionEngine {
         private final ConversionResult result;
         private int conversions;
+        private int cancellations;
 
         private FakeEngine(ConversionResult result) {
             this.result = result;
@@ -93,17 +130,28 @@ class StartConversionUseCaseTest {
 
         @Override
         public void cancel() {
+            cancellations++;
         }
     }
 
     private static final class BlockingEngine implements ConversionEngine {
         private final CountDownLatch started;
         private final CountDownLatch release;
+        private final boolean completeAfterCancellation;
         private volatile boolean cancelled;
 
         private BlockingEngine(CountDownLatch started, CountDownLatch release) {
+            this(started, release, false);
+        }
+
+        private BlockingEngine(
+                CountDownLatch started,
+                CountDownLatch release,
+                boolean completeAfterCancellation
+        ) {
             this.started = started;
             this.release = release;
+            this.completeAfterCancellation = completeAfterCancellation;
         }
 
         @Override
@@ -124,11 +172,12 @@ class StartConversionUseCaseTest {
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
             }
+            boolean completed = !cancelled || completeAfterCancellation;
             return new ConversionResult(
-                    cancelled ? ConversionStatus.CANCELLED : ConversionStatus.COMPLETED,
-                    cancelled ? -1 : 0,
+                    completed ? ConversionStatus.COMPLETED : ConversionStatus.CANCELLED,
+                    completed ? 0 : -1,
                     List.of(),
-                    cancelled ? "cancelled" : null,
+                    completed ? null : "cancelled",
                     Duration.ZERO);
         }
 

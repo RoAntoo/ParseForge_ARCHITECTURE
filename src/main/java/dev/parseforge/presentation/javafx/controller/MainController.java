@@ -360,10 +360,16 @@ public final class MainController {
                     "El sistema no permite abrir la carpeta automáticamente.");
             return;
         }
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.OPEN)) {
+            showAlert(Alert.AlertType.WARNING, "Acción no disponible",
+                    "El sistema no permite abrir la carpeta automáticamente.");
+            return;
+        }
         Path output = Path.of(outputDirectoryField.getText());
         try {
             Files.createDirectories(output);
-            Desktop.getDesktop().open(output.toFile());
+            desktop.open(output.toFile());
         } catch (IOException error) {
             showAlert(Alert.AlertType.ERROR, "No fue posible abrir la carpeta", output.toString());
         }

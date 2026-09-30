@@ -25,7 +25,7 @@ public enum ConversionStatus {
             case PENDING -> EnumSet.of(PREPARING, CANCELLED, FAILED);
             case PREPARING -> EnumSet.of(RUNNING, CANCELLING, FAILED);
             case RUNNING -> EnumSet.of(CANCELLING, COMPLETED, FAILED);
-            case CANCELLING -> EnumSet.of(CANCELLED, FAILED);
+            case CANCELLING -> EnumSet.of(CANCELLED, COMPLETED, FAILED);
             case CANCELLED, COMPLETED, FAILED -> EnumSet.noneOf(ConversionStatus.class);
         };
     }

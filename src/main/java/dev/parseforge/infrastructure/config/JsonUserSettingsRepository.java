@@ -29,7 +29,8 @@ public final class JsonUserSettingsRepository implements UserSettingsRepository 
             return UserSettings.empty();
         }
         try {
-            return mapper.readValue(configFile.toFile(), UserSettings.class);
+            UserSettings settings = mapper.readValue(configFile.toFile(), UserSettings.class);
+            return settings == null ? UserSettings.empty() : settings;
         } catch (IOException error) {
             log.warn("Could not load user settings from {}", configFile, error);
             return UserSettings.empty();
