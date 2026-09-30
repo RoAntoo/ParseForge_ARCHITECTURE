@@ -28,6 +28,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class StartConversionUseCaseTest {
     private static final EngineId ENGINE_ID = new EngineId("marker");
 
+    @Test void cancellationBeforeProcessRegistrationIsDeliveredWhenEngineStarts() {
+        AtomicReference<StartConversionUseCase> holder = new AtomicReference<>();
+        var registered = new java.util.concurrent.atomic.AtomicBoolean();
+        var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        ConversionEngine engine = new ConversionEngine() {
+            public EngineDescriptor descriptor() { return new EngineDescriptor(ENGINE_ID, "Marker", "test"); }
+            public EngineState state() { return EngineState.READY; }
+            public void cancel() { if (registered.get()) cancelled.set(true); }
+            public ConversionResult convert(ConversionRequest request, ConversionEventListener listener) {
+                holder.get().cancelActive(); // Executor does not own a process yet.
+                registered.set(true);
+                listener.onEvent(new dev.parseforge.application.port.out.ConversionEvent.EngineStarted("Marker"));
+                return new ConversionResult(cancelled.get() ? ConversionStatus.CANCELLED : ConversionStatus.COMPLETED,
+                        -1, List.of(), null, Duration.ZERO);
+            }
+        };
+        var useCase = new StartConversionUseCase(id -> engine, Runnable::run); holder.set(useCase);
+        assertEquals(ConversionStatus.CANCELLED, useCase.start(request(), e -> {}).join().status());
+        assertFalse(useCase.hasActiveConversion());
+    }
+
     @Test
     void executesTheSelectedEngineAndReturnsItsResult() {
         ConversionResult expected = new ConversionResult(

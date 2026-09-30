@@ -17,6 +17,8 @@
         <jackson.version>2.18.2</jackson.version>
         <junit.version>5.11.4</junit.version>
         <mockito.version>5.15.2</mockito.version>
+        <parseforge.dataDir></parseforge.dataDir>
+        <parseforge.marker.override></parseforge.marker.override>
     </properties>
 
     <dependencies>
@@ -77,6 +79,10 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>dev.parseforge.presentation.javafx.ParseForgeApplication</mainClass>
+                    <options>
+                        <option>-Dparseforge.dataDir=${parseforge.dataDir}</option>
+                        <option>-Dparseforge.marker.override=${parseforge.marker.override}</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>

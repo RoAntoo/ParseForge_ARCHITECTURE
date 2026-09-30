@@ -5,6 +5,7 @@ import dev.parseforge.application.port.out.UserSettingsRepository;
 import dev.parseforge.application.settings.UserSettings;
 import dev.parseforge.application.usecase.CancelConversionUseCase;
 import dev.parseforge.application.usecase.StartConversionUseCase;
+import dev.parseforge.application.usecase.*;
 import dev.parseforge.domain.exception.ConversionException;
 import dev.parseforge.domain.model.ConversionRequest;
 import dev.parseforge.domain.model.ConversionResult;
@@ -19,6 +20,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
@@ -44,54 +46,67 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
-import java.util.function.Consumer;
 
 public final class MainController {
     private final Stage stage;
     private final StartConversionUseCase startConversion;
     private final CancelConversionUseCase cancelConversion;
     private final UserSettingsRepository settingsRepository;
-    private final Consumer<Path> configureEngineExecutable;
+    private final EngineSettingsController engineSettings;
     private final EngineId selectedEngineId;
 
     private final BorderPane root = new BorderPane();
     private final Label selectedPdfLabel = new Label("Ningún PDF seleccionado");
     private final TextField outputDirectoryField = new TextField();
-    private final TextField markerExecutableField = new TextField();
     private final Button convertButton = new Button("CONVERTIR");
+    private final CheckBox forceOcr = new CheckBox("Forzar OCR");
     private final Button cancelButton = new Button("Cancelar");
     private final Button openOutputButton = new Button("Abrir carpeta");
     private final ProgressIndicator progress = new ProgressIndicator(-1);
     private final Label phaseLabel = new Label("Listo");
-    private final Label elapsedLabel = new Label("Tiempo: 00:00");
+    private final Label elapsedLabel = new Label("Tiempo transcurrido: 00:00:00");
     private final TextArea logs = new TextArea();
     private final Timeline elapsedTimer;
 
     private Path selectedPdf;
     private Instant conversionStartedAt;
+    private String lastInputDirectory;
+    private boolean conversionBusy;
+    private boolean engineBusy;
+    private final boolean developmentOverrideAvailable;
 
     public MainController(
             Stage stage,
             StartConversionUseCase startConversion,
             CancelConversionUseCase cancelConversion,
             UserSettingsRepository settingsRepository,
-            Consumer<Path> configureEngineExecutable,
+            InstallEngineUseCase installEngine,
+            RepairEngineUseCase repairEngine,
+            UninstallEngineUseCase uninstallEngine,
+            CheckEngineStatusUseCase checkEngine,
+            CancelEngineOperationUseCase cancelEngine,
             EngineId selectedEngineId,
-            UserSettings settings
+            UserSettings settings,
+            boolean developmentOverrideAvailable
     ) {
         this.stage = Objects.requireNonNull(stage, "stage");
         this.startConversion = Objects.requireNonNull(startConversion, "startConversion");
         this.cancelConversion = Objects.requireNonNull(cancelConversion, "cancelConversion");
         this.settingsRepository = Objects.requireNonNull(settingsRepository, "settingsRepository");
-        this.configureEngineExecutable = Objects.requireNonNull(
-                configureEngineExecutable, "configureEngineExecutable");
         this.selectedEngineId = Objects.requireNonNull(selectedEngineId, "selectedEngineId");
+        this.developmentOverrideAvailable = developmentOverrideAvailable;
 
-        markerExecutableField.setText(settings.markerExecutable());
-        outputDirectoryField.setText(defaultOutputDirectory(settings.outputDirectory()));
+        lastInputDirectory = settings.lastInputDirectory();
+        engineSettings = new EngineSettingsController(stage, selectedEngineId, installEngine, repairEngine,
+                uninstallEngine, checkEngine, cancelEngine, busy -> {
+                    engineBusy = busy; convertButton.setDisable(busy || conversionBusy);
+                }, line -> appendLog("INSTALL", line));
+        outputDirectoryField.setText(defaultOutputDirectory(settings.lastOutputDirectory().isBlank()
+                ? settings.outputDirectory() : settings.lastOutputDirectory()));
         elapsedTimer = new Timeline(new KeyFrame(Duration.seconds(1), ignored -> updateElapsedTime()));
         elapsedTimer.setCycleCount(Timeline.INDEFINITE);
         buildView();
+        engineSettings.refresh();
     }
 
     public Parent view() {
@@ -108,26 +123,27 @@ public final class MainController {
 
         VBox dropZone = buildDropZone();
         HBox outputRow = pathRow(outputDirectoryField, "Cambiar", this::chooseOutputDirectory);
-        HBox markerRow = pathRow(markerExecutableField, "Seleccionar", this::chooseMarkerExecutable);
-
-        TitledPane engineSettings = new TitledPane("Configuración de Marker", markerRow);
-        engineSettings.setExpanded(markerExecutableField.getText().isBlank());
-        engineSettings.setCollapsible(true);
+        TitledPane settingsPane = new TitledPane("Configuración > Motores", engineSettings.view());
+        settingsPane.setExpanded(true);
+        settingsPane.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         convertButton.getStyleClass().add("primary-button");
         convertButton.setOnAction(ignored -> startConversion());
-        HBox conversionAction = new HBox(convertButton);
+        convertButton.setId("convert-pdf"); cancelButton.setId("cancel-conversion"); forceOcr.setId("force-ocr");
+        outputDirectoryField.setId("output-directory"); logs.setId("engine-logs"); phaseLabel.setId("conversion-state");
+        HBox conversionAction = new HBox(12, forceOcr, convertButton);
         conversionAction.setAlignment(Pos.CENTER);
 
         VBox form = new VBox(14,
                 dropZone,
                 new Label("Carpeta de salida"),
                 outputRow,
-                engineSettings,
+                settingsPane,
                 conversionAction);
         form.setPadding(new Insets(8, 24, 12, 24));
 
         VBox status = buildStatusPanel();
+        VBox.setMargin(status, new Insets(0, 24, 20, 24));
         VBox content = new VBox(10, form, status);
         VBox.setVgrow(status, Priority.ALWAYS);
         root.setCenter(content);
@@ -190,6 +206,7 @@ public final class MainController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar documento PDF");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Documentos PDF", "*.pdf"));
+        chooser.setInitialDirectory(validDirectory(lastInputDirectory));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
             selectPdf(file.toPath());
@@ -207,21 +224,12 @@ public final class MainController {
         }
     }
 
-    private void chooseMarkerExecutable() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Seleccionar ejecutable del motor");
-        chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Ejecutables", "*.exe", "*.cmd", "*.bat"),
-                new FileChooser.ExtensionFilter("Todos los archivos", "*.*"));
-        File file = chooser.showOpenDialog(stage);
-        if (file != null) {
-            markerExecutableField.setText(file.getAbsolutePath());
-            configureEngineExecutable.accept(file.toPath());
-            saveSettings();
-        }
-    }
-
     private void startConversion() {
+        if (!engineSettings.ready() && !developmentOverrideAvailable) {
+            showAlert(Alert.AlertType.INFORMATION, "Marker necesita instalarse o repararse",
+                    "Abrí Configuración > Motores y seleccioná Instalar Marker o Reparar para continuar.");
+            return;
+        }
         String validationError = validateInputs();
         if (validationError != null) {
             showAlert(Alert.AlertType.WARNING, "No se puede iniciar", validationError);
@@ -237,17 +245,17 @@ public final class MainController {
             return;
         }
 
-        Path executable = Path.of(markerExecutableField.getText()).toAbsolutePath().normalize();
-        configureEngineExecutable.accept(executable);
         saveSettings();
         setBusy(true);
         logs.clear();
         appendLog("SYSTEM", "Iniciando conversión de " + selectedPdf.getFileName());
         conversionStartedAt = Instant.now();
+        phaseLabel.setText("Procesando documento...");
+        elapsedLabel.setText("Tiempo transcurrido: 00:00:00");
         elapsedTimer.playFromStart();
 
         ConversionRequest request = new ConversionRequest(
-                selectedPdf, output, selectedEngineId, OutputFormat.MARKDOWN);
+                selectedPdf, output, selectedEngineId, OutputFormat.MARKDOWN, forceOcr.isSelected());
         startConversion.start(request, event -> Platform.runLater(() -> handleEvent(event)))
                 .whenComplete((result, error) -> Platform.runLater(() -> finishConversion(result, error)));
     }
@@ -302,15 +310,13 @@ public final class MainController {
         if (outputDirectoryField.getText().isBlank()) {
             return "Seleccioná una carpeta de salida.";
         }
-        if (markerExecutableField.getText().isBlank()
-                || !Files.isRegularFile(Path.of(markerExecutableField.getText()))) {
-            return "Seleccioná un ejecutable válido para el motor.";
-        }
         return null;
     }
 
     private void setBusy(boolean busy) {
-        convertButton.setDisable(busy);
+        conversionBusy = busy;
+        engineSettings.converting(busy);
+        convertButton.setDisable(busy || engineBusy);
         cancelButton.setDisable(!busy);
         progress.setVisible(busy);
     }
@@ -349,9 +355,11 @@ public final class MainController {
                 .orElse(null);
     }
 
-    private void selectPdf(Path pdf) {
+    public void selectPdf(Path pdf) {
         selectedPdf = pdf.toAbsolutePath().normalize();
+        lastInputDirectory = selectedPdf.getParent().toString();
         selectedPdfLabel.setText(selectedPdf.getFileName() + System.lineSeparator() + selectedPdf);
+        saveSettings();
     }
 
     private void openOutputDirectory() {
@@ -384,14 +392,13 @@ public final class MainController {
             return;
         }
         java.time.Duration elapsed = java.time.Duration.between(conversionStartedAt, Instant.now());
-        long minutes = elapsed.toMinutes();
-        long seconds = elapsed.minusMinutes(minutes).toSeconds();
-        elapsedLabel.setText("Tiempo: %02d:%02d".formatted(minutes, seconds));
+        long seconds = elapsed.toSeconds();
+        elapsedLabel.setText("Tiempo transcurrido: %02d:%02d:%02d".formatted(seconds / 3600, seconds / 60 % 60, seconds % 60));
     }
 
     private void saveSettings() {
         settingsRepository.save(new UserSettings(
-                markerExecutableField.getText(), outputDirectoryField.getText()));
+                "", outputDirectoryField.getText(), lastInputDirectory, outputDirectoryField.getText(), "es", selectedEngineId.value()));
     }
 
     private String defaultOutputDirectory(String configured) {
@@ -402,13 +409,17 @@ public final class MainController {
     }
 
     private void setInitialDirectory(DirectoryChooser chooser, String path) {
-        if (path == null || path.isBlank()) {
-            return;
+        chooser.setInitialDirectory(validDirectory(path));
+    }
+
+    private File validDirectory(String configured) {
+        if (configured != null && !configured.isBlank()) {
+            try { Path path = Path.of(configured); if (Files.isDirectory(path)) return path.toFile(); }
+            catch (java.nio.file.InvalidPathException ignored) { }
         }
-        File directory = Path.of(path).toFile();
-        if (directory.isDirectory()) {
-            chooser.setInitialDirectory(directory);
-        }
+        Path home = Path.of(System.getProperty("user.home"));
+        Path documents = home.resolve("Documents");
+        return (Files.isDirectory(documents) ? documents : home).toFile();
     }
 
     private Throwable unwrap(Throwable error) {

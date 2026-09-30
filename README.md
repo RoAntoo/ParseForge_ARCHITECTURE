@@ -1,45 +1,55 @@
 # ParseForge
 
-ParseForge is a Windows-first, local-first desktop application for converting PDF documents to editable formats. The first engine integration targets [Marker](https://github.com/datalab-to/marker).
+ParseForge is a Windows-first desktop app that converts PDFs to Markdown using
+Marker as its first engine. Documents are processed locally.
 
-## Current status
+## Managed Marker
 
-The repository contains the first executable proof of concept:
+Open **Configuración > Motores** and click **Instalar Marker**. ParseForge
+downloads pinned private CPython, llama.cpp CPU, locked packages and private
+models. It validates SHA-256, prepares staging, runs health checks and activates
+the runtime. Normal conversion needs no Python, Marker, pip, WinGet, manual
+executable path or administrator privileges.
 
-- JavaFX PDF selection and drag and drop;
-- configurable Marker executable and output directory;
-- asynchronous process execution with live stdout/stderr;
-- cancellation of the process tree;
-- persisted local UI settings;
-- clean boundaries between domain, application, infrastructure, and presentation.
+Marker installs under `%LOCALAPPDATA%\ParseForge\engines\marker`.
+It uses approximately 3.2 GB; have at least 7 GB free for preparation/repair.
+Internet is needed to install or repair. Model revisions are pinned; the Hugging
+Face cache runs offline during conversion. Repair safely reinstalls. Uninstall
+requires confirmation and removes private models/caches. Documents and outputs
+remain independent of the engine directory.
 
-Marker installation is intentionally not automated yet. This is the next major milestone described in `ParseForge_ARCHITECTURE_MVP.md`.
+Requirements: Windows x64 and Microsoft Visual C++ Runtime x64. Import/CLI health
+checks detect native-load failures; prerequisite distribution and validation on
+clean Windows remain release work. JDK/Maven are development requirements.
+Application packaging is outside Stage 3C.
 
-The [Stage 3B autonomous runtime spike](docs/spikes/marker-autonomous-runtime.md)
-verifies private CPython and llama.cpp, Java conversion/cancellation, and hashed
-artifacts. Its scripts are experimental and are not connected to the UI.
+## Development
 
-## Requirements for development
-
-- JDK 21 or newer;
-- Maven 3.9+;
-- an existing Marker installation to perform a real conversion.
-
-## Run
+JDK 21+ and Maven 3.9+:
 
 ```powershell
 mvn javafx:run
+mvn clean verify
 ```
 
-In the app, select `marker_single.exe` (or the equivalent launcher from the active Marker environment), a PDF, and an output directory.
-
-## Test and package
+Optional isolated data root:
 
 ```powershell
-mvn test
-mvn package
+mvn javafx:run "-Dparseforge.dataDir=$env:USERPROFILE\Documents\ParseForge-test"
 ```
 
-## Privacy
+`-Dparseforge.marker.override=C:\...\marker_single.exe` is an explicit
+development-only override, not selected in the normal UI.
 
-Documents are sent only to the selected local conversion engine. ParseForge does not upload document contents.
+## Architecture and validation
+
+Domain separates engines from conversion. Application ports/use cases coordinate
+lifecycle and conversion. Infrastructure owns HTTPS, hashes, filesystem and
+tracked processes. JavaFX depends on use cases with explicit injection.
+
+See [Stage 3C result](docs/STAGE_3C_RESULT.md) and [ADRs](docs/ADR).
+The [3B spike](docs/spikes/marker-autonomous-runtime.md) remains historical evidence.
+Runtimes, models, wheels and validation outputs remain outside Git.
+
+Privacy: ParseForge does not upload documents or inherit external LLM/API
+credentials. Internet is used to install the engine and download models.

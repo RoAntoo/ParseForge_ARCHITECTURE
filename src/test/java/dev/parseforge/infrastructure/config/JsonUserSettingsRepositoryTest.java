@@ -13,6 +13,19 @@ class JsonUserSettingsRepositoryTest {
     @TempDir
     Path temporaryDirectory;
 
+    @Test void persistsInputAndOutputDirectoriesIndependentlyAndReadsLegacySettings() throws Exception {
+        Path config = temporaryDirectory.resolve("config.json");
+        var repository = new JsonUserSettingsRepository(config);
+        var settings = new UserSettings("", "output", "input", "output", "es", "marker");
+        repository.save(settings);
+        assertEquals(settings, new JsonUserSettingsRepository(config).load());
+        Files.writeString(config, "{\"markerExecutable\":\"old.exe\",\"outputDirectory\":\"legacy-output\"}");
+        assertEquals("legacy-output", repository.load().lastOutputDirectory());
+        assertEquals("", repository.load().lastInputDirectory());
+        Files.writeString(config, "{invalid");
+        assertEquals(UserSettings.empty(), repository.load());
+    }
+
     @Test
     void returnsEmptySettingsWhenJsonRootIsNull() throws Exception {
         Path configFile = temporaryDirectory.resolve("config.json");

@@ -4,6 +4,8 @@ import dev.parseforge.application.port.out.ConversionEvent;
 import dev.parseforge.application.port.out.ProcessExecutor;
 import dev.parseforge.application.port.out.ProcessResult;
 import dev.parseforge.application.port.out.ProcessStream;
+import dev.parseforge.application.port.out.*;
+import java.util.concurrent.*;
 import dev.parseforge.domain.model.ConversionRequest;
 import dev.parseforge.domain.model.ConversionResult;
 import dev.parseforge.domain.model.ConversionStatus;
@@ -29,6 +31,27 @@ import static org.mockito.Mockito.when;
 class MarkerEngineTest {
     @TempDir
     Path temporaryDirectory;
+
+    @Test void managedCancellationDuringRuntimeLookupPreventsProcessStartAndReleasesLease() throws Exception {
+        var locator = mock(EngineRuntimeLocator.class);
+        var executor = mock(ProcessExecutor.class);
+        var leaseClosed = new java.util.concurrent.atomic.AtomicBoolean();
+        var runtime = new EngineRuntimeLocator.EngineRuntime() {
+            public ProcessSpec command() { throw new AssertionError("Cancelled conversion requested a command"); }
+            public void close() { leaseClosed.set(true); }
+        };
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        when(locator.acquire(any())).thenAnswer(i -> { entered.countDown(); release.await(5, TimeUnit.SECONDS); return runtime; });
+        var engine = new MarkerEngine(executor, locator);
+        try (var worker = Executors.newSingleThreadExecutor()) {
+            var future = worker.submit(() -> engine.convert(request(temporaryDirectory), e -> {}));
+            assertTrue(entered.await(5, TimeUnit.SECONDS));
+            engine.cancel(); release.countDown();
+            assertEquals(ConversionStatus.CANCELLED, future.get(5, TimeUnit.SECONDS).status());
+            verify(executor, org.mockito.Mockito.never()).execute(any(), any());
+            assertTrue(leaseClosed.get());
+        }
+    }
 
     @Test
     void translatesProcessOutputAndSuccessfulExitIntoConversionEvents() throws Exception {

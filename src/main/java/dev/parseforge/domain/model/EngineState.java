@@ -1,8 +1,5 @@
 package dev.parseforge.domain.model;
-
 public enum EngineState {
-    AVAILABLE,
-    NOT_CONFIGURED,
-    CORRUPTED,
-    BUSY
+    NOT_INSTALLED, DOWNLOADING, INSTALLING, VERIFYING, READY, BROKEN, REMOVING,
+    /** Legacy development integration. */ AVAILABLE, NOT_CONFIGURED, CORRUPTED, BUSY
 }

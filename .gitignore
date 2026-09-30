@@ -3,8 +3,7 @@ target/
 .vscode/
 *.iml
 *.log
-engines/
-models/
-runtime/
+/engines/
+/models/
+/runtime/
 *.tmp
-
