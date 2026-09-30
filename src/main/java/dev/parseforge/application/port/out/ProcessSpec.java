@@ -11,8 +11,13 @@ public record ProcessSpec(
         List<String> arguments,
         Map<String, String> environment,
         Path workingDirectory,
-        Duration timeout
+        Duration timeout,
+        boolean inheritEnvironment
 ) {
+    public ProcessSpec(Path executable, List<String> arguments, Map<String, String> environment,
+                       Path workingDirectory, Duration timeout) {
+        this(executable, arguments, environment, workingDirectory, timeout, true);
+    }
     public ProcessSpec {
         executable = Objects.requireNonNull(executable, "executable").toAbsolutePath().normalize();
         arguments = arguments == null ? List.of() : List.copyOf(arguments);

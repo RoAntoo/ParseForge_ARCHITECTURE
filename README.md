@@ -15,6 +15,10 @@ The repository contains the first executable proof of concept:
 
 Marker installation is intentionally not automated yet. This is the next major milestone described in `ParseForge_ARCHITECTURE_MVP.md`.
 
+The [Stage 3B autonomous runtime spike](docs/spikes/marker-autonomous-runtime.md)
+verifies private CPython and llama.cpp, Java conversion/cancellation, and hashed
+artifacts. Its scripts are experimental and are not connected to the UI.
+
 ## Requirements for development
 
 - JDK 21 or newer;

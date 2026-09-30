@@ -1,0 +1,759 @@
+{
+  "date": "2026-09-30",
+  "timezone": "America/Buenos_Aires",
+  "result": "SUCCESS",
+  "runtimeAudit": {
+    "root": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "sizesBytes": {
+      "pythonWithoutSitePackages": 35420219,
+      "sitePackages": 1261041455,
+      "llamaCpp": 47188765,
+      "models": 1888309853,
+      "cache": 21581,
+      "temp": 3761,
+      "logs": 210007,
+      "downloadArtifacts": 310308734,
+      "rootFiles": 14560,
+      "installedTotal": 3232210201,
+      "totalWithDownloadArtifacts": 3542518935
+    },
+    "models": [
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/.gitattributes",
+        "bytes": 1519,
+        "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/config.json",
+        "bytes": 647,
+        "sha256": "e11e04c98a43e1ed1eff099b4d6cb6dffbeb24fd226f709365defcb0f9e9ef83"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/manifest.json",
+        "bytes": 161,
+        "sha256": "51408a4e2a69aa6ca91de4e91e953244b619ecf8bc28badfc3c30d653d643505"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/model.safetensors",
+        "bytes": 270664948,
+        "sha256": "42cd5698d62dcdd408628fe6d67c3e1981fc90523ca286f358f1dea8e212de3e"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/README.md",
+        "bytes": 32,
+        "sha256": "a9d7ccd967379ca368a6495f523a63d1d582513406d2da37899f8bf51815db6b"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/special_tokens_map.json",
+        "bytes": 695,
+        "sha256": "5d5b662e421ea9fac075174bb0688ee0d9431699900b90662acd44b2a350503a"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/tokenizer.json",
+        "bytes": 2919362,
+        "sha256": "bf1b59b7b11c95f194f51708d918eea378e09d05f84c0e1656dc5180e8117088"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/tokenizer_config.json",
+        "bytes": 1198,
+        "sha256": "228e2c7cc6d20d298f7a3d69b89103f6dcb0b533c0b1146a6e6b6e7bb511ae35"
+      },
+      {
+        "path": "models/datalab/ocr_error_detection/2025_02_18/vocab.txt",
+        "bytes": 995526,
+        "sha256": "fe0fda7c425b48c516fc8f160d594c8022a0808447475c1a7c6d6479763f310c"
+      },
+      {
+        "path": "models/huggingface/.agent_harnesses.json",
+        "bytes": 5778,
+        "sha256": "fce17fe375f6d857126d31f6a3e3ae5697c44d530b1bc652aaeb43fe8d7b357c"
+      },
+      {
+        "path": "models/huggingface/hub/CACHEDIR.TAG",
+        "bytes": 195,
+        "sha256": "e8893e2dcb3f4545ef67a0a5b7b769113d38eef1aa61c7c7ba14659b02af955f"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya-ocr-2-gguf/refs/main",
+        "bytes": 40,
+        "sha256": "e2489ca1c94f8fa7938100f96e509f7504baa9eca846c295f800ce3c059db903"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya-ocr-2-gguf/snapshots/6a3a4c30e5e74446d4f8b6afd05b2f2da970f470/surya-2-mmproj.gguf",
+        "bytes": 204986688,
+        "sha256": "98c0563673b1657ff6d021d1e5f04af06cbf61bb40c63ac613e8bb71b42fb2c0"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya-ocr-2-gguf/snapshots/6a3a4c30e5e74446d4f8b6afd05b2f2da970f470/surya-2.gguf",
+        "bytes": 1266400864,
+        "sha256": "1f18abe17b1ed8b4e47ee9b1ad0e274c93daf5efbb6b29a04ff1712e37051e05"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/refs/main",
+        "bytes": 40,
+        "sha256": "81a8d4185babe42d8db59e13bada6ade879fbd76f9c4517b94ee6377a9df6052"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/.gitattributes",
+        "bytes": 1519,
+        "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/config.json",
+        "bytes": 1796,
+        "sha256": "bd2db9bcc338841fc4496b10a69f07ccc544b0c80e94d94482295197b23d5605"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/LICENSE",
+        "bytes": 14744,
+        "sha256": "b6be9042dce439368b606444256cd97624a97c67dfae33957b87c3a0b461ae03"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/order/config.json",
+        "bytes": 434,
+        "sha256": "83e687c922ce1915adb212af882f54ba52dca17c5d556526af9d57c41b6e0124"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/order/order_ar.pt",
+        "bytes": 7072639,
+        "sha256": "f381c38548015cbbe962611cbd2c80c59e88c3c25543ac20df9db16f84923ad8"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/README.md",
+        "bytes": 1447,
+        "sha256": "13e6e87fa26a13e5c043fb8c7fa0300287d42ac7b5bb5a16d77107aaca69f3e9"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/snapshots/0aee81d5fd9275c0582e545bf3a56944b1e75679/rfdetr_layout.pth",
+        "bytes": 134915547,
+        "sha256": "e01b79f858778cdad8a1384e644ac2b35f9c095fbfd102a34942e23f2f179fe7"
+      },
+      {
+        "path": "models/huggingface/hub/models--datalab-to--surya_layout2/trees/0aee81d5fd9275c0582e545bf3a56944b1e75679.json",
+        "bytes": 1172,
+        "sha256": "cbb7a2ad305683fa8548fece57ccf71acea70da72ac72b9e87909804dc09d538"
+      }
+    ],
+    "downloadedArtifacts": [
+      {
+        "path": "downloads/llama-release.json",
+        "bytes": 79924,
+        "sha256": "08679ba1304325efee66f6d580f9127644cb77c0f4e5b34139743373433d8c88"
+      },
+      {
+        "path": "downloads/llama.zip",
+        "bytes": 18559583,
+        "sha256": "d1cb5f9ef7bbb7068954b4c9767d5b5309e20bcefeb61d4aafc47f9581f38752"
+      },
+      {
+        "path": "downloads/pip-25.0.1-py3-none-any.whl",
+        "bytes": 1841526,
+        "sha256": "c46efd13b6aa8279f33f2864459c8ce587ea6a1a59ee20de055868d8f7688f7f"
+      },
+      {
+        "path": "downloads/python.zip",
+        "bytes": 11133606,
+        "sha256": "4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3"
+      },
+      {
+        "path": "downloads/requirements.lock",
+        "bytes": 8194,
+        "sha256": "cb00a399f01ce64d087562a6e9d613d8f5b319c72994b66a2db7fc4c6f564def"
+      },
+      {
+        "path": "downloads/wheels.json",
+        "bytes": 14024,
+        "sha256": "e8aecfe9c3e9c6b109947842bed501d18dc44aba4ea5f57f8674e9a6394676c5"
+      }
+    ],
+    "remainingPrivateProcesses": []
+  },
+  "health": {
+    "startedAt": "2026-09-30T17:47:54.507146700Z",
+    "logicalRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaRealRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaExecutable": "C:\\Program Files\\Java\\jdk-26\\bin\\java.exe",
+    "environment": {
+      "HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
+      "USERPROFILE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "NUMBER_OF_PROCESSORS": "8",
+      "MODEL_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\datalab",
+      "LOCALAPPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Local",
+      "LLAMA_CPP_BINARY": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "TEMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "APPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Roaming",
+      "HF_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface",
+      "WINDIR": "C:\\WINDOWS",
+      "HF_HUB_CACHE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "TMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "TORCH_DEVICE": "cpu",
+      "SURYA_INFERENCE_BACKEND": "llamacpp",
+      "PYTHONNOUSERSITE": "1",
+      "XDG_CACHE_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache",
+      "PATH": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python;C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp;C:\\WINDOWS\\System32",
+      "SystemRoot": "C:\\WINDOWS",
+      "PIP_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\pip",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONIOENCODING": "utf-8",
+      "TORCH_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\torch",
+      "SURYA_INFERENCE_KEEP_ALIVE": "true"
+    },
+    "results": [
+      {
+        "durationMs": 38,
+        "exitCode": 0,
+        "timedOut": false,
+        "cancelled": false
+      },
+      {
+        "durationMs": 3389,
+        "exitCode": 0,
+        "timedOut": false,
+        "cancelled": false
+      },
+      {
+        "durationMs": 10582,
+        "exitCode": 0,
+        "timedOut": false,
+        "cancelled": false
+      },
+      {
+        "durationMs": 51,
+        "exitCode": 0,
+        "timedOut": false,
+        "cancelled": false
+      }
+    ],
+    "processes": [
+      {
+        "commandLine": "",
+        "pid": 6896,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+        "startInstant": "2026-09-30T17:48:08.854Z",
+        "arguments": []
+      },
+      {
+        "commandLine": "",
+        "pid": 3552,
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "startInstant": "2026-09-30T17:48:08.86Z",
+        "arguments": []
+      },
+      {
+        "commandLine": "",
+        "pid": 14692,
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "startInstant": "2026-09-30T17:47:54.87Z",
+        "arguments": []
+      },
+      {
+        "commandLine": "",
+        "pid": 13684,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "startInstant": "2026-09-30T17:47:58.26Z",
+        "arguments": []
+      },
+      {
+        "commandLine": "",
+        "pid": 7796,
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "startInstant": "2026-09-30T17:47:58.269Z",
+        "arguments": []
+      },
+      {
+        "commandLine": "",
+        "pid": 14600,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "startInstant": "2026-09-30T17:47:54.863Z",
+        "arguments": []
+      }
+    ],
+    "cancellationSent": false,
+    "aliveObservedPids": []
+  },
+  "pythonAudit": {
+    "executable": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+    "prefix": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python",
+    "base_prefix": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python",
+    "path": [
+      "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\Lib",
+      "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python",
+      "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\Lib\\site-packages"
+    ],
+    "marker": [
+      "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\Lib\\site-packages\\marker"
+    ],
+    "surya": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\Lib\\site-packages\\surya\\__init__.py",
+    "llama": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+    "versions": {
+      "marker-pdf": "2.0.0",
+      "surya-ocr": "0.22.1",
+      "torch": "2.14.0+cpu",
+      "torchvision": "0.29.0+cpu"
+    }
+  },
+  "digital": {
+    "startedAt": "2026-09-30T17:48:09.810350500Z",
+    "logicalRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaRealRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaExecutable": "C:\\Program Files\\Java\\jdk-26\\bin\\java.exe",
+    "environment": {
+      "SURYA_INFERENCE_KEEP_ALIVE": "true",
+      "HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
+      "USERPROFILE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "NUMBER_OF_PROCESSORS": "8",
+      "MODEL_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\datalab",
+      "LOCALAPPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Local",
+      "LLAMA_CPP_BINARY": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "TEMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "APPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Roaming",
+      "HF_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface",
+      "WINDIR": "C:\\WINDOWS",
+      "HF_HUB_CACHE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "TMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "TORCH_DEVICE": "cpu",
+      "SURYA_INFERENCE_BACKEND": "llamacpp",
+      "PYTHONNOUSERSITE": "1",
+      "XDG_CACHE_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache",
+      "PATH": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python;C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp;C:\\WINDOWS\\System32",
+      "SystemRoot": "C:\\WINDOWS",
+      "PIP_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\pip",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONIOENCODING": "utf-8",
+      "TORCH_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\torch"
+    },
+    "results": [
+      {
+        "durationMs": 52536,
+        "exitCode": 0,
+        "timedOut": false,
+        "cancelled": false
+      }
+    ],
+    "processes": [
+      {
+        "arguments": [],
+        "commandLine": "",
+        "pid": 10560,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "startInstant": "2026-09-30T17:48:21.273Z"
+      },
+      {
+        "arguments": [],
+        "commandLine": "",
+        "pid": 10664,
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "startInstant": "2026-09-30T17:48:10.075Z"
+      },
+      {
+        "arguments": [],
+        "commandLine": "",
+        "pid": 8956,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "startInstant": "2026-09-30T17:48:10.067Z"
+      },
+      {
+        "arguments": [],
+        "commandLine": "",
+        "pid": 13436,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "startInstant": "2026-09-30T17:48:42.612Z"
+      }
+    ],
+    "cancellationSent": false,
+    "aliveObservedPids": []
+  },
+  "ocr": {
+    "startedAt": "2026-09-30T17:49:24.987928300Z",
+    "logicalRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaRealRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaExecutable": "C:\\Program Files\\Java\\jdk-26\\bin\\java.exe",
+    "environment": {
+      "USERPROFILE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
+      "HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "SURYA_INFERENCE_KEEP_ALIVE": "true",
+      "TORCH_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\torch",
+      "PYTHONIOENCODING": "utf-8",
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PIP_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\pip",
+      "SystemRoot": "C:\\WINDOWS",
+      "PATH": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python;C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp;C:\\WINDOWS\\System32",
+      "XDG_CACHE_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache",
+      "PYTHONNOUSERSITE": "1",
+      "SURYA_INFERENCE_BACKEND": "llamacpp",
+      "TORCH_DEVICE": "cpu",
+      "TMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "HF_HUB_CACHE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub",
+      "WINDIR": "C:\\WINDOWS",
+      "HF_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface",
+      "APPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Roaming",
+      "TEMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "LLAMA_CPP_BINARY": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "LOCALAPPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Local",
+      "MODEL_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\datalab",
+      "NUMBER_OF_PROCESSORS": "8"
+    },
+    "results": [
+      {
+        "durationMs": 179310,
+        "cancelled": false,
+        "timedOut": false,
+        "exitCode": 0
+      }
+    ],
+    "processes": [
+      {
+        "arguments": [],
+        "startInstant": "2026-09-30T17:49:49.235Z",
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "pid": 18768,
+        "commandLine": ""
+      },
+      {
+        "arguments": [],
+        "startInstant": "2026-09-30T17:49:25.234Z",
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "pid": 2436,
+        "commandLine": ""
+      },
+      {
+        "arguments": [],
+        "startInstant": "2026-09-30T17:49:25.247Z",
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "pid": 21812,
+        "commandLine": ""
+      },
+      {
+        "arguments": [],
+        "startInstant": "2026-09-30T17:49:36.523Z",
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+        "pid": 4344,
+        "commandLine": ""
+      },
+      {
+        "arguments": [],
+        "startInstant": "2026-09-30T17:51:00.644Z",
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+        "pid": 21816,
+        "commandLine": ""
+      }
+    ],
+    "cancellationSent": false,
+    "aliveObservedPids": []
+  },
+  "cancellation": {
+    "startedAt": "2026-09-30T17:53:45.453308900Z",
+    "logicalRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaRealRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b",
+    "javaExecutable": "C:\\Program Files\\Java\\jdk-26\\bin\\java.exe",
+    "environment": {
+      "PYTHONNOUSERSITE": "1",
+      "XDG_CACHE_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache",
+      "PATH": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python;C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp;C:\\WINDOWS\\System32",
+      "SystemRoot": "C:\\WINDOWS",
+      "PIP_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\pip",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONIOENCODING": "utf-8",
+      "TORCH_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\torch",
+      "SURYA_INFERENCE_KEEP_ALIVE": "true",
+      "HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
+      "USERPROFILE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home",
+      "NUMBER_OF_PROCESSORS": "8",
+      "MODEL_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\datalab",
+      "LOCALAPPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Local",
+      "LLAMA_CPP_BINARY": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "TEMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "APPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\cache\\home\\AppData\\Roaming",
+      "HF_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface",
+      "WINDIR": "C:\\WINDOWS",
+      "HF_HUB_CACHE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "TMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp",
+      "TORCH_DEVICE": "cpu",
+      "SURYA_INFERENCE_BACKEND": "llamacpp"
+    },
+    "results": [
+      {
+        "cancelled": true,
+        "durationMs": 43840,
+        "exitCode": 1,
+        "timedOut": false
+      }
+    ],
+    "processes": [
+      {
+        "startInstant": "2026-09-30T17:53:58.854Z",
+        "arguments": [],
+        "commandLine": "",
+        "pid": 22048,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe"
+      },
+      {
+        "startInstant": "2026-09-30T17:53:45.726Z",
+        "arguments": [],
+        "commandLine": "",
+        "pid": 15684,
+        "command": "C:\\Windows\\System32\\conhost.exe"
+      },
+      {
+        "startInstant": "2026-09-30T17:54:12.269Z",
+        "arguments": [],
+        "commandLine": "",
+        "pid": 6920,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe"
+      },
+      {
+        "startInstant": "2026-09-30T17:54:27.443Z",
+        "arguments": [],
+        "commandLine": "",
+        "pid": 4312,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe"
+      },
+      {
+        "startInstant": "2026-09-30T17:53:45.712Z",
+        "arguments": [],
+        "commandLine": "",
+        "pid": 16828,
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe"
+      }
+    ],
+    "cancellationSent": true,
+    "aliveObservedPids": []
+  },
+  "ocrWindowsProcesses": [
+    {
+      "ProcessId": 2436,
+      "ParentProcessId": 22296,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -I -X utf8 -u -B -c \"from marker.scripts.convert_single import convert_single_cli; convert_single_cli()\" C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp\\ocr.pdf --output_dir C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp\\output-ocr --output_format markdown --force_ocr"
+    },
+    {
+      "ProcessId": 4344,
+      "ParentProcessId": 2436,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -m surya.fast_layout.server --host 127.0.0.1 --port 50038 --checkpoint hf://datalab-to/surya_layout2"
+    },
+    {
+      "ProcessId": 18768,
+      "ParentProcessId": 2436,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -m surya.ocr_error.server --host 127.0.0.1 --port 50063 --checkpoint s3://ocr_error_detection/2025_02_18"
+    },
+    {
+      "ProcessId": 21816,
+      "ParentProcessId": 2436,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe -m C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub\\models--datalab-to--surya-ocr-2-gguf\\snapshots\\6a3a4c30e5e74446d4f8b6afd05b2f2da970f470\\surya-2.gguf --mmproj C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub\\models--datalab-to--surya-ocr-2-gguf\\snapshots\\6a3a4c30e5e74446d4f8b6afd05b2f2da970f470\\surya-2-mmproj.gguf -ngl 99 --host 127.0.0.1 --port 59932 --parallel 8 --ctx-size 98304 --alias datalab-to/surya-ocr-2 --jinja"
+    }
+  ],
+  "cancelWindowsProcesses": [
+    {
+      "ProcessId": 16828,
+      "ParentProcessId": 16456,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -I -X utf8 -u -B -c \"from marker.scripts.convert_single import convert_single_cli; convert_single_cli()\" C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp\\ocr.pdf --output_dir C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\temp\\output-cancel --output_format markdown --force_ocr",
+      "CreationDate": "2026-09-30T14:53:45.712936-03:00"
+    },
+    {
+      "ProcessId": 22048,
+      "ParentProcessId": 16828,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -m surya.fast_layout.server --host 127.0.0.1 --port 57514 --checkpoint hf://datalab-to/surya_layout2",
+      "CreationDate": "2026-09-30T14:53:58.854412-03:00"
+    },
+    {
+      "ProcessId": 6920,
+      "ParentProcessId": 16828,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\python\\python.exe -m surya.ocr_error.server --host 127.0.0.1 --port 57540 --checkpoint s3://ocr_error_detection/2025_02_18",
+      "CreationDate": "2026-09-30T14:54:12.269652-03:00"
+    },
+    {
+      "ProcessId": 4312,
+      "ParentProcessId": 16828,
+      "ExecutablePath": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe",
+      "CommandLine": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\runtime\\llamacpp\\llama-server.exe -m C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub\\models--datalab-to--surya-ocr-2-gguf\\snapshots\\6a3a4c30e5e74446d4f8b6afd05b2f2da970f470\\surya-2.gguf --mmproj C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b\\models\\huggingface\\hub\\models--datalab-to--surya-ocr-2-gguf\\snapshots\\6a3a4c30e5e74446d4f8b6afd05b2f2da970f470\\surya-2-mmproj.gguf -ngl 99 --host 127.0.0.1 --port 57562 --parallel 8 --ctx-size 98304 --alias datalab-to/surya-ocr-2 --jinja",
+      "CreationDate": "2026-09-30T14:54:27.443607-03:00"
+    }
+  ],
+  "replayHealth": {
+    "startedAt": "2026-09-30T17:57:05.500088300Z",
+    "logicalRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay",
+    "javaRealRoot": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay",
+    "javaExecutable": "C:\\Program Files\\Java\\jdk-26\\bin\\java.exe",
+    "environment": {
+      "PYTHONNOUSERSITE": "1",
+      "SURYA_INFERENCE_BACKEND": "llamacpp",
+      "TORCH_DEVICE": "cpu",
+      "TMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\temp",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "HF_HUB_CACHE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\models\\huggingface\\hub",
+      "WINDIR": "C:\\WINDOWS",
+      "HF_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\models\\huggingface",
+      "APPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\home\\AppData\\Roaming",
+      "TEMP": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\temp",
+      "LLAMA_CPP_BINARY": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\llamacpp\\llama-server.exe",
+      "LOCALAPPDATA": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\home\\AppData\\Local",
+      "MODEL_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\models\\datalab",
+      "NUMBER_OF_PROCESSORS": "8",
+      "USERPROFILE": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\home",
+      "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
+      "HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\home",
+      "SURYA_INFERENCE_KEEP_ALIVE": "true",
+      "TORCH_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\torch",
+      "PYTHONIOENCODING": "utf-8",
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PIP_CACHE_DIR": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache\\pip",
+      "SystemRoot": "C:\\WINDOWS",
+      "PATH": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\python;C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\llamacpp;C:\\WINDOWS\\System32",
+      "XDG_CACHE_HOME": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\cache"
+    },
+    "results": [
+      {
+        "timedOut": false,
+        "exitCode": 0,
+        "durationMs": 29,
+        "cancelled": false
+      },
+      {
+        "timedOut": false,
+        "exitCode": 0,
+        "durationMs": 3414,
+        "cancelled": false
+      },
+      {
+        "timedOut": false,
+        "exitCode": 0,
+        "durationMs": 10656,
+        "cancelled": false
+      },
+      {
+        "timedOut": false,
+        "exitCode": 0,
+        "durationMs": 65,
+        "cancelled": false
+      }
+    ],
+    "processes": [
+      {
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\python\\python.exe",
+        "pid": 21044,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:05.791Z"
+      },
+      {
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "pid": 20052,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:09.224Z"
+      },
+      {
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\llamacpp\\llama-server.exe",
+        "pid": 21668,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:19.882Z"
+      },
+      {
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "pid": 21796,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:19.893Z"
+      },
+      {
+        "command": "C:\\Windows\\System32\\conhost.exe",
+        "pid": 22268,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:05.8Z"
+      },
+      {
+        "command": "C:\\Users\\rochi\\Documents\\ParseForge-runtimes\\marker-3b-replay\\runtime\\python\\python.exe",
+        "pid": 18972,
+        "commandLine": "",
+        "arguments": [],
+        "startInstant": "2026-09-30T17:57:09.216Z"
+      }
+    ],
+    "cancellationSent": false,
+    "aliveObservedPids": []
+  },
+  "oldIntegrity": {
+    "old": "C:\\Users\\rochi\\marker",
+    "baselineFiles": 44564,
+    "criticalHashes": 3,
+    "differences": []
+  },
+  "systemNativeDependencies": [
+    "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.26080.4-0\\MpOAV.dll",
+    "C:\\Windows\\System32\\IPHLPAPI.DLL",
+    "C:\\Windows\\System32\\KernelBase.dll",
+    "C:\\Windows\\System32\\advapi32.dll",
+    "C:\\Windows\\System32\\amsi.dll",
+    "C:\\Windows\\System32\\bcrypt.dll",
+    "C:\\Windows\\System32\\bcryptprimitives.dll",
+    "C:\\Windows\\System32\\clbcatq.dll",
+    "C:\\Windows\\System32\\combase.dll",
+    "C:\\Windows\\System32\\crypt32.dll",
+    "C:\\Windows\\System32\\cryptbase.dll",
+    "C:\\Windows\\System32\\dbghelp.dll",
+    "C:\\Windows\\System32\\gdi32.dll",
+    "C:\\Windows\\System32\\gdi32full.dll",
+    "C:\\Windows\\System32\\imagehlp.dll",
+    "C:\\Windows\\System32\\imm32.dll",
+    "C:\\Windows\\System32\\kernel.appcore.dll",
+    "C:\\Windows\\System32\\kernel32.dll",
+    "C:\\Windows\\System32\\msasn1.dll",
+    "C:\\Windows\\System32\\msvcp140.dll",
+    "C:\\Windows\\System32\\msvcp140_atomic_wait.dll",
+    "C:\\Windows\\System32\\msvcp_win.dll",
+    "C:\\Windows\\System32\\msvcrt.dll",
+    "C:\\Windows\\System32\\mswsock.dll",
+    "C:\\Windows\\System32\\ntdll.dll",
+    "C:\\Windows\\System32\\ole32.dll",
+    "C:\\Windows\\System32\\oleaut32.dll",
+    "C:\\Windows\\System32\\pdh.dll",
+    "C:\\Windows\\System32\\powrprof.dll",
+    "C:\\Windows\\System32\\profapi.dll",
+    "C:\\Windows\\System32\\propsys.dll",
+    "C:\\Windows\\System32\\psapi.dll",
+    "C:\\Windows\\System32\\rpcrt4.dll",
+    "C:\\Windows\\System32\\sechost.dll",
+    "C:\\Windows\\System32\\shell32.dll",
+    "C:\\Windows\\System32\\sspicli.dll",
+    "C:\\Windows\\System32\\ucrtbase.dll",
+    "C:\\Windows\\System32\\umpdc.dll",
+    "C:\\Windows\\System32\\user32.dll",
+    "C:\\Windows\\System32\\userenv.dll",
+    "C:\\Windows\\System32\\uxtheme.dll",
+    "C:\\Windows\\System32\\vcruntime140_threads.dll",
+    "C:\\Windows\\System32\\version.dll",
+    "C:\\Windows\\System32\\win32u.dll",
+    "C:\\Windows\\System32\\wintrust.dll",
+    "C:\\Windows\\System32\\ws2_32.dll",
+    "C:\\Windows\\System32\\wtsapi32.dll"
+  ],
+  "maven": {
+    "tests": 24,
+    "failures": 0,
+    "skipped": 0,
+    "errors": 0,
+    "command": "mvn -B -ntp clean verify",
+    "result": "BUILD SUCCESS"
+  }
+}

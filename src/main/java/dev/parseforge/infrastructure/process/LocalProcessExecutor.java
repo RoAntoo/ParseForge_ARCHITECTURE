@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class LocalProcessExecutor implements ProcessExecutor {
     private static final Logger log = LoggerFactory.getLogger(LocalProcessExecutor.class);
@@ -58,6 +59,9 @@ public final class LocalProcessExecutor implements ProcessExecutor {
             if (spec.workingDirectory() != null) {
                 builder.directory(spec.workingDirectory().toFile());
             }
+            if (!spec.inheritEnvironment()) {
+                builder.environment().clear();
+            }
             builder.environment().putAll(spec.environment());
 
             if (execution.cancellationRequested.get()) {
@@ -84,8 +88,10 @@ public final class LocalProcessExecutor implements ProcessExecutor {
 
                 boolean finished = waitFor(process, spec.timeout(), execution);
                 if (!finished) {
-                    terminateTree(process, true);
+                    terminateTree(execution, process, true);
                 }
+                // Persistent engine services can outlive their parent and hold its pipes open.
+                terminateTrackedChildren(execution);
                 awaitReader(stdout);
                 awaitReader(stderr);
 
@@ -98,6 +104,11 @@ public final class LocalProcessExecutor implements ProcessExecutor {
                         Duration.between(startedAt, Instant.now()));
             }
         } finally {
+            Process remaining = execution.process.get();
+            if (remaining != null && remaining.isAlive()) {
+                terminateTree(execution, remaining, true);
+            }
+            terminateTrackedChildren(execution);
             activeExecution.compareAndSet(execution, null);
         }
     }
@@ -117,15 +128,20 @@ public final class LocalProcessExecutor implements ProcessExecutor {
 
     private boolean waitFor(Process process, Duration timeout, Execution execution) {
         try {
-            if (timeout == null) {
-                process.waitFor();
-                return true;
+            long deadline = timeout == null ? Long.MAX_VALUE : System.nanoTime() + timeout.toNanos();
+            while (true) {
+                process.descendants().forEach(handle -> execution.children.putIfAbsent(handle.pid(), handle));
+                if (process.waitFor(50, TimeUnit.MILLISECONDS)) {
+                    return true;
+                }
+                if (System.nanoTime() >= deadline) {
+                    return false;
+                }
             }
-            return process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             execution.cancellationRequested.set(true);
-            terminateTree(process, true);
+            terminateTree(execution, process, true);
             return false;
         }
     }
@@ -165,12 +181,13 @@ public final class LocalProcessExecutor implements ProcessExecutor {
 
     private void terminateAsync(Execution execution, Process process) {
         if (execution.terminationStarted.compareAndSet(false, true)) {
-            Thread.startVirtualThread(() -> terminateTree(process, false));
+            Thread.startVirtualThread(() -> terminateTree(execution, process, false));
         }
     }
 
-    private void terminateTree(Process process, boolean forceImmediately) {
+    private void terminateTree(Execution execution, Process process, boolean forceImmediately) {
         List<ProcessHandle> descendants = process.descendants().toList();
+        descendants.forEach(handle -> execution.children.putIfAbsent(handle.pid(), handle));
         descendants.forEach(ProcessHandle::destroy);
         process.destroy();
 
@@ -185,6 +202,16 @@ public final class LocalProcessExecutor implements ProcessExecutor {
         descendants.stream().filter(ProcessHandle::isAlive).forEach(ProcessHandle::destroyForcibly);
         if (process.isAlive()) {
             process.destroyForcibly();
+        }
+        terminateTrackedChildren(execution);
+    }
+
+    private void terminateTrackedChildren(Execution execution) {
+        execution.children.values().stream().filter(ProcessHandle::isAlive).forEach(ProcessHandle::destroyForcibly);
+        long deadline = System.nanoTime() + GRACEFUL_SHUTDOWN.toNanos();
+        while (execution.children.values().stream().anyMatch(ProcessHandle::isAlive)
+                && System.nanoTime() < deadline) {
+            java.util.concurrent.locks.LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(20));
         }
     }
 
@@ -210,5 +237,6 @@ public final class LocalProcessExecutor implements ProcessExecutor {
         private final AtomicReference<Process> process = new AtomicReference<>();
         private final AtomicBoolean cancellationRequested = new AtomicBoolean();
         private final AtomicBoolean terminationStarted = new AtomicBoolean();
+        private final ConcurrentHashMap<Long, ProcessHandle> children = new ConcurrentHashMap<>();
     }
 }
