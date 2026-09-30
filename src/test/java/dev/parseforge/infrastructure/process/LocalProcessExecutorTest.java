@@ -75,6 +75,7 @@ class LocalProcessExecutorTest {
     void keepsDrainingAStreamAfterTheOutputListenerFails() {
         LocalProcessExecutor executor = new LocalProcessExecutor();
         AtomicInteger stdoutCalls = new AtomicInteger();
+        AtomicInteger stderrCalls = new AtomicInteger();
 
         ProcessResult result = executor.execute(
                 javaProcess(Duration.ofSeconds(3), "many-lines"),
@@ -83,11 +84,13 @@ class LocalProcessExecutorTest {
                         stdoutCalls.incrementAndGet();
                         throw new IllegalStateException("listener failure");
                     }
+                    stderrCalls.incrementAndGet();
                 });
 
         assertEquals(0, result.exitCode());
         assertFalse(result.timedOut());
         assertEquals(1, stdoutCalls.get());
+        assertTrue(stderrCalls.get() > 0);
     }
 
     private ProcessSpec javaProcess(String... fixtureArguments) {
