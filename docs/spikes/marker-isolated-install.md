@@ -55,6 +55,11 @@ física. Sigue siendo el árbol privado del spike, fuera de Git y de OLD. No se
 debe asumir que una app externa verá exactamente los mismos archivos usando
 la ruta lógica: la siguiente etapa debe validar esto desde ParseForge.
 
+El script de cierre resuelve tanto el directorio runtime como las rutas de los
+ejecutables a su ubicación física antes de filtrar procesos. Se comprobó con
+procesos simulados que acepta las rutas lógica y física de NEW y excluye OLD,
+directorios hermanos y procesos ajenos; la validación no terminó procesos reales.
+
 ```text
 marker/
   runtime/                  venv Python y paquetes
@@ -77,6 +82,15 @@ Se creó un venv nuevo con el Python base de la máquina. Se instalaron las
 exclusivamente `NEW\runtime\Scripts\python.exe -m pip install -r ...`.
 La lista reproduce todas las versiones anteriores salvo pip, que se dejó
 en la versión del bootstrap. No se instaló nada globalmente.
+
+Tras la revisión, el script de preparación instala primero los pins de Torch y
+Torchvision desde `https://download.pytorch.org/whl/cpu`, sin dependencias, y
+después mantiene la instalación del archivo completo de requisitos. Comprueba
+los sufijos `+cpu`, la ausencia de CUDA/HIP y que Torch no se compiló con CUDA.
+Los nuevos logs son `pip-install-cpu.log` y `cpu-build-check.log`. Se validó la
+disponibilidad de `torch==2.14.0` y `torchvision==0.29.0` con un dry-run del índice
+CPU; no se reinstaló el entorno ya verificado. El metadato de versión de esos
+wheels puede incluir `+cpu`, compatible con los pins de versión base.
 
 Se copió el directorio existente de llama.cpp de WinGet a
 `NEW\runtime\llamacpp`; no se enlazó ni se ejecutó la copia del sistema

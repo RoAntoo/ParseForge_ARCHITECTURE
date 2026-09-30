@@ -37,8 +37,15 @@ try {
     & $BootstrapPython -m venv (Join-Path $spikeRoot 'runtime')
     if ($LASTEXITCODE -ne 0) { throw 'venv creation failed' }
     $python = Join-Path $spikeRoot 'runtime\Scripts\python.exe'
+    $cpuPackages = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'marker-requirements.txt') |
+        Where-Object { $_ -match '^(torch|torchvision)==' })
+    if ($cpuPackages.Count -ne 2) { throw 'Expected pinned torch and torchvision requirements' }
+    & $python -m pip install --disable-pip-version-check --no-deps --index-url https://download.pytorch.org/whl/cpu @cpuPackages *> (Join-Path $spikeRoot 'spike-info\pip-install-cpu.log')
+    if ($LASTEXITCODE -ne 0) { throw 'CPU wheels installation failed; see spike-info/pip-install-cpu.log' }
     & $python -m pip install --disable-pip-version-check -r (Join-Path $PSScriptRoot 'marker-requirements.txt') *> (Join-Path $spikeRoot 'spike-info\pip-install.log')
     if ($LASTEXITCODE -ne 0) { throw 'Installation failed; see spike-info/pip-install.log' }
+    & $python -B -c "import sys,torch,torchvision; print('torch:',torch.__version__,'torchvision:',torchvision.__version__,'CUDA:',torch.version.cuda,'HIP:',torch.version.hip); sys.exit(0 if '+cpu' in torch.__version__ and '+cpu' in torchvision.__version__ and torch.version.cuda is None and torch.version.hip is None and not torch.backends.cuda.is_built() else 'Expected CPU-only PyTorch and torchvision builds')" *> (Join-Path $spikeRoot 'spike-info\cpu-build-check.log')
+    if ($LASTEXITCODE -ne 0) { throw 'CPU build verification failed; see spike-info/cpu-build-check.log' }
     & $python -m pip check
     if ($LASTEXITCODE -ne 0) { throw 'Dependency verification failed' }
     Copy-Item -LiteralPath $LlamaDirectory -Destination (Join-Path $spikeRoot 'runtime\llamacpp') -Recurse
