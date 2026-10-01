@@ -6,6 +6,10 @@ Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been publ
 - Install/repair Marker from Configuración > Motores with verified downloads.
 - Download feedback shows actual bytes, rolling speed and approximate ETA when stable.
 - Preparation stages show elapsed time and indeterminate progress.
+- Installation/repair shows an estimate of 20 minutes or more (it may finish sooner).
+- Final runtime probes are optional and unchecked by default; file/model integrity
+  checks always run. Selected probes report the failing step and preserve a
+  separate health-check log with output and timeout details.
 - Documents remain local. Marker and models (~3.2 GB) are downloaded separately.
 - Windows Job Objects contain private subprocesses on application crashes.
 - Reinstall and app uninstall preserve settings, engines, models and documents.

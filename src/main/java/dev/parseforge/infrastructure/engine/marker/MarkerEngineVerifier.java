@@ -5,6 +5,7 @@ import dev.parseforge.application.port.out.*;
 import dev.parseforge.domain.model.*;
 import dev.parseforge.domain.exception.EngineInstallException;
 import dev.parseforge.infrastructure.engine.*;
+import java.io.*;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
@@ -17,7 +18,7 @@ public final class MarkerEngineVerifier implements EngineVerifier {
     public MarkerEngineVerifier(EngineManifestRepository manifests, ChecksumVerifier checksums, ProcessExecutor executor) {
         this.manifests = manifests; this.checksums = checksums; this.executor = executor;
     }
-    @Override public EngineVerificationResult verify(EngineDescriptor descriptor, Path root, boolean full,
+    @Override public EngineVerificationResult verify(EngineDescriptor descriptor, Path root, boolean full, boolean runHealthCheck,
             EngineProgressListener listener, OperationCancellation cancellation) {
         try {
             cancellation.check();
@@ -48,7 +49,7 @@ public final class MarkerEngineVerifier implements EngineVerifier {
                 Path path = tree.resolve(ref.path("path").asText());
                 checksums.verify(path, ref.path("sha256").asText(), cancellation);
             }
-            if (full) {
+            if (runHealthCheck) {
                 listener.onProgress(EngineInstallProgress.phase(HEALTH_CHECKING, "Probando Python, Marker, Surya, Torch CPU y llama.cpp..."));
                 var runtime = new ManagedMarkerRuntime(root, expected);
                 String audit = "import sys,importlib.metadata as m,torch,torchvision,marker,surya; from pathlib import Path; "
@@ -64,16 +65,37 @@ public final class MarkerEngineVerifier implements EngineVerifier {
                         runtime.python(List.of("-c", ManagedMarkerRuntime.ENTRYPOINT, "--help"), Duration.ofMinutes(3)),
                         new ProcessSpec(runtime.resolve(expected.path("llamaCpp").path("executable").asText()),
                                 List.of("--version"), runtime.environment(), runtime.root(), Duration.ofSeconds(30), false));
-                for (var spec : specs) {
-                    cancellation.check();
-                    ProcessResult result;
-                    try (var registered = cancellation.onCancel(executor::cancel)) {
-                        result = CancellableProcessRunner.execute(executor, spec, (stream, line) -> listener.onProgress(
-                                EngineInstallProgress.phase(HEALTH_CHECKING, "[" + stream + "] " + line)), cancellation);
+                List<String> names = List.of("Python", "Marker / Torch CPU", "Dependencias Python", "Apertura de Marker", "llama.cpp");
+                Path diagnostic = tree.resolve("logs/health-check.log");
+                Files.createDirectories(diagnostic.getParent());
+                try (var writer = Files.newBufferedWriter(diagnostic)) {
+                    for (int index = 0; index < specs.size(); index++) {
+                        var spec = specs.get(index);
+                        String name = names.get(index);
+                        String starting = "Probando " + name + " (límite: " + spec.timeout().toSeconds() + " s)...";
+                        writer.write(starting); writer.newLine(); writer.flush();
+                        listener.onProgress(EngineInstallProgress.phase(HEALTH_CHECKING, starting));
+                        cancellation.check();
+                        ProcessResult result;
+                        try (var registered = cancellation.onCancel(executor::cancel)) {
+                            result = CancellableProcessRunner.execute(executor, spec, (stream, line) -> {
+                                synchronized (writer) {
+                                    try { writer.write("[" + stream + "] " + line); writer.newLine(); writer.flush(); }
+                                    catch (IOException error) { throw new UncheckedIOException(error); }
+                                }
+                                listener.onProgress(EngineInstallProgress.phase(HEALTH_CHECKING, "[" + stream + "] " + line));
+                            }, cancellation);
+                        }
+                        writer.write(name + ": exit=" + result.exitCode() + ", timedOut=" + result.timedOut()
+                                + ", cancelled=" + result.cancelled() + ", elapsedMs=" + result.duration().toMillis());
+                        writer.newLine(); writer.flush();
+                        cancellation.check();
+                        if (result.exitCode() != 0 || result.timedOut() || result.cancelled())
+                            throw new IOException(result.timedOut()
+                                    ? "La prueba de " + name + " superó el límite de " + spec.timeout().toSeconds()
+                                            + " s. Podés reintentar sin la prueba de funcionamiento opcional."
+                                    : "Falló la prueba de " + name + " (código " + result.exitCode() + "). Revisá el log de funcionamiento.");
                     }
-                    cancellation.check();
-                    if (result.exitCode() != 0 || result.timedOut() || result.cancelled())
-                        throw new java.io.IOException("Health check falló. Revisá el log y Microsoft Visual C++ Runtime x64.");
                 }
             }
             return new EngineVerificationResult(true, "Marker listo");

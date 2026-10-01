@@ -63,7 +63,7 @@ class MarkerInstallationTest {
         json.putArray("refs"); manifest = json;
         manifests = new EngineManifestRepository(mapper.writeValueAsBytes(json), "marker==2.0.0".getBytes());
         verifier = mock(EngineVerifier.class);
-        when(verifier.verify(any(), any(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
+        when(verifier.verify(any(), any(), anyBoolean(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
         executor = mock(ProcessExecutor.class);
         when(executor.execute(any(), any())).thenReturn(new ProcessResult(0, false, false, Duration.ZERO));
         downloader = (request, listener, token) -> {
@@ -82,7 +82,7 @@ class MarkerInstallationTest {
     }
     @Test void successUsesStagingAndAtomicCommitAndCleansDownloadedArtifacts() throws Exception {
         List<Path> verifiedRoots = new ArrayList<>();
-        when(verifier.verify(any(), any(), eq(true), any(), any())).thenAnswer(i -> {
+        when(verifier.verify(any(), any(), eq(true), eq(false), any(), any())).thenAnswer(i -> {
             Path staging = i.getArgument(1); verifiedRoots.add(staging);
             assertTrue(staging.getFileName().toString().startsWith("marker.installing-"));
             assertFalse(Files.exists(paths.engine(new EngineId("marker"))));
@@ -123,11 +123,12 @@ class MarkerInstallationTest {
     @Test void failedHealthDoesNotReplacePreviousAndRepairReplacesItAfterValidation() throws Exception {
         Path engine = paths.engine(new EngineId("marker")); Files.createDirectories(engine);
         Files.writeString(engine.resolve("sentinel"), "old");
-        when(verifier.verify(any(), any(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(false, "unhealthy"));
-        assertThrows(EngineInstallException.class, () -> installer(downloader).repair(manifests.descriptor(), p -> {}, new OperationCancellation()));
+        when(verifier.verify(any(), any(), anyBoolean(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(false, "unhealthy"));
+        assertThrows(EngineInstallException.class, () -> installer(downloader).repair(manifests.descriptor(),
+                EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}, new OperationCancellation()));
         assertEquals("old", Files.readString(engine.resolve("sentinel")));
-        when(verifier.verify(any(), any(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
-        installer(downloader).repair(manifests.descriptor(), p -> {}, new OperationCancellation());
+        when(verifier.verify(any(), any(), anyBoolean(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
+        installer(downloader).repair(manifests.descriptor(), EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}, new OperationCancellation());
         assertFalse(Files.exists(engine.resolve("sentinel")));
         installer(downloader).uninstall(manifests.descriptor(), p -> {}, new OperationCancellation());
         assertFalse(Files.exists(engine));
@@ -144,5 +145,65 @@ class MarkerInstallationTest {
         Files.write(engine.resolve("models/weight"), artifacts.get("model"));
         Files.writeString(engine.resolve("runtime/python/python.exe"), "corrupt");
         assertFalse(realVerifier.verify(manifests.descriptor(), engine, false, p -> {}, new OperationCancellation()).ready());
+    }
+    @Test void defaultInstallationCommitsAfterIntegrityChecksWithoutRuntimeProbes() throws Exception {
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        var realInstaller = new MarkerInstaller(paths, manifests, downloader, realVerifier, executor);
+        List<EngineInstallProgress> events = new ArrayList<>();
+        realInstaller.install(manifests.descriptor(), events::add, new OperationCancellation());
+        assertTrue(Files.exists(paths.engine(new EngineId("marker"))));
+        assertTrue(events.getLast().message().contains("prueba de funcionamiento omitida"));
+        assertTrue(events.stream().noneMatch(e -> e.phase() == EngineInstallProgress.Phase.HEALTH_CHECKING));
+        verify(executor, times(1)).execute(any(), any()); // pip installation only
+    }
+    @Test void skippingRuntimeProbesStillRejectsSameSizeFileAndModelCorruption() throws Exception {
+        installer(downloader).install(manifests.descriptor(), p -> {}, new OperationCancellation());
+        reset(executor);
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        Path engine = paths.engine(new EngineId("marker"));
+        byte[] corrupted = "test executable".getBytes(); corrupted[0] ^= 1;
+        Files.write(engine.resolve("runtime/python/python.exe"), corrupted);
+        assertFalse(realVerifier.verify(manifests.descriptor(), engine, true, false, p -> {}, new OperationCancellation()).ready());
+        Files.write(engine.resolve("runtime/python/python.exe"), artifacts.get("model"));
+        Files.write(engine.resolve("models/weight"), corrupted);
+        assertFalse(realVerifier.verify(manifests.descriptor(), engine, true, false, p -> {}, new OperationCancellation()).ready());
+        verifyNoInteractions(executor);
+    }
+    @Test void selectedRuntimeProbesRunAndTheirLogSurvivesCommit() throws Exception {
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        var realInstaller = new MarkerInstaller(paths, manifests, downloader, realVerifier, executor);
+        realInstaller.install(manifests.descriptor(), EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}, new OperationCancellation());
+        verify(executor, times(6)).execute(any(), any()); // pip and five runtime probes
+        Path engine = paths.engine(new EngineId("marker"));
+        assertTrue(Files.readString(engine.resolve("logs/health-check.log")).contains("llama.cpp: exit=0"));
+        try (var logs = Files.list(paths.logs())) {
+            assertTrue(logs.anyMatch(p -> p.getFileName().toString().endsWith(".health-check.log")));
+        }
+    }
+    @Test void timeoutNamesTheProbePreservesDiagnosticsAndDoesNotReplacePrevious() throws Exception {
+        Path engine = paths.engine(new EngineId("marker")); Files.createDirectories(engine);
+        Files.writeString(engine.resolve("sentinel"), "previous");
+        when(executor.execute(any(), any())).thenAnswer(i -> {
+            ProcessSpec spec = i.getArgument(0);
+            if (spec.arguments().contains("--help")) {
+                ((ProcessOutputListener) i.getArgument(1)).onLine(ProcessStream.STDERR, "test diagnostic");
+                return new ProcessResult(1, false, true, Duration.ofSeconds(185));
+            }
+            return new ProcessResult(0, false, false, Duration.ZERO);
+        });
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        var realInstaller = new MarkerInstaller(paths, manifests, downloader, realVerifier, executor);
+        var error = assertThrows(EngineInstallException.class, () -> realInstaller.install(manifests.descriptor(),
+                EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}, new OperationCancellation()));
+        assertEquals(EngineInstallException.Code.HEALTH_CHECK_FAILED, error.code());
+        assertTrue(error.getMessage().contains("Apertura de Marker"));
+        assertTrue(error.getMessage().contains("180 s"));
+        assertEquals("previous", Files.readString(engine.resolve("sentinel")));
+        try (var logs = Files.list(paths.logs())) {
+            Path diagnostic = logs.filter(p -> p.getFileName().toString().endsWith(".health-check.log")).findFirst().orElseThrow();
+            String content = Files.readString(diagnostic);
+            assertTrue(content.contains("test diagnostic"));
+            assertTrue(content.contains("timedOut=true"));
+        }
     }
 }

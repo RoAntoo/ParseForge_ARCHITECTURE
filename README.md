@@ -7,9 +7,17 @@ Marker as its first engine. Documents are processed locally.
 
 Open **Configuración > Motores** and click **Instalar Marker**. ParseForge
 downloads pinned private CPython, llama.cpp CPU, locked packages and private
-models. It validates SHA-256, prepares staging, runs health checks and activates
+models. It validates SHA-256, prepares staging and activates
 the runtime. Normal conversion needs no Python, Marker, pip, WinGet, manual
 executable path or administrator privileges.
+
+Allow **20 minutes or more** for installation or repair, depending on connection
+and hardware; it may finish sooner. **Probar funcionamiento al finalizar (opcional)**
+is unchecked by default. Select it to run Python, Torch, Marker CLI and llama.cpp
+probes before activation. File/model integrity checks always run. If probes are
+omitted, runtime compatibility is first exercised when converting a PDF. Probe
+failures preserve the previous installation and a separate `*.health-check.log`
+under `%LOCALAPPDATA%\ParseForge\logs`, including output and timeout details.
 
 Marker installs under `%LOCALAPPDATA%\ParseForge\engines\marker`.
 It uses approximately 3.2 GB; have at least 7 GB free for preparation/repair.
@@ -35,11 +43,11 @@ removes app files/shortcuts and retains engines, models, settings and documents.
 Windows 10/11 x64 is required. Marker additionally needs Microsoft Visual C++
 Runtime x64 and Internet for initial installation. Missing DLLs block engine
 installation with the [official Microsoft download](https://aka.ms/vs/17/release/vc_redist.x64.exe).
-Native health checks validate compatibility; clean Windows validation is pending.
+Optional native health checks validate compatibility; clean Windows validation is pending.
 
 Open **Configuración > Motores > Instalar Marker**, wait for **Listo**, then
 select/drop a PDF, choose output folder and press **Convertir**. Use **Forzar OCR**
-for scanned pages. Downloads show actual bytes/smoothed speed and ETA only when
+for scanned pages. Downloads show actual bytes/smoothed speed and a per-file ETA only when
 the measurement is stable; other phases show elapsed time without a percentage.
 Times depend on connection and hardware. Marker uses ~3.2 GB and needs at least
 7 GB free while preparing/repairing.
@@ -57,7 +65,8 @@ See [release build instructions](docs/release/BUILD.md),
 - **Are documents uploaded?** No. PDFs are processed locally. Internet downloads
   runtimes, dependencies and models when installing/repairing the engine.
 - **Why is Marker several GB?** OCR/inference models and CPU libraries are private.
-- **How long does installation take?** It depends on Internet speed and hardware.
+- **How long does installation take?** Allow 20 minutes or more; it depends on
+  Internet speed and hardware, and may finish sooner.
 - **Can I use the models commercially?** Review the pinned model terms; model
   rights differ from ParseForge's code license.
 - **Where are startup logs?** `%LOCALAPPDATA%\ParseForge\logs`. Logs rotate;

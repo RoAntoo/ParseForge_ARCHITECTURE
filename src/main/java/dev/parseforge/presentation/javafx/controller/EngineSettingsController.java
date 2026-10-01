@@ -37,6 +37,7 @@ public final class EngineSettingsController {
     private final Button uninstallButton = new Button("Desinstalar");
     private final Button cancelButton = new Button("Cancelar instalación");
     private final Button checkButton = new Button("Actualizar estado");
+    private final CheckBox healthCheck = new CheckBox("Probar funcionamiento al finalizar (opcional)");
     private final VBox view;
     private boolean busy;
     private boolean converting;
@@ -52,6 +53,8 @@ public final class EngineSettingsController {
         uninstallButton.setId("uninstall-marker"); state.setId("engine-state");
         cancelButton.setId("cancel-installation"); progress.setMaxWidth(Double.MAX_VALUE);
         checkButton.setId("check-engine-state");
+        healthCheck.setId("engine-health-check");
+        healthCheck.setTooltip(new Tooltip("Ejecuta pruebas adicionales de Marker y llama.cpp. Puede tardar varios minutos."));
         progress.setVisible(false); progress.setManaged(false);
         Label info = new Label("Marker · OCR y conversión avanzada · CPU / llama.cpp\n"
                 + "Versión " + check.installation(id).version().value() + " · ~3,2 GB · instalación: al menos 7 GB libres\n"
@@ -62,8 +65,10 @@ public final class EngineSettingsController {
         operation.setWrapText(true);
         operation.setId("engine-operation");
         operation.setMinHeight(Region.USE_PREF_SIZE);
-        Label timing = new Label("Los tiempos son aproximados. Las descargas dependen de tu conexión a Internet "
+        Label timing = new Label("Tiempo estimado de instalación: 20 minutos o más. Puede finalizar antes. "
+                + "Las descargas dependen de tu conexión a Internet "
                 + "y las etapas de preparación dependen del rendimiento de tu equipo.");
+        timing.setId("engine-install-estimate");
         timing.setWrapText(true); timing.setMinHeight(Region.USE_PREF_SIZE);
         var actions = new FlowPane(8, 8, installButton, repairButton, uninstallButton, cancelButton, checkButton);
         Hyperlink prerequisite = new Hyperlink("Microsoft Visual C++ Runtime x64 · descargar desde Microsoft");
@@ -71,7 +76,10 @@ public final class EngineSettingsController {
             try { java.awt.Desktop.getDesktop().browse(java.net.URI.create("https://aka.ms/vs/17/release/vc_redist.x64.exe")); }
             catch (Exception error) { operation.setText("Descarga oficial: https://aka.ms/vs/17/release/vc_redist.x64.exe"); }
         });
-        view = new VBox(8, info, prerequisite, state, actions, operation, progress, elapsed, timing);
+        Label verification = new Label("Los archivos y modelos se comprueban siempre. Si omitís la prueba, "
+                + "el funcionamiento se comprobará al convertir el primer PDF.");
+        verification.setWrapText(true); verification.setMinHeight(Region.USE_PREF_SIZE);
+        view = new VBox(8, info, prerequisite, state, healthCheck, verification, actions, operation, progress, elapsed, timing);
         timer.setCycleCount(Timeline.INDEFINITE);
         checkButton.setOnAction(ignored -> refresh());
         installButton.setOnAction(ignored -> begin(0));
@@ -118,17 +126,18 @@ public final class EngineSettingsController {
                     detail += "\n" + bytes(event.completedBytes()) + (event.totalBytes() > 0 ? " / " + bytes(event.totalBytes()) : " descargados");
                     if (estimate.bytesPerSecond() > 0) detail += " · " + bytes((long)estimate.bytesPerSecond()) + "/s";
                     var remaining = estimate.remainingSeconds(event.completedBytes(), event.totalBytes());
-                    detail += remaining.isPresent() ? " · Tiempo restante: ~" + remaining.getAsLong() + " s"
-                            : " · Calculando tiempo restante...";
+                    detail += remaining.isPresent() ? " · Restante de este archivo: ~" + remaining.getAsLong() + " s"
+                            : " · Calculando tiempo restante de este archivo...";
                 } else { lastDownload = 0; estimate.reset(); }
                 operation.setText(detail);
             }
             progress.setProgress(event.fraction());
             refreshButtons();
         });
+        var options = new EngineInstallOptions(healthCheck.isSelected());
         CompletableFuture<Void> future = switch (action) {
-            case 0 -> install.execute(id, listener);
-            case 1 -> repair.execute(id, listener);
+            case 0 -> install.execute(id, options, listener);
+            case 1 -> repair.execute(id, options, listener);
             default -> uninstall.execute(id, listener);
         };
         // Final-state UI update runs after the manager has released its lease.
@@ -148,7 +157,7 @@ public final class EngineSettingsController {
                 + (busy ? " · ParseForge continúa trabajando." : ""));
         if (busy && lastDownload > 0 && System.nanoTime() - lastDownload > 3_000_000_000L) {
             estimate.reset();
-            operation.setText(detail.split("\\n")[0] + "\nEsperando datos... Calculando tiempo restante...");
+            operation.setText(detail.split("\\n")[0] + "\nEsperando datos... Calculando tiempo restante de este archivo...");
         }
     }
     private static String bytes(long value) {
@@ -169,6 +178,7 @@ public final class EngineSettingsController {
             default -> "Preparando";
         });
         boolean occupied = busy || converting || value == EngineState.BUSY;
+        healthCheck.setDisable(occupied);
         installButton.setDisable(occupied || value == EngineState.READY);
         repairButton.setDisable(occupied || value == EngineState.NOT_INSTALLED);
         uninstallButton.setDisable(occupied || value == EngineState.NOT_INSTALLED);

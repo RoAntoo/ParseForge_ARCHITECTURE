@@ -1,6 +1,6 @@
 package dev.parseforge.application.usecase;
 import dev.parseforge.application.port.out.*;
-import dev.parseforge.domain.model.EngineId;
+import dev.parseforge.domain.model.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 public final class InstallEngineUseCase {
@@ -8,7 +8,9 @@ public final class InstallEngineUseCase {
     private final Executor executor;
     public InstallEngineUseCase(EngineManager manager, Executor executor) { this.manager = manager; this.executor = executor; }
     public CompletableFuture<Void> execute(EngineId id, EngineProgressListener listener) {
-        return CompletableFuture.runAsync(() -> manager.install(id, listener), executor);
+        return execute(id, EngineInstallOptions.DEFAULT, listener);
+    }
+    public CompletableFuture<Void> execute(EngineId id, EngineInstallOptions options, EngineProgressListener listener) {
+        return CompletableFuture.runAsync(() -> manager.install(id, options, listener), executor);
     }
 }
-
