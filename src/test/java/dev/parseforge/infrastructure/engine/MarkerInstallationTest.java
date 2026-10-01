@@ -3,12 +3,16 @@ package dev.parseforge.infrastructure.engine;
 import com.fasterxml.jackson.databind.*;
 import dev.parseforge.application.port.out.*;
 import dev.parseforge.domain.exception.EngineInstallException;
+import dev.parseforge.domain.exception.ConversionException;
+import dev.parseforge.domain.exception.ErrorCode;
 import dev.parseforge.domain.model.*;
 import dev.parseforge.infrastructure.engine.marker.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.file.*;
 import java.time.Duration;
 import java.io.*;
@@ -205,5 +209,52 @@ class MarkerInstallationTest {
             assertTrue(content.contains("test diagnostic"));
             assertTrue(content.contains("timedOut=true"));
         }
+    }
+    @Test void probeStartupFailureNamesTheProbeAndPreservesExceptionInDiagnostics() throws Exception {
+        Path engine = paths.engine(new EngineId("marker")); Files.createDirectories(engine);
+        Files.writeString(engine.resolve("sentinel"), "previous");
+        var startupError = new ConversionException(ErrorCode.PROCESS_START_FAILED,
+                "No fue posible iniciar el motor.", new IOException("Access denied"));
+        when(executor.execute(any(), any())).thenAnswer(i -> {
+            ProcessSpec spec = i.getArgument(0);
+            if (spec.arguments().contains("--help")) throw startupError;
+            return new ProcessResult(0, false, false, Duration.ZERO);
+        });
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        var realInstaller = new MarkerInstaller(paths, manifests, downloader, realVerifier, executor);
+        var error = assertThrows(EngineInstallException.class, () -> realInstaller.install(manifests.descriptor(),
+                EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}, new OperationCancellation()));
+        assertEquals(EngineInstallException.Code.HEALTH_CHECK_FAILED, error.code());
+        assertTrue(error.getMessage().contains("Apertura de Marker"));
+        assertTrue(error.getMessage().contains(startupError.getMessage()));
+        assertEquals("previous", Files.readString(engine.resolve("sentinel")));
+        verify(executor, times(5)).execute(any(), any());
+        try (var logs = Files.list(paths.logs())) {
+            Path diagnostic = logs.filter(p -> p.getFileName().toString().endsWith(".health-check.log")).findFirst().orElseThrow();
+            String content = Files.readString(diagnostic);
+            assertTrue(content.contains("Apertura de Marker: error al ejecutar la prueba"));
+            assertTrue(content.contains(startupError.getClass().getName()));
+            assertTrue(content.contains("Caused by: java.io.IOException: Access denied"));
+        }
+    }
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void probeExecutionCancellationPropagatesWithoutBecomingAProbeFailure(boolean cancelToken) throws Exception {
+        installer(downloader).install(manifests.descriptor(), p -> {}, new OperationCancellation());
+        var cancellation = new OperationCancellation();
+        var cancelled = new EngineInstallException(EngineInstallException.Code.INSTALL_CANCELLED, "cancelled by executor");
+        when(executor.execute(any(), any())).thenAnswer(i -> {
+            if (cancelToken) {
+                cancellation.cancel();
+                throw new ConversionException(ErrorCode.PROCESS_START_FAILED, "startup failed during cancellation");
+            }
+            throw cancelled;
+        });
+        var realVerifier = new MarkerEngineVerifier(manifests, new ChecksumVerifier(), executor);
+        Path engine = paths.engine(new EngineId("marker"));
+        var error = assertThrows(EngineInstallException.class, () -> realVerifier.verify(manifests.descriptor(), engine,
+                true, true, p -> {}, cancellation));
+        assertEquals(EngineInstallException.Code.INSTALL_CANCELLED, error.code());
+        if (!cancelToken) assertSame(cancelled, error);
+        assertFalse(Files.readString(engine.resolve("logs/health-check.log")).contains("error al ejecutar la prueba"));
     }
 }

@@ -85,6 +85,15 @@ public final class MarkerEngineVerifier implements EngineVerifier {
                                 }
                                 listener.onProgress(EngineInstallProgress.phase(HEALTH_CHECKING, "[" + stream + "] " + line));
                             }, cancellation);
+                        } catch (Exception error) {
+                            if (error instanceof EngineInstallException installError
+                                    && installError.code() == EngineInstallException.Code.INSTALL_CANCELLED) throw installError;
+                            cancellation.check();
+                            synchronized (writer) {
+                                writer.write(name + ": error al ejecutar la prueba"); writer.newLine();
+                                error.printStackTrace(new PrintWriter(writer)); writer.flush();
+                            }
+                            throw new IOException("No se pudo ejecutar la prueba de " + name + ": " + error.getMessage(), error);
                         }
                         writer.write(name + ": exit=" + result.exitCode() + ", timedOut=" + result.timedOut()
                                 + ", cancelled=" + result.cancelled() + ", elapsedMs=" + result.duration().toMillis());
