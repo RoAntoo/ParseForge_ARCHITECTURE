@@ -32,7 +32,13 @@ public final class Launcher {
         } catch (Throwable error) { startupFailure(logDirectory, error); System.exit(1); }
     }
     static Path resolveLogDirectory(Path configured) throws java.io.IOException {
-        try { return Files.createDirectories(configured); }
+        try {
+            Files.createDirectories(configured);
+            Path probe = Files.createTempFile(configured, ".write-probe-", ".tmp");
+            try { Files.writeString(probe, "ParseForge log write probe"); }
+            finally { Files.delete(probe); }
+            return configured;
+        }
         catch (java.io.IOException | SecurityException unavailable) {
             return Files.createTempDirectory("ParseForge-logs-");
         }
