@@ -11,6 +11,30 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LauncherTest {
     @TempDir Path temp;
+    @Test void smokeSettingsAreDisposableAndPreserveAnExistingConfiguredFile() throws Exception {
+        var paths = new dev.parseforge.infrastructure.engine.EnginePathResolver(java.util.Map.of(),
+                temp.toString(), temp.resolve("user-data").toString());
+        Files.createDirectories(paths.configFile().getParent());
+        byte[] original = "{\"lastOutputDirectory\":\"user-documents\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Files.write(paths.configFile(), original);
+        String previous = System.getProperty("parseforge.dataDir");
+        try {
+            for (String override : new String[]{"", paths.dataRoot().toString()}) {
+                System.setProperty("parseforge.dataDir", override);
+                var report = Launcher.checkSmokeSettings();
+                assertEquals(true, report.get("settingsReadable"));
+                assertEquals(true, report.get("settingsPersisted"));
+                Path disposable = Path.of((String) report.get("smokeSettingsFile"));
+                assertNotEquals(paths.configFile(), disposable);
+                assertFalse(Files.exists(disposable));
+                assertFalse(Files.exists(disposable.resolveSibling(disposable.getFileName() + ".tmp")));
+                assertArrayEquals(original, Files.readAllBytes(paths.configFile()));
+            }
+        } finally {
+            if (previous == null) System.clearProperty("parseforge.dataDir");
+            else System.setProperty("parseforge.dataDir", previous);
+        }
+    }
     @Test void createsAndKeepsConfiguredLogDirectory() throws Exception {
         Path configured = temp.resolve("logs");
         assertEquals(configured, Launcher.resolveLogDirectory(configured));

@@ -51,18 +51,24 @@ public final class Launcher {
         report.put("dataRoot", paths.dataRoot().toString());
         report.put("configFile", paths.configFile().toString());
         report.put("logs", logDirectory.toString()); report.put("windowsJob", job); report.put("uiOpened", ui);
-        var repository = new JsonUserSettingsRepository(paths.configFile());
-        boolean isolated = System.getProperty("parseforge.dataDir") != null && !System.getProperty("parseforge.dataDir").isBlank();
-        var settings = repository.load();
-        if (isolated) {
-            settings = new dev.parseforge.application.settings.UserSettings("", "out", "in", "out", "es", "marker");
-            repository.save(settings);
-        }
-        report.put("settingsReadable", repository.load().equals(settings));
-        report.put("settingsPersisted", Files.isRegularFile(paths.configFile()));
+        report.putAll(checkSmokeSettings());
         report.put("markerRoot", paths.engine(new dev.parseforge.domain.model.EngineId("marker")).toString());
         report.put("manifestLoaded", new dev.parseforge.infrastructure.engine.EngineManifestRepository().descriptor().version());
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(file.toFile(), report);
+    }
+    static Map<String, Object> checkSmokeSettings() throws java.io.IOException {
+        Path settingsFile = Files.createTempFile("ParseForge-smoke-settings-", ".json");
+        try {
+            var repository = new JsonUserSettingsRepository(settingsFile);
+            var settings = new dev.parseforge.application.settings.UserSettings("", "out", "in", "out", "es", "marker");
+            repository.save(settings);
+            return Map.of("smokeSettingsFile", settingsFile.toString(),
+                    "settingsReadable", repository.load().equals(settings),
+                    "settingsPersisted", Files.isRegularFile(settingsFile));
+        } finally {
+            Files.deleteIfExists(settingsFile.resolveSibling(settingsFile.getFileName() + ".tmp"));
+            Files.deleteIfExists(settingsFile);
+        }
     }
     static void completeUiSmoke(Stage stage) {
         if (uiReport == null) return;
