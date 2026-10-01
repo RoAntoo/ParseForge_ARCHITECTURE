@@ -36,6 +36,7 @@ public final class MarkerInstaller implements EngineInstaller {
             if (!System.getProperty("os.name").startsWith("Windows") || !List.of("amd64", "x86_64").contains(System.getProperty("os.arch")))
                 throw new EngineInstallException(HEALTH_CHECK_FAILED, "Marker requiere Windows x64.");
             Files.createDirectories(engines);
+            dev.parseforge.infrastructure.process.WindowsNativePrerequisites.requireMarkerRuntime();
             EngineFiles.safeResolve(paths.dataRoot(), paths.dataRoot().relativize(engines).toString());
             if (Files.getFileStore(engines).getUsableSpace() < manifest.path("minimumFreeBytes").asLong())
                 throw new EngineInstallException(DISK_SPACE_LOW, "Se necesitan al menos 7 GB libres para instalar Marker.");

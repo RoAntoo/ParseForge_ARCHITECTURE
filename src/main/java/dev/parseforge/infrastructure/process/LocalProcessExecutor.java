@@ -76,6 +76,7 @@ public final class LocalProcessExecutor implements ProcessExecutor {
                         "No fue posible iniciar el motor.", error);
             }
             execution.process.set(process);
+            log.info("Engine process started; pid={}, executable={}", process.pid(), spec.executable().getFileName());
             if (execution.cancellationRequested.get()) {
                 terminateAsync(execution, process);
             }
@@ -97,6 +98,8 @@ public final class LocalProcessExecutor implements ProcessExecutor {
 
                 int exitCode = safeExitCode(process);
                 boolean cancelled = execution.cancellationRequested.get() && exitCode != 0;
+                log.info("Engine process ended; pid={}, exit={}, cancelled={}, elapsedMs={}",
+                        process.pid(), exitCode, cancelled, Duration.between(startedAt, Instant.now()).toMillis());
                 return new ProcessResult(
                         exitCode,
                         cancelled,

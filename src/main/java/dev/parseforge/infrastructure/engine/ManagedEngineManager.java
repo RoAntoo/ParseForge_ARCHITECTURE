@@ -14,6 +14,7 @@ import java.nio.channels.OverlappingFileLockException;
 
 /** Owns the engine lifecycle; a conversion lease excludes installation/removal. */
 public final class ManagedEngineManager implements EngineManager, EngineRuntimeLocator {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ManagedEngineManager.class);
     private final EnginePathResolver paths;
     private final EngineManifestRepository manifests;
     private final EngineInstaller installer;
@@ -87,6 +88,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
         var cancellation = new OperationCancellation();
         LifecycleFileLock diskLock = null;
         current = cancellation;
+        log.info("Engine lifecycle operation started; engine={}, operation={}", id, operation);
         try {
             diskLock = fileLock(id);
             if (diskLock == null) throw new IllegalStateException("Marker está en uso por otra ventana de ParseForge.");
@@ -103,6 +105,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
             else if (operation == 1) installer.repair(descriptor, progress, cancellation);
             else installer.install(descriptor, progress, cancellation);
         } catch (RuntimeException error) {
+            log.warn("Engine lifecycle operation failed; engine={}, operation={}", id, operation, error);
             listener.onProgress(EngineInstallProgress.phase(error instanceof EngineInstallException installError &&
                     installError.code() == EngineInstallException.Code.INSTALL_CANCELLED
                     ? EngineInstallProgress.Phase.CANCELLED : EngineInstallProgress.Phase.FAILED, error.getMessage()));
@@ -115,6 +118,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
             finally {
                 if (diskLock != null) diskLock.close();
                 lifecycle.unlock(); if (interrupted) Thread.currentThread().interrupt();
+                log.info("Engine lifecycle operation ended; engine={}, state={}", id, state);
             }
         }
     }

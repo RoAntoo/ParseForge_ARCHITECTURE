@@ -18,10 +18,51 @@ Face cache runs offline during conversion. Repair safely reinstalls. Uninstall
 requires confirmation and removes private models/caches. Documents and outputs
 remain independent of the engine directory.
 
-Requirements: Windows x64 and Microsoft Visual C++ Runtime x64. Import/CLI health
-checks detect native-load failures; prerequisite distribution and validation on
-clean Windows remain release work. JDK/Maven are development requirements.
-Application packaging is outside Stage 3C.
+## Download and install (0.1.0 candidate)
+
+The candidate is **PACKAGE BUILT — VM VALIDATION PENDING**. It has not been
+published as a GitHub Release. Local artifacts are in `build/release`:
+`ParseForge-Setup-0.1.0.exe`, `ParseForge-0.1.0-win-x64.zip`, and `SHA256SUMS.txt`.
+Verify SHA-256, double-click setup, choose language/folder/shortcuts and launch
+ParseForge. The private Java runtime is included. Neither Java nor Python needs
+to be installed globally. The portable ZIP also contains the runtime.
+
+Setup installs for the current user under `%LOCALAPPDATA%\Programs\ParseForge`
+without elevation. Settings live under `%APPDATA%\ParseForge`, engines/logs under
+`%LOCALAPPDATA%\ParseForge`. Reinstall preserves mutable data. App uninstall
+removes app files/shortcuts and retains engines, models, settings and documents.
+
+Windows 10/11 x64 is required. Marker additionally needs Microsoft Visual C++
+Runtime x64 and Internet for initial installation. Missing DLLs block engine
+installation with the [official Microsoft download](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+Native health checks validate compatibility; clean Windows validation is pending.
+
+Open **Configuración > Motores > Instalar Marker**, wait for **Listo**, then
+select/drop a PDF, choose output folder and press **Convertir**. Use **Forzar OCR**
+for scanned pages. Downloads show actual bytes/smoothed speed and ETA only when
+the measurement is stable; other phases show elapsed time without a percentage.
+Times depend on connection and hardware. Marker uses ~3.2 GB and needs at least
+7 GB free while preparing/repairing.
+
+See [release build instructions](docs/release/BUILD.md),
+[validation checklist](docs/release/VM_VALIDATION.md),
+[Stage 4 result](docs/release/STAGE_4_RESULT.md) and
+[third-party/model terms](THIRD_PARTY_NOTICES.md).
+
+![Packaged ParseForge window](docs/release/images/app-window.png)
+
+## FAQ
+
+- **Do I need Java/Python?** No global installation; private runtimes are used.
+- **Are documents uploaded?** No. PDFs are processed locally. Internet downloads
+  runtimes, dependencies and models when installing/repairing the engine.
+- **Why is Marker several GB?** OCR/inference models and CPU libraries are private.
+- **How long does installation take?** It depends on Internet speed and hardware.
+- **Can I use the models commercially?** Review the pinned model terms; model
+  rights differ from ParseForge's code license.
+- **Where are startup logs?** `%LOCALAPPDATA%\ParseForge\logs`. Logs rotate;
+  startup errors provide the path. A native launcher failure before the JVM
+  starts may require inspecting the installer log/runtime files.
 
 ## Development
 
@@ -31,6 +72,10 @@ JDK 21+ and Maven 3.9+:
 mvn javafx:run
 mvn clean verify
 ```
+
+Release: `.\scripts\release.ps1` downloads hash-verified pinned build tools,
+runs tests, builds the runtime/image/setup/ZIP and generates hashes. No automatic
+publishing, updater, Docling/MinerU, batch or Stage 5 is included.
 
 Optional isolated data root:
 
