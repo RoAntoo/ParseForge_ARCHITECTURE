@@ -34,10 +34,7 @@ public final class ParseForgeApplication extends Application {
         EnginePathResolver paths = new EnginePathResolver();
         UserSettingsRepository settingsRepository = new JsonUserSettingsRepository(
                 paths.configFile());
-        UserSettings settings = settingsRepository.load();
-        if (settings.equals(UserSettings.empty())) {
-            settings = new JsonUserSettingsRepository(applicationDataDirectory().resolve("config.json")).load();
-        }
+        UserSettings settings = dev.parseforge.infrastructure.config.InstalledSettings.load(paths);
         EngineManifestRepository manifests = new EngineManifestRepository();
         ChecksumVerifier checksums = new ChecksumVerifier();
         var verifier = new MarkerEngineVerifier(manifests, checksums, new LocalProcessExecutor());
@@ -74,10 +71,14 @@ public final class ParseForgeApplication extends Application {
         Scene scene = new Scene(controller.view(), 880, 900);
         scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
         stage.setTitle("ParseForge");
+        stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/icons/ParseForge.png")));
         stage.setMinWidth(700);
         stage.setMinHeight(620);
         stage.setScene(scene);
         stage.show();
+        org.slf4j.LoggerFactory.getLogger(getClass()).info("Application window opened; config={}, engines={}",
+                paths.configFile(), paths.dataRoot().resolve("engines"));
+        Launcher.completeUiSmoke(stage);
     }
 
     @Override
@@ -94,14 +95,6 @@ public final class ParseForgeApplication extends Application {
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    private Path applicationDataDirectory() {
-        String appData = System.getenv("APPDATA");
-        if (appData != null && !appData.isBlank()) {
-            return Path.of(appData, "ParseForge");
-        }
-        return Path.of(System.getProperty("user.home"), ".parseforge");
     }
 
 }

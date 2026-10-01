@@ -8,6 +8,10 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import dev.parseforge.presentation.javafx.DownloadEstimate;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
 
 public final class EngineSettingsController {
     private final Stage owner;
@@ -21,6 +25,12 @@ public final class EngineSettingsController {
     private final Consumer<String> log;
     private final Label state = new Label("Comprobando Marker...");
     private final Label operation = new Label();
+    private final Label elapsed = new Label();
+    private final DownloadEstimate estimate = new DownloadEstimate();
+    private final Timeline timer = new Timeline(new KeyFrame(Duration.seconds(1), ignored -> tick()));
+    private long started;
+    private long lastDownload;
+    private String detail = "";
     private final ProgressBar progress = new ProgressBar(-1);
     private final Button installButton = new Button("Instalar Marker");
     private final Button repairButton = new Button("Reparar");
@@ -52,7 +62,17 @@ public final class EngineSettingsController {
         operation.setWrapText(true);
         operation.setId("engine-operation");
         operation.setMinHeight(Region.USE_PREF_SIZE);
-        view = new VBox(8, info, state, new HBox(8, installButton, repairButton, uninstallButton, cancelButton, checkButton), operation, progress);
+        Label timing = new Label("Los tiempos son aproximados. Las descargas dependen de tu conexión a Internet "
+                + "y las etapas de preparación dependen del rendimiento de tu equipo.");
+        timing.setWrapText(true); timing.setMinHeight(Region.USE_PREF_SIZE);
+        var actions = new FlowPane(8, 8, installButton, repairButton, uninstallButton, cancelButton, checkButton);
+        Hyperlink prerequisite = new Hyperlink("Microsoft Visual C++ Runtime x64 · descargar desde Microsoft");
+        prerequisite.setOnAction(ignored -> {
+            try { java.awt.Desktop.getDesktop().browse(java.net.URI.create("https://aka.ms/vs/17/release/vc_redist.x64.exe")); }
+            catch (Exception error) { operation.setText("Descarga oficial: https://aka.ms/vs/17/release/vc_redist.x64.exe"); }
+        });
+        view = new VBox(8, info, prerequisite, state, actions, operation, progress, elapsed, timing);
+        timer.setCycleCount(Timeline.INDEFINITE);
         checkButton.setOnAction(ignored -> refresh());
         installButton.setOnAction(ignored -> begin(0));
         repairButton.setOnAction(ignored -> begin(1));
@@ -83,13 +103,26 @@ public final class EngineSettingsController {
     private void begin(int action) {
         if (busy || converting) return;
         cancellationRequested = false;
+        started = System.nanoTime(); lastDownload = 0; estimate.reset(); detail = ""; timer.playFromStart();
         busy = true; busyListener.accept(true);
         progress.setProgress(-1); progress.setVisible(true); progress.setManaged(true); refreshButtons();
         var listener = (dev.parseforge.application.port.out.EngineProgressListener) event -> Platform.runLater(() -> {
             // A click can precede registration of a queued background operation.
             if (cancellationRequested) cancel.execute(id);
             if (event.message().startsWith("[STDOUT]") || event.message().startsWith("[STDERR]")) log.accept(event.message());
-            else operation.setText(event.message() + (event.fraction() >= 0 ? " · %.0f %%".formatted(event.fraction() * 100) : ""));
+            else {
+                detail = event.message() + (event.fraction() >= 0 ? " · %.0f %%".formatted(event.fraction() * 100) : "");
+                if (event.phase() == EngineInstallProgress.Phase.DOWNLOADING) {
+                    long now = System.nanoTime(); lastDownload = now;
+                    estimate.update(event.message(), event.completedBytes(), now);
+                    detail += "\n" + bytes(event.completedBytes()) + (event.totalBytes() > 0 ? " / " + bytes(event.totalBytes()) : " descargados");
+                    if (estimate.bytesPerSecond() > 0) detail += " · " + bytes((long)estimate.bytesPerSecond()) + "/s";
+                    var remaining = estimate.remainingSeconds(event.completedBytes(), event.totalBytes());
+                    detail += remaining.isPresent() ? " · Tiempo restante: ~" + remaining.getAsLong() + " s"
+                            : " · Calculando tiempo restante...";
+                } else { lastDownload = 0; estimate.reset(); }
+                operation.setText(detail);
+            }
             progress.setProgress(event.fraction());
             refreshButtons();
         });
@@ -101,12 +134,27 @@ public final class EngineSettingsController {
         // Final-state UI update runs after the manager has released its lease.
         future.whenComplete((ignored, error) -> Platform.runLater(() -> {
             busy = false; cancellationRequested = false; busyListener.accept(false); progress.setVisible(false); progress.setManaged(false);
+            timer.stop(); tick();
             refreshButtons();
             if (error != null) {
                 Throwable cause = error; while (cause.getCause() != null && cause instanceof java.util.concurrent.CompletionException) cause = cause.getCause();
                 operation.setText(cause.getMessage()); log.accept(cause.toString());
             }
         }));
+    }
+    private void tick() {
+        long seconds = Math.max(0, (System.nanoTime() - started) / 1_000_000_000L);
+        elapsed.setText("Tiempo transcurrido: %02d:%02d".formatted(seconds / 60, seconds % 60)
+                + (busy ? " · ParseForge continúa trabajando." : ""));
+        if (busy && lastDownload > 0 && System.nanoTime() - lastDownload > 3_000_000_000L) {
+            estimate.reset();
+            operation.setText(detail.split("\\n")[0] + "\nEsperando datos... Calculando tiempo restante...");
+        }
+    }
+    private static String bytes(long value) {
+        return value >= 1_000_000_000 ? "%.2f GB".formatted(value / 1e9)
+                : value >= 1_000_000 ? "%.1f MB".formatted(value / 1e6)
+                : "%.1f KB".formatted(value / 1e3);
     }
     private void refreshButtons() {
         EngineState value = check.state(id);

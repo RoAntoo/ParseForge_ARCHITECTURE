@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-30",
+  "timezone": "America/Buenos_Aires",
+  "status": "PACKAGE BUILT — VM VALIDATION PENDING",
+  "version": "0.1.0",
+  "host": {
+    "os": "Windows 11 Pro",
+    "version": "10.0.26200",
+    "cleanVm": false,
+    "sandboxAvailable": false
+  },
+  "java": {
+    "version": "21.0.12.1+1",
+    "moduleRoots": [
+      "java.base",
+      "java.desktop",
+      "java.naming",
+      "java.net.http",
+      "java.sql",
+      "jdk.crypto.ec",
+      "jdk.jfr",
+      "jdk.unsupported"
+    ],
+    "moduleCount": 14,
+    "vendor": "Eclipse Adoptium",
+    "runtimeBytes": 50563918
+  },
+  "applicationBytes": 68672714,
+  "artifacts": [
+    {
+      "file": "ParseForge-0.1.0-win-x64.zip",
+      "bytes": 51311271,
+      "sha256": "bdb43bee39d45782a322e3a27e9c396c2861b0475d807c6af466719c2cba069f"
+    },
+    {
+      "file": "ParseForge-Setup-0.1.0.exe",
+      "bytes": 49196194,
+      "sha256": "43a526bbfa669fe0a45c69154512b0bf14a87666450a1ca53337dfa043076712"
+    }
+  ],
+  "tests": {
+    "result": "BUILD SUCCESS",
+    "total": 64,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "command": "mvn clean verify"
+  },
+  "smoke": {
+    "windowsJob": true,
+    "globalToolsExcludedFromPath": true,
+    "settingsPersisted": true,
+    "windowOpened": true,
+    "privateRuntime": true
+  },
+  "installer": {
+    "uninstall": true,
+    "shortcutsCreated": true,
+    "realHostInstall": true,
+    "reinstall": true,
+    "userDocumentPreserved": true
+  },
+  "prerequisiteStrategy": "Detect system DLLs, block Marker install with official download link if unavailable",
+  "vmValidation": "Not executed",
+  "githubReleasePublished": false
+}

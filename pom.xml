@@ -6,12 +6,13 @@
 
     <groupId>dev.parseforge</groupId>
     <artifactId>parseforge</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>ParseForge</name>
     <description>Local-first PDF conversion desktop application</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.outputTimestamp>2026-09-30T00:00:00Z</project.build.outputTimestamp>
         <maven.compiler.release>21</maven.compiler.release>
         <javafx.version>21.0.6</javafx.version>
         <jackson.version>2.18.2</jackson.version>
@@ -22,6 +23,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.16.0</version>
+        </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -62,6 +68,16 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
             </plugin>
@@ -78,7 +94,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>dev.parseforge.presentation.javafx.ParseForgeApplication</mainClass>
+                    <mainClass>dev.parseforge.presentation.javafx.Launcher</mainClass>
                     <options>
                         <option>-Dparseforge.dataDir=${parseforge.dataDir}</option>
                         <option>-Dparseforge.marker.override=${parseforge.marker.override}</option>

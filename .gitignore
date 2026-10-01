@@ -7,3 +7,7 @@ target/
 /models/
 /runtime/
 *.tmp
+/build/
+/dist/
+*.exe
+*.msi
