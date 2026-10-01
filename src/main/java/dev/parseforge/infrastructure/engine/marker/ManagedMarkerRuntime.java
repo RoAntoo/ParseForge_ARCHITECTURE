@@ -56,7 +56,10 @@ public final class ManagedMarkerRuntime {
     public ProcessSpec conversion(dev.parseforge.domain.model.ConversionRequest request) throws IOException {
         var args = new ArrayList<>(List.of("-c", ENTRYPOINT, request.inputFile().toRealPath().toString(),
                 "--output_dir", request.outputDirectory().toAbsolutePath().toString(),
-                "--output_format", request.outputFormat().commandValue()));
+                "--output_format", request.outputFormat().commandValue(),
+                // pdftext's Windows process pool can fail with invalid queue handles
+                // when launched by the desktop app. Keep text extraction in-process.
+                "--disable_multiprocessing"));
         if (request.forceOcr()) args.add("--force_ocr");
         return python(args, Duration.ofHours(6));
     }

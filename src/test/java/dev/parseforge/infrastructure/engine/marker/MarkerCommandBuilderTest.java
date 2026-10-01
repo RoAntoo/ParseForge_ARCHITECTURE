@@ -28,5 +28,6 @@ class MarkerCommandBuilderTest {
         assertEquals(request.outputDirectory().toString(), spec.arguments().get(2));
         assertEquals("--output_format", spec.arguments().get(3));
         assertEquals("markdown", spec.arguments().get(4));
+        assertEquals("--disable_multiprocessing", spec.arguments().get(5));
     }
 }

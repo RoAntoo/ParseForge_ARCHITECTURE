@@ -19,7 +19,8 @@ public final class MarkerCommandBuilder {
                 List.of(
                         request.inputFile().toString(),
                         "--output_dir", request.outputDirectory().toString(),
-                        "--output_format", request.outputFormat().commandValue()),
+                        "--output_format", request.outputFormat().commandValue(),
+                        "--disable_multiprocessing"),
                 Map.of("PYTHONUTF8", "1"),
                 request.outputDirectory(),
                 DEFAULT_TIMEOUT);
