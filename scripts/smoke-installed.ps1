@@ -10,9 +10,11 @@ New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
 $report = Join-Path $reportDir 'smoke.json'
 $mode = if ($Ui) { '--smoke-ui' } else { '--smoke-test' }
 $oldPath = $env:PATH; $oldJava = $env:JAVA_HOME; $oldJavaOpts = $env:JAVA_TOOL_OPTIONS; $oldJdkOpts = $env:JDK_JAVA_OPTIONS
+$oldLegacyJavaOpts = $env:_JAVA_OPTIONS
 try {
     $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"; $env:JAVA_HOME = $null
     $env:JDK_JAVA_OPTIONS = $null
+    $env:_JAVA_OPTIONS = $null
     # Isolated roots ensure the smoke never alters the user's settings/engines.
     $env:JAVA_TOOL_OPTIONS = '-Dparseforge.dataDir="' + (Join-Path $reportDir 'data') + '"'
     $process = Start-Process -FilePath (Join-Path $AppDirectory 'ParseForge.exe') -ArgumentList @($mode,('"' + $report + '"')) -WorkingDirectory $env:TEMP -WindowStyle Hidden -PassThru
@@ -24,4 +26,4 @@ try {
     if ($Ui -and -not $result.uiOpened) { throw 'Window did not open' }
     $result | ConvertTo-Json
     Write-Host "Packaged smoke passed: $report"
-} finally { $env:PATH=$oldPath; $env:JAVA_HOME=$oldJava; $env:JAVA_TOOL_OPTIONS=$oldJavaOpts; $env:JDK_JAVA_OPTIONS=$oldJdkOpts }
+} finally { $env:PATH=$oldPath; $env:JAVA_HOME=$oldJava; $env:JAVA_TOOL_OPTIONS=$oldJavaOpts; $env:JDK_JAVA_OPTIONS=$oldJdkOpts; $env:_JAVA_OPTIONS=$oldLegacyJavaOpts }
