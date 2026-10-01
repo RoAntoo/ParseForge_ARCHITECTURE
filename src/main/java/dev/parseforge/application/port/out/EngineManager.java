@@ -6,9 +6,10 @@ public interface EngineManager {
     EngineState getState(EngineId id);
     EngineInstallation getInstallation(EngineId id);
     EngineState check(EngineId id);
-    void install(EngineId id, EngineProgressListener listener);
-    void repair(EngineId id, EngineProgressListener listener);
+    default void install(EngineId id, EngineProgressListener listener) { install(id, EngineInstallOptions.DEFAULT, listener); }
+    void install(EngineId id, EngineInstallOptions options, EngineProgressListener listener);
+    default void repair(EngineId id, EngineProgressListener listener) { repair(id, EngineInstallOptions.DEFAULT, listener); }
+    void repair(EngineId id, EngineInstallOptions options, EngineProgressListener listener);
     void uninstall(EngineId id, EngineProgressListener listener);
     void cancelCurrentOperation(EngineId id);
 }
-

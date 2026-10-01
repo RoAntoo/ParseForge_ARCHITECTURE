@@ -24,12 +24,14 @@ public final class MarkerInstaller implements EngineInstaller {
         this.paths = paths; this.manifests = manifests; this.downloads = downloads;
         this.verifier = verifier; this.executor = executor;
     }
-    @Override public void install(EngineDescriptor descriptor, EngineProgressListener listener, OperationCancellation cancellation) {
+    @Override public void install(EngineDescriptor descriptor, EngineInstallOptions options, EngineProgressListener listener, OperationCancellation cancellation) {
+        Objects.requireNonNull(options);
         Path engines = paths.engine(descriptor.id()).getParent();
         Path staging = engines.resolve(descriptor.id() + ".installing-" + UUID.randomUUID());
         Path finalRoot = paths.engine(descriptor.id());
         Path previous = engines.resolve(descriptor.id() + ".previous");
         JsonNode manifest = manifests.manifest();
+        boolean committed = false;
         EngineInstallException.Code failureCode = PERMISSION_DENIED;
         try {
             cancellation.check();
@@ -40,7 +42,7 @@ public final class MarkerInstaller implements EngineInstaller {
             EngineFiles.safeResolve(paths.dataRoot(), paths.dataRoot().relativize(engines).toString());
             if (Files.getFileStore(engines).getUsableSpace() < manifest.path("minimumFreeBytes").asLong())
                 throw new EngineInstallException(DISK_SPACE_LOW, "Se necesitan al menos 7 GB libres para instalar Marker.");
-            listener.onProgress(EngineInstallProgress.phase(PREPARING, "Preparando instalación de Marker (~3,2 GB)..."));
+            listener.onProgress(EngineInstallProgress.phase(PREPARING, "Preparando instalación de Marker (~3,2 GB). Tiempo estimado: 20 minutos o más."));
             Files.createDirectory(staging);
             Files.createDirectories(staging.resolve("downloads/wheels"));
             Files.createDirectories(staging.resolve("logs"));
@@ -67,7 +69,7 @@ public final class MarkerInstaller implements EngineInstaller {
             listener.onProgress(EngineInstallProgress.phase(INSTALLING_PACKAGES, "Instalando paquetes con lock y hashes..."));
             var runtime = new ManagedMarkerRuntime(staging, manifest);
             run(runtime.python(List.of("-m", "pip", "--isolated", "--disable-pip-version-check", "install",
-                    "--no-index", "--only-binary=:all:", "--no-compile", "--find-links",
+                    "--no-index", "--only-binary=:all:", "--no-compile", "--no-warn-script-location", "--find-links",
                     staging.resolve("downloads/wheels").toString(), "--require-hashes",
                     "-r", staging.resolve("downloads/requirements.lock").toString()), Duration.ofMinutes(15)),
                     staging.resolve("logs/install.log"), listener, cancellation);
@@ -85,8 +87,10 @@ public final class MarkerInstaller implements EngineInstaller {
             for (String key : List.of("schemaVersion", "id", "platform", "engineVersion")) metadata.set(key, manifest.path(key));
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(staging.resolve("engine.json").toFile(), metadata);
             failureCode = HEALTH_CHECK_FAILED;
-            var health = verifier.verify(descriptor, staging, true, listener, cancellation);
+            var health = verifier.verify(descriptor, staging, true, options.runHealthCheck(), listener, cancellation);
             if (!health.ready()) throw new EngineInstallException(HEALTH_CHECK_FAILED, health.detail());
+            if (!options.runHealthCheck()) listener.onProgress(EngineInstallProgress.phase(VERIFYING,
+                    "Archivos verificados. Prueba de funcionamiento omitida."));
             cancellation.check();
             // No more cancellation points after this commit boundary.
             EngineFiles.deleteTree(staging, staging.resolve("downloads"));
@@ -103,10 +107,13 @@ public final class MarkerInstaller implements EngineInstaller {
                 if (Files.exists(previous)) Files.move(previous, finalRoot, StandardCopyOption.ATOMIC_MOVE);
                 throw error;
             }
+            committed = true;
             // A cleanup failure must not roll back a successfully committed runtime.
             try { EngineFiles.deleteTree(engines, previous); }
             catch (IOException error) { listener.onProgress(EngineInstallProgress.phase(COMPLETED, "Marker listo; quedó un backup para limpiar al reiniciar.")); }
-            listener.onProgress(EngineInstallProgress.phase(COMPLETED, "Marker instalado y verificado."));
+            listener.onProgress(EngineInstallProgress.phase(COMPLETED, options.runHealthCheck()
+                    ? "Marker instalado y verificado."
+                    : "Marker instalado. Archivos verificados; prueba de funcionamiento omitida."));
         } catch (EngineInstallException error) { throw error; }
         catch (Exception error) {
             cancellation.check();
@@ -115,11 +122,13 @@ public final class MarkerInstaller implements EngineInstaller {
         } finally {
             // Preserve diagnostics outside staging even when installation fails.
             try {
-                Path installLog = staging.resolve("logs/install.log");
-                if (Files.isRegularFile(installLog)) {
+                for (String name : List.of("install", "health-check")) {
+                    Path installLog = (committed ? finalRoot : staging).resolve("logs/" + name + ".log");
+                    if (!Files.isRegularFile(installLog)) continue;
                     Path logs = paths.dataRoot().resolve("logs");
                     Files.createDirectories(logs);
-                    Path diagnostic = EngineFiles.safeResolve(paths.dataRoot(), "logs/" + staging.getFileName() + ".log");
+                    Path diagnostic = EngineFiles.safeResolve(paths.dataRoot(), "logs/" + staging.getFileName()
+                            + (name.equals("install") ? "" : ".health-check") + ".log");
                     Files.copy(installLog, diagnostic, StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (IOException ignored) { }

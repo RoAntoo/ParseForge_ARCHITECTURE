@@ -26,7 +26,7 @@ class ManagedEngineManagerTest {
         paths = new EnginePathResolver(Map.of(), temp.toString(), temp.toString());
         manifests = new EngineManifestRepository();
         installer = mock(EngineInstaller.class); verifier = mock(EngineVerifier.class);
-        when(verifier.verify(any(), any(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
+        when(verifier.verify(any(), any(), anyBoolean(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(true, "ok"));
         manager = new ManagedEngineManager(paths, manifests, installer, verifier);
     }
     @Test void stateIsRecoveredAcrossManagerInstancesAndBrokenIsDetected() throws Exception {
@@ -35,13 +35,13 @@ class ManagedEngineManagerTest {
         assertEquals(EngineState.READY, manager.check(id));
         var restarted = new ManagedEngineManager(paths, manifests, installer, verifier);
         assertEquals(EngineState.READY, restarted.check(id));
-        when(verifier.verify(any(), any(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(false, "missing"));
+        when(verifier.verify(any(), any(), anyBoolean(), anyBoolean(), any(), any())).thenReturn(new EngineVerificationResult(false, "missing"));
         assertEquals(EngineState.BROKEN, restarted.check(id));
     }
     @Test void failedRepairPreservesPreviousReadyInstallation() throws Exception {
         Files.createDirectories(paths.engine(id)); Files.writeString(paths.engine(id).resolve("original"), "previous");
         doThrow(new EngineInstallException(EngineInstallException.Code.DOWNLOAD_FAILED, "offline"))
-                .when(installer).repair(any(), any(), any());
+                .when(installer).repair(any(), any(), any(), any());
         assertThrows(CompletionException.class, () -> new RepairEngineUseCase(manager, Runnable::run).execute(id, p -> {}).join());
         assertEquals(EngineState.READY, manager.getState(id));
         assertEquals("previous", Files.readString(paths.engine(id).resolve("original")));
@@ -49,7 +49,7 @@ class ManagedEngineManagerTest {
     @Test void failureRetainsReadyAndReportsFailedEvent() throws Exception {
         Files.createDirectories(paths.engine(id));
         doThrow(new EngineInstallException(EngineInstallException.Code.CHECKSUM_MISMATCH, "bad hash"))
-                .when(installer).install(any(), any(), any());
+                .when(installer).install(any(), any(), any(), any());
         List<EngineInstallProgress> events = new ArrayList<>();
         assertThrows(EngineInstallException.class, () -> manager.install(id, events::add));
         assertEquals(EngineState.READY, manager.getState(id));
@@ -58,9 +58,9 @@ class ManagedEngineManagerTest {
     @Test void cancellationIsDeliveredToInstallerAndStateResets() throws Exception {
         CountDownLatch started = new CountDownLatch(1), release = new CountDownLatch(1);
         doAnswer(invocation -> {
-            var cancellation = (OperationCancellation) invocation.getArgument(2);
+            var cancellation = (OperationCancellation) invocation.getArgument(3);
             started.countDown(); release.await(5, TimeUnit.SECONDS); cancellation.check(); return null;
-        }).when(installer).install(any(), any(), any());
+        }).when(installer).install(any(), any(), any(), any());
         try (var worker = Executors.newSingleThreadExecutor()) {
             var pending = new InstallEngineUseCase(manager, worker).execute(id, p -> {});
             assertTrue(started.await(5, TimeUnit.SECONDS));
@@ -72,7 +72,7 @@ class ManagedEngineManagerTest {
     }
     @Test void activeOperationExcludesUninstallAndSecondInstall() throws Exception {
         CountDownLatch started = new CountDownLatch(1), release = new CountDownLatch(1);
-        doAnswer(i -> { started.countDown(); release.await(5, TimeUnit.SECONDS); return null; }).when(installer).install(any(), any(), any());
+        doAnswer(i -> { started.countDown(); release.await(5, TimeUnit.SECONDS); return null; }).when(installer).install(any(), any(), any(), any());
         try (var worker = Executors.newSingleThreadExecutor()) {
             var future = new InstallEngineUseCase(manager, worker).execute(id, p -> {});
             assertTrue(started.await(5, TimeUnit.SECONDS));
@@ -85,7 +85,13 @@ class ManagedEngineManagerTest {
         new RepairEngineUseCase(manager, Runnable::run).execute(id, p -> {}).join();
         new UninstallEngineUseCase(manager, Runnable::run).execute(id, p -> {}).join();
         assertEquals(EngineState.NOT_INSTALLED, new CheckEngineStatusUseCase(manager, Runnable::run).execute(id).join());
-        verify(installer).repair(any(), any(), any()); verify(installer).uninstall(any(), any(), any());
+        verify(installer).repair(any(), any(), any(), any()); verify(installer).uninstall(any(), any(), any());
+    }
+    @Test void useCasesPassRuntimeProbeChoiceThroughManagerForInstallAndRepair() {
+        new InstallEngineUseCase(manager, Runnable::run).execute(id, EngineInstallOptions.WITH_HEALTH_CHECK, p -> {}).join();
+        new RepairEngineUseCase(manager, Runnable::run).execute(id, EngineInstallOptions.DEFAULT, p -> {}).join();
+        verify(installer).install(any(), eq(EngineInstallOptions.WITH_HEALTH_CHECK), any(), any());
+        verify(installer).repair(any(), eq(EngineInstallOptions.DEFAULT), any(), any());
     }
     @Test void interruptedSwapRestoresBackupAndCleansAbandonedStaging() throws Exception {
         Path engine = paths.engine(id); Files.createDirectories(engine.getParent());

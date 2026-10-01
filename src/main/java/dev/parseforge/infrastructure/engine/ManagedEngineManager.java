@@ -53,7 +53,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
     private EngineState installedState(EngineId id) {
         Path root = paths.engine(id);
         if (!Files.exists(root, LinkOption.NOFOLLOW_LINKS)) return EngineState.NOT_INSTALLED;
-        return verifier.verify(require(id), root, false, ignored -> {}, new OperationCancellation()).ready()
+        return verifier.verify(require(id), root, false, false, ignored -> {}, new OperationCancellation()).ready()
                 ? EngineState.READY : EngineState.BROKEN;
     }
     private void recover(EngineId id) throws IOException {
@@ -79,10 +79,11 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
             }
         }
     }
-    @Override public void install(EngineId id, EngineProgressListener listener) { operate(id, listener, 0); }
-    @Override public void repair(EngineId id, EngineProgressListener listener) { operate(id, listener, 1); }
-    @Override public void uninstall(EngineId id, EngineProgressListener listener) { operate(id, listener, 2); }
-    private void operate(EngineId id, EngineProgressListener listener, int operation) {
+    @Override public void install(EngineId id, EngineInstallOptions options, EngineProgressListener listener) { operate(id, options, listener, 0); }
+    @Override public void repair(EngineId id, EngineInstallOptions options, EngineProgressListener listener) { operate(id, options, listener, 1); }
+    @Override public void uninstall(EngineId id, EngineProgressListener listener) { operate(id, EngineInstallOptions.DEFAULT, listener, 2); }
+    private void operate(EngineId id, EngineInstallOptions options, EngineProgressListener listener, int operation) {
+        Objects.requireNonNull(options);
         var descriptor = require(id);
         if (!lifecycle.tryLock()) throw new IllegalStateException("El motor está ocupado. Esperá a que termine la conversión u operación.");
         var cancellation = new OperationCancellation();
@@ -102,8 +103,8 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
                 listener.onProgress(event);
             };
             if (operation == 2) installer.uninstall(descriptor, progress, cancellation);
-            else if (operation == 1) installer.repair(descriptor, progress, cancellation);
-            else installer.install(descriptor, progress, cancellation);
+            else if (operation == 1) installer.repair(descriptor, options, progress, cancellation);
+            else installer.install(descriptor, options, progress, cancellation);
         } catch (RuntimeException error) {
             log.warn("Engine lifecycle operation failed; engine={}, operation={}", id, operation, error);
             listener.onProgress(EngineInstallProgress.phase(error instanceof EngineInstallException installError &&
