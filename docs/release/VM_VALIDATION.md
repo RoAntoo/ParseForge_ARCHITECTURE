@@ -1,8 +1,8 @@
 # Clean Windows release validation
 
 Status: **VM VALIDATION PENDING**. No clean-VM result is claimed.
-Candidate: ParseForge 0.1.0. Date: 2026-09-30, America/Buenos_Aires.
-The host build and smoke results are in STAGE_4_RESULT.md, separate from this checklist.
+Candidate: ParseForge 0.1.0 with Stage 5 UI. Date: 2026-10-01, America/Buenos_Aires.
+The host build and smoke results are in STAGE_4_RESULT.md and STAGE_5_RESULT.md, separate from this checklist.
 
 Record before execution:
 
@@ -25,6 +25,15 @@ means untested, not failure.
 - [ ] Double-click setup; choose Spanish and installation folder.
 - [ ] Install without app elevation; desktop and Start shortcuts exist.
 - [ ] Launch ParseForge.exe from shortcut; no Java/native launcher error.
+- [ ] First launch shows the welcome dialog; close it and use the app normally.
+- [ ] Select "No volver a mostrar al iniciar"; restart retains the preference.
+- [ ] Main window has the Marker sidebar, PDF drop area and destination folder.
+- [ ] Drop a real PDF, replace it and verify a non-PDF gets understandable feedback.
+- [ ] Long PDF names/output paths truncate with tooltips; no horizontal overflow.
+- [ ] At 800x500, scroll to every control; conversion action/footer remain visible.
+- [ ] Review maximized/restored at 1920x1080 and 1366x768 (100%).
+- [ ] Change actual Windows scaling to 125% and 150% at 1920x1080; restart and review dialogs/layout.
+- [ ] Convertir is disabled with missing/broken/busy engine or missing/invalid input/destination.
 - [ ] Marker starts NOT_INSTALLED; no installation-time document upload.
 - [ ] Without VC runtime: engine install blocks before GB downloads with a clear message.
 - [ ] Install official Microsoft x64 VC runtime; restart ParseForge.

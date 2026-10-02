@@ -3,8 +3,6 @@ package dev.parseforge.presentation.javafx.controller;
 import dev.parseforge.application.port.out.ConversionEvent;
 import dev.parseforge.application.port.out.UserSettingsRepository;
 import dev.parseforge.application.settings.UserSettings;
-import dev.parseforge.application.usecase.CancelConversionUseCase;
-import dev.parseforge.application.usecase.StartConversionUseCase;
 import dev.parseforge.application.usecase.*;
 import dev.parseforge.domain.exception.ConversionException;
 import dev.parseforge.domain.model.ConversionRequest;
@@ -18,20 +16,15 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -57,6 +50,15 @@ public final class MainController {
 
     private final BorderPane root = new BorderPane();
     private final Label selectedPdfLabel = new Label("Ningún PDF seleccionado");
+    private final Label dropTitle = new Label("Arrastrá tu archivo PDF");
+    private final Label dropHint = new Label("Soltá el documento acá o buscá el archivo en tu equipo.");
+    private final Button selectPdfButton = new Button("SELECCIONAR ARCHIVO");
+    private final Button changeDirectoryButton = new Button("CAMBIAR");
+    private final Label destinationLabel = new Label();
+    private final Label actionHint = new Label();
+    private final Label systemState = new Label();
+    private final VBox conversionStatus = new VBox(12);
+    private final VBox dropZone = new VBox(18);
     private final TextField outputDirectoryField = new TextField();
     private final Button convertButton = new Button("CONVERTIR");
     private final CheckBox forceOcr = new CheckBox("Forzar OCR");
@@ -74,6 +76,7 @@ public final class MainController {
     private boolean conversionBusy;
     private boolean engineBusy;
     private final boolean developmentOverrideAvailable;
+    private UserSettings settings;
 
     public MainController(
             Stage stage,
@@ -95,11 +98,12 @@ public final class MainController {
         this.settingsRepository = Objects.requireNonNull(settingsRepository, "settingsRepository");
         this.selectedEngineId = Objects.requireNonNull(selectedEngineId, "selectedEngineId");
         this.developmentOverrideAvailable = developmentOverrideAvailable;
+        this.settings = settings;
 
         lastInputDirectory = settings.lastInputDirectory();
         engineSettings = new EngineSettingsController(stage, selectedEngineId, installEngine, repairEngine,
                 uninstallEngine, checkEngine, cancelEngine, busy -> {
-                    engineBusy = busy; convertButton.setDisable(busy || conversionBusy);
+                    engineBusy = busy; updateConvertState();
                 }, line -> appendLog("INSTALL", line));
         outputDirectoryField.setText(defaultOutputDirectory(settings.lastOutputDirectory().isBlank()
                 ? settings.outputDirectory() : settings.lastOutputDirectory()));
@@ -116,47 +120,92 @@ public final class MainController {
     private void buildView() {
         Label title = new Label("ParseForge");
         title.getStyleClass().add("title");
-        Label privacy = new Label("Tus documentos se procesan localmente.");
+        Label privacy = new Label("PROCESAMIENTO LOCAL");
+        privacy.getStyleClass().add("eyebrow");
         VBox header = new VBox(3, title, privacy);
-        header.setPadding(new Insets(20, 24, 12, 24));
-        root.setTop(header);
-
-        VBox dropZone = buildDropZone();
-        HBox outputRow = pathRow(outputDirectoryField, "Cambiar", this::chooseOutputDirectory);
-        TitledPane settingsPane = new TitledPane("Configuración > Motores", engineSettings.view());
-        settingsPane.setExpanded(true);
-        settingsPane.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        header.getStyleClass().add("brand-header");
+        Label enginesTitle = new Label("MOTORES DE CONVERSIÓN");
+        enginesTitle.getStyleClass().add("eyebrow");
+        VBox engines = new VBox(18, enginesTitle, engineSettings.view());
+        engines.setPadding(new Insets(24, 18, 24, 18));
+        ScrollPane engineScroll = scrollPane(engines, "engine-scroll");
+        engineScroll.setId("engine-scroll");
 
         convertButton.getStyleClass().add("primary-button");
         convertButton.setOnAction(ignored -> startConversion());
         convertButton.setId("convert-pdf"); cancelButton.setId("cancel-conversion"); forceOcr.setId("force-ocr");
         outputDirectoryField.setId("output-directory"); logs.setId("engine-logs"); phaseLabel.setId("conversion-state");
-        HBox conversionAction = new HBox(12, forceOcr, convertButton);
-        conversionAction.setAlignment(Pos.CENTER);
+        convertButton.setMaxWidth(Double.MAX_VALUE);
+        convertButton.setMinHeight(48);
+        actionHint.setId("conversion-hint"); actionHint.setWrapText(true);
+        actionHint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        actionHint.setMaxWidth(Double.MAX_VALUE); actionHint.setAlignment(Pos.CENTER);
+        VBox conversionAction = new VBox(12, convertButton, actionHint);
+        conversionAction.getStyleClass().add("conversion-action");
+        BorderPane sidebar = new BorderPane(engineScroll, header, null, conversionAction, null);
+        sidebar.getStyleClass().add("sidebar"); sidebar.setPrefWidth(300); sidebar.setMinWidth(300); sidebar.setMaxWidth(300);
+        root.setLeft(sidebar);
 
-        VBox form = new VBox(14,
-                dropZone,
-                new Label("Carpeta de salida"),
-                outputRow,
-                settingsPane,
-                conversionAction);
-        form.setPadding(new Insets(8, 24, 12, 24));
-
-        VBox status = buildStatusPanel();
-        VBox.setMargin(status, new Insets(0, 24, 20, 24));
-        VBox content = new VBox(10, form, status);
-        VBox.setVgrow(status, Priority.ALWAYS);
-        root.setCenter(content);
+        buildDropZone();
+        Label destinationTitle = new Label("CARPETA DE DESTINO"); destinationTitle.getStyleClass().add("eyebrow");
+        destinationLabel.setMinWidth(0); destinationLabel.setMaxWidth(Double.MAX_VALUE);
+        destinationLabel.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
+        destinationLabel.setId("destination-path");
+        destinationLabel.textProperty().bind(outputDirectoryField.textProperty());
+        Tooltip destinationTooltip = new Tooltip();
+        destinationTooltip.textProperty().bind(outputDirectoryField.textProperty());
+        destinationLabel.setTooltip(destinationTooltip);
+        outputDirectoryField.setVisible(false); outputDirectoryField.setManaged(false);
+        outputDirectoryField.textProperty().addListener((observable, before, after) -> updateConvertState());
+        HBox.setHgrow(destinationLabel, Priority.ALWAYS);
+        changeDirectoryButton.setOnAction(ignored -> chooseOutputDirectory());
+        changeDirectoryButton.setId("change-output-directory");
+        changeDirectoryButton.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        HBox destinationRow = new HBox(12, icon("M2 7 L2 22 L27 22 L30 10 L13 10 L10 7 Z M2 7 L2 3 L11 3 L14 6 L26 6 L26 10", "folder-icon"),
+                destinationLabel, changeDirectoryButton);
+        destinationRow.setAlignment(Pos.CENTER_LEFT);
+        VBox destination = new VBox(12, destinationTitle, destinationRow, outputDirectoryField);
+        destination.getStyleClass().add("destination-panel"); destination.setMinWidth(0);
+        forceOcr.setTooltip(new Tooltip("Activá OCR para reconocer texto en páginas escaneadas."));
+        VBox options = new VBox(10, new Label("OPCIONES DE CONVERSIÓN"), forceOcr);
+        options.getStyleClass().add("options-panel");
+        VBox content = new VBox(24, dropZone, destination, options, buildStatusPanel());
+        content.setMinWidth(0); content.getStyleClass().add("workspace");
+        ScrollPane workspaceScroll = scrollPane(content, "workspace-scroll");
+        workspaceScroll.setId("workspace-scroll");
+        dropZone.prefHeightProperty().bind(javafx.beans.binding.Bindings.max(330,
+                javafx.beans.binding.Bindings.min(480, workspaceScroll.heightProperty().multiply(0.48))));
+        systemState.getStyleClass().add("system-state"); systemState.setWrapText(true);
+        systemState.setMinWidth(0);
+        Label version = new Label("ParseForge " + dev.parseforge.presentation.javafx.AppVersion.current());
+        version.setId("app-version"); version.getStyleClass().add("version");
+        version.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox footer = new HBox(12, systemState, spacer, version); footer.setAlignment(Pos.CENTER_LEFT);
+        footer.getStyleClass().add("footer");
+        root.setCenter(new BorderPane(workspaceScroll, null, null, footer, null));
+        updateConvertState();
     }
 
     private VBox buildDropZone() {
-        Label instruction = new Label("Arrastrá un PDF aquí");
-        Label or = new Label("o");
-        Button selectPdfButton = new Button("Seleccionar PDF");
+        dropTitle.getStyleClass().add("drop-title"); dropTitle.setWrapText(true);
+        dropTitle.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        dropHint.getStyleClass().add("muted"); dropHint.setWrapText(true);
+        dropHint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        dropTitle.setAlignment(Pos.CENTER); dropHint.setAlignment(Pos.CENTER);
+        selectPdfButton.setId("select-pdf"); selectPdfButton.getStyleClass().add("primary-button");
         selectPdfButton.setOnAction(ignored -> choosePdf());
-        selectedPdfLabel.setWrapText(true);
-
-        VBox dropZone = new VBox(8, instruction, or, selectPdfButton, selectedPdfLabel);
+        selectedPdfLabel.setId("selected-pdf"); selectedPdfLabel.setMinWidth(0);
+        selectedPdfLabel.setMaxWidth(Double.MAX_VALUE);
+        selectedPdfLabel.setAlignment(Pos.CENTER); selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
+        selectedPdfLabel.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
+        javafx.scene.layout.StackPane uploadIcon = new javafx.scene.layout.StackPane(
+                icon("M16 24 L16 3 M8 11 L16 3 L24 11 M3 20 L3 29 L29 29 L29 20", "upload-icon"));
+        uploadIcon.getStyleClass().add("upload-circle");
+        uploadIcon.setMinSize(72, 72); uploadIcon.setMaxSize(72, 72);
+        dropZone.getChildren().setAll(uploadIcon, dropTitle, dropHint, selectPdfButton, selectedPdfLabel);
+        dropZone.setId("pdf-drop-zone"); dropZone.setMinWidth(0);
+        dropZone.setMinHeight(330); dropZone.setPrefHeight(390);
         dropZone.setAlignment(Pos.CENTER);
         dropZone.getStyleClass().add("drop-zone");
         dropZone.setOnDragOver(event -> acceptPdfDrag(event, dropZone));
@@ -172,9 +221,10 @@ public final class MainController {
         state.setAlignment(Pos.CENTER_LEFT);
 
         logs.setEditable(false);
-        logs.setWrapText(false);
+        logs.setWrapText(true); logs.setPrefRowCount(7);
         logs.setPromptText("Los logs del motor aparecerán aquí.");
-        VBox.setVgrow(logs, Priority.ALWAYS);
+        TitledPane details = new TitledPane("Detalles técnicos", logs);
+        details.setExpanded(false); details.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         cancelButton.setDisable(true);
         cancelButton.setOnAction(ignored -> {
@@ -186,20 +236,24 @@ public final class MainController {
         HBox actions = new HBox(10, cancelButton, openOutputButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox panel = new VBox(10, state, new Label("Logs"), logs, actions);
+        phaseLabel.setWrapText(true); phaseLabel.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        VBox panel = new VBox(10, conversionStatus, details);
+        conversionStatus.getChildren().setAll(state, actions);
+        conversionStatus.setVisible(false); conversionStatus.setManaged(false);
         panel.getStyleClass().add("status-panel");
-        panel.setMaxHeight(Double.MAX_VALUE);
-        VBox.setVgrow(panel, Priority.ALWAYS);
-        BorderPane.setMargin(panel, new Insets(0, 24, 20, 24));
         return panel;
     }
 
-    private HBox pathRow(TextField field, String buttonText, Runnable action) {
-        field.setEditable(false);
-        HBox.setHgrow(field, Priority.ALWAYS);
-        Button button = new Button(buttonText);
-        button.setOnAction(ignored -> action.run());
-        return new HBox(8, field, button);
+    private ScrollPane scrollPane(VBox content, String style) {
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.setFitToWidth(true); scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setMinWidth(0); scroll.setMinHeight(0); scroll.getStyleClass().add(style);
+        return scroll;
+    }
+
+    private SVGPath icon(String path, String style) {
+        SVGPath icon = new SVGPath(); icon.setContent(path); icon.getStyleClass().add(style);
+        return icon;
     }
 
     private void choosePdf() {
@@ -225,9 +279,10 @@ public final class MainController {
     }
 
     private void startConversion() {
-        if (!engineSettings.ready() && !developmentOverrideAvailable) {
+        if (conversionBusy || engineBusy || startConversion.hasActiveConversion()) return;
+        if (!engineSettings.selected() && !developmentOverrideAvailable) {
             showAlert(Alert.AlertType.INFORMATION, "Marker necesita instalarse o repararse",
-                    "Abrí Configuración > Motores y seleccioná Instalar Marker o Reparar para continuar.");
+                    "Usá Instalar Marker o Reparar en el panel Motores de conversión para continuar.");
             return;
         }
         String validationError = validateInputs();
@@ -247,6 +302,7 @@ public final class MainController {
 
         saveSettings();
         setBusy(true);
+        conversionStatus.setVisible(true); conversionStatus.setManaged(true);
         logs.clear();
         appendLog("SYSTEM", "Iniciando conversión de " + selectedPdf.getFileName());
         conversionStartedAt = Instant.now();
@@ -304,25 +360,57 @@ public final class MainController {
     }
 
     private String validateInputs() {
-        if (selectedPdf == null || !Files.isRegularFile(selectedPdf)) {
+        if (selectedPdf == null || !Files.isRegularFile(selectedPdf) || !Files.isReadable(selectedPdf)
+                || !selectedPdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
             return "Seleccioná un archivo PDF válido.";
         }
-        if (outputDirectoryField.getText().isBlank()) {
-            return "Seleccioná una carpeta de salida.";
-        }
-        return null;
+        return validOutputDirectory() ? null : "Seleccioná una carpeta de destino disponible.";
     }
 
     private void setBusy(boolean busy) {
         conversionBusy = busy;
         engineSettings.converting(busy);
-        convertButton.setDisable(busy || engineBusy);
+        updateConvertState();
         cancelButton.setDisable(!busy);
         progress.setVisible(busy);
+        progress.setManaged(busy);
+        selectPdfButton.setDisable(busy); changeDirectoryButton.setDisable(busy);
+        openOutputButton.setDisable(busy); forceOcr.setDisable(busy);
+        dropTitle.setText(busy ? "Procesando tu PDF" : selectedPdf == null ? "Arrastrá tu archivo PDF" : "PDF seleccionado");
+    }
+
+    private boolean validOutputDirectory() {
+        try {
+            if (outputDirectoryField.getText().isBlank()) return false;
+            Path output = Path.of(outputDirectoryField.getText()).toAbsolutePath().normalize();
+            // A default/new folder can be created by the existing conversion flow.
+            while (!Files.exists(output)) {
+                output = output.getParent();
+                if (output == null) return false;
+            }
+            return Files.isDirectory(output) && Files.isWritable(output);
+        } catch (java.nio.file.InvalidPathException | SecurityException error) { return false; }
+    }
+
+    private void updateConvertState() {
+        boolean ready = engineSettings != null && engineSettings.selected();
+        String validationError = validateInputs();
+        String reason;
+        if (conversionBusy) reason = "CONVERSIÓN EN CURSO";
+        else if (engineBusy) reason = "ESPERÁ A QUE TERMINE LA OPERACIÓN DEL MOTOR";
+        else if (!ready && !developmentOverrideAvailable) reason = "INSTALÁ O REPARÁ MARKER PARA CONTINUAR";
+        else if (validationError != null) reason = selectedPdf == null ? "SELECCIONÁ UN PDF PARA CONTINUAR" : validationError;
+        else reason = "TODO LISTO PARA CONVERTIR";
+        boolean enabled = !conversionBusy && !engineBusy && !startConversion.hasActiveConversion()
+                && (ready || developmentOverrideAvailable) && validationError == null;
+        convertButton.setDisable(!enabled);
+        actionHint.setText(reason);
+        systemState.setText(conversionBusy ? "● CONVIRTIENDO DOCUMENTO" : engineBusy ? "● COMPROBANDO / PREPARANDO MOTOR"
+                : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ MARKER REQUIERE ATENCIÓN");
     }
 
     private void acceptPdfDrag(DragEvent event, VBox dropZone) {
-        if (event.getGestureSource() != dropZone && firstPdf(event.getDragboard()) != null) {
+        if (!conversionBusy && event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
             event.acceptTransferModes(TransferMode.COPY);
             if (!dropZone.getStyleClass().contains("drop-zone-active")) {
                 dropZone.getStyleClass().add("drop-zone-active");
@@ -333,11 +421,12 @@ public final class MainController {
 
     private void receivePdfDrop(DragEvent event, VBox dropZone) {
         Path pdf = firstPdf(event.getDragboard());
-        if (pdf != null) {
+        if (!conversionBusy && pdf != null) {
             selectPdf(pdf);
             event.setDropCompleted(true);
         } else {
             event.setDropCompleted(false);
+            if (!conversionBusy) invalidPdf();
         }
         dropZone.getStyleClass().remove("drop-zone-active");
         event.consume();
@@ -356,10 +445,31 @@ public final class MainController {
     }
 
     public void selectPdf(Path pdf) {
+        if (conversionBusy) return;
+        if (pdf == null || !Files.isRegularFile(pdf) || !Files.isReadable(pdf)
+                || !pdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
+            invalidPdf(); return;
+        }
         selectedPdf = pdf.toAbsolutePath().normalize();
         lastInputDirectory = selectedPdf.getParent().toString();
-        selectedPdfLabel.setText(selectedPdf.getFileName() + System.lineSeparator() + selectedPdf);
+        selectedPdfLabel.setText(selectedPdf.getFileName().toString());
+        selectedPdfLabel.setTooltip(new Tooltip(selectedPdf.toString()));
+        selectedPdfLabel.setVisible(true); selectedPdfLabel.setManaged(true);
+        dropTitle.setText("PDF seleccionado"); dropHint.setText("Podés elegir otro archivo antes de convertir.");
+        dropZone.getStyleClass().remove("drop-zone-invalid");
+        selectPdfButton.setText("CAMBIAR ARCHIVO");
+        updateConvertState();
         saveSettings();
+    }
+
+    private void invalidPdf() {
+        selectedPdf = null;
+        selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
+        dropTitle.setText("Elegí un archivo PDF válido");
+        dropHint.setText("No se pudo seleccionar ese archivo. Revisá que sea un PDF accesible en tu equipo.");
+        selectPdfButton.setText("SELECCIONAR ARCHIVO");
+        if (!dropZone.getStyleClass().contains("drop-zone-invalid")) dropZone.getStyleClass().add("drop-zone-invalid");
+        updateConvertState();
     }
 
     private void openOutputDirectory() {
@@ -397,8 +507,40 @@ public final class MainController {
     }
 
     private void saveSettings() {
-        settingsRepository.save(new UserSettings(
-                "", outputDirectoryField.getText(), lastInputDirectory, outputDirectoryField.getText(), "es", selectedEngineId.value()));
+        settings = new UserSettings(settings.markerExecutable(), outputDirectoryField.getText(), lastInputDirectory,
+                outputDirectoryField.getText(), settings.language(), selectedEngineId.value(), settings.welcomeDialogVersion());
+        settingsRepository.save(settings);
+    }
+
+    public void showWelcomeIfNeeded() {
+        if (settings.welcomeDialogVersion() >= 1) return;
+        Dialog<ButtonType> welcome = new Dialog<>();
+        welcome.initOwner(stage); welcome.setTitle("Bienvenido a ParseForge");
+        welcome.getDialogPane().setId("welcome-dialog");
+        Label title = new Label("Bienvenido a ParseForge"); title.getStyleClass().add("welcome-title"); title.setWrapText(true);
+        Label message = new Label("Convertí tus documentos PDF a Markdown en tu equipo.\n\n"
+                + "ParseForge utiliza motores de conversión instalables. Para comenzar, instalá un motor desde el panel Motores de conversión.\n\n"
+                + "Actualmente está disponible Marker, recomendado para documentos complejos y OCR. Si ya está listo, podés seleccionar un PDF y convertirlo.\n\n"
+                + "Tus documentos se procesan localmente. Internet solo es necesario para instalar o reparar el motor.");
+        message.setWrapText(true); message.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        CheckBox hide = new CheckBox("No volver a mostrar al iniciar"); hide.setId("hide-welcome"); hide.setWrapText(true);
+        VBox content = new VBox(18, title, message, hide); content.setPadding(new Insets(12)); content.setMinWidth(0);
+        ScrollPane scroll = scrollPane(content, "welcome-scroll");
+        scroll.setPrefViewportWidth(440); scroll.setPrefViewportHeight(330);
+        welcome.getDialogPane().setContent(scroll);
+        ButtonType understood = new ButtonType("ENTENDIDO", ButtonBar.ButtonData.OK_DONE);
+        welcome.getDialogPane().getButtonTypes().add(understood);
+        welcome.getDialogPane().lookupButton(understood).setId("welcome-understood");
+        welcome.getDialogPane().lookupButton(understood).getStyleClass().add("primary-button");
+        welcome.getDialogPane().getStylesheets().addAll(stage.getScene().getStylesheets());
+        welcome.setOnHidden(ignored -> {
+            if (hide.isSelected()) {
+                settings = new UserSettings(settings.markerExecutable(), settings.outputDirectory(), settings.lastInputDirectory(),
+                        settings.lastOutputDirectory(), settings.language(), settings.selectedEngine(), 1);
+                saveSettings();
+            }
+        });
+        welcome.show();
     }
 
     private String defaultOutputDirectory(String configured) {
@@ -433,6 +575,7 @@ public final class MainController {
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.initOwner(stage);
+        alert.getDialogPane().getStylesheets().addAll(stage.getScene().getStylesheets());
         alert.setTitle("ParseForge");
         alert.setHeaderText(title);
         alert.setContentText(message);

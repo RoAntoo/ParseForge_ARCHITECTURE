@@ -68,14 +68,17 @@ public final class ParseForgeApplication extends Application {
                 settings,
                 override != null && !override.isBlank() && java.nio.file.Files.isRegularFile(Path.of(override)));
 
-        Scene scene = new Scene(controller.view(), 880, 900);
+        var screen = javafx.stage.Screen.getPrimary().getVisualBounds();
+        Scene scene = new Scene(controller.view(), Math.min(1100, screen.getWidth() - 32),
+                Math.min(760, screen.getHeight() - 64));
         scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
         stage.setTitle("ParseForge");
         stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/icons/ParseForge.png")));
-        stage.setMinWidth(700);
-        stage.setMinHeight(620);
+        stage.setMinWidth(800);
+        stage.setMinHeight(500);
         stage.setScene(scene);
         stage.show();
+        javafx.application.Platform.runLater(controller::showWelcomeIfNeeded);
         org.slf4j.LoggerFactory.getLogger(getClass()).info("Application window opened; config={}, engines={}",
                 paths.configFile(), paths.dataRoot().resolve("engines"));
         Launcher.completeUiSmoke(stage);

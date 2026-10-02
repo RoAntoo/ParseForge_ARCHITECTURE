@@ -1,7 +1,12 @@
 package dev.parseforge.application.settings;
 
 public record UserSettings(String markerExecutable, String outputDirectory, String lastInputDirectory,
-                           String lastOutputDirectory, String language, String selectedEngine) {
+                           String lastOutputDirectory, String language, String selectedEngine,
+                           int welcomeDialogVersion) {
+    public UserSettings(String markerExecutable, String outputDirectory, String lastInputDirectory,
+                        String lastOutputDirectory, String language, String selectedEngine) {
+        this(markerExecutable, outputDirectory, lastInputDirectory, lastOutputDirectory, language, selectedEngine, 0);
+    }
     public UserSettings(String markerExecutable, String outputDirectory) {
         this(markerExecutable, outputDirectory, "", outputDirectory, "es", "marker");
     }
