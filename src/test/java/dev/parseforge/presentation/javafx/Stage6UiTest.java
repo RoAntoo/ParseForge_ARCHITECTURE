@@ -98,8 +98,17 @@ class Stage6UiTest {
             fx(() -> {
                 assertTrue(radio(md).isSelected()); assertFalse(radio(marker).isSelected());
                 button("expand-marker").fire(); assertFalse(node("markitdown-details").isVisible());
-                click(button("expand-marker")); click(button("repair-marker"));
-                assertTrue(radio(md).isSelected(), "Los controles internos no deben cambiar el motor seleccionado");
+                assertTrue(node("marker-details").isVisible());
+                assertTrue(radio(md).isSelected(), "Expandir Marker no debe cambiar el motor seleccionado");
+                button("repair-marker").fire();
+                assertTrue(radio(md).isSelected(), "Iniciar la reparación de Marker no debe cambiar el motor seleccionado");
+                return null;
+            });
+            waitFor(() -> !button("repair-marker").isDisabled() && !button("check-engine-state").isDisabled());
+            verify(manager).repair(eq(marker), any(EngineInstallOptions.class), any(EngineProgressListener.class));
+            fx(() -> {
+                assertTrue(radio(md).isSelected(), "Reparar Marker no debe cambiar el motor seleccionado");
+                assertFalse(radio(marker).isSelected());
                 click(node("marker-card").lookup(".engine-name"));
                 assertTrue(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
                 assertTrue(node("marker-details").isVisible(), "Seleccionar no debe cambiar la expansión");
