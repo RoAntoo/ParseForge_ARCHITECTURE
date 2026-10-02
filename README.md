@@ -36,7 +36,8 @@ for staging. Exact PDF-only packages, artifacts and hashes are pinned. Core
 Magika/ONNX detection dependencies are included; there is no OCR support, cloud
 service or external plugin. See the [measured spike](docs/spikes/STAGE_6_MARKITDOWN_SPIKE.md).
 
-Radio buttons select the ready engine used to convert. Chevrons show details;
+Click a ready engine's card or radio button to select it for conversion. Internal
+buttons and options keep their own actions. Chevrons show details;
 expanding a card collapses the other. Selection persists across restarts, with
 a fallback to the first ready engine. With no ready engine, Convertir remains
 disabled. **Ligero / Avanzado** describe processing scope and resource needs;

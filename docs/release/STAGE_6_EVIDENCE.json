@@ -123,7 +123,7 @@
     "markerRoot": "C:\\Users\\rochi\\AppData\\Local\\ParseForge\\engines\\marker"
   },
   "packagedJarMatchesVerifiedBuild": true,
-  "packagedJarSha256": "041c527134d41d26f3357dfdcc0fa107505660ef6716eac5bf5876345b6b2001",
+  "packagedJarSha256": "4d4af2dc0826bc7d7ee0de05e18d80054be4f52419aa2fe66e18e6b40fa3e58b",
   "startupSmoke": {
     "source": "build/smoke/c5d7cb0c-549c-4049-8ad0-80721a8b5347/smoke.json",
     "result": "PASS",
@@ -156,18 +156,6 @@
     "markerRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\fa596dce-ab22-45e6-8057-a55d24aa4c99\\data\\engines\\marker",
     "manifestLoaded": "2.0.0"
   },
-  "releaseArtifacts": [
-    {
-      "file": "build/release/ParseForge-0.1.0-win-x64.zip",
-      "bytes": 51615485,
-      "sha256": "a382e7a8560a77b4a443d15d0de85f4df08975afe7b612a5a9d78fd90a07dfef"
-    },
-    {
-      "file": "build/release/ParseForge-Setup-0.1.0.exe",
-      "bytes": 49501030,
-      "sha256": "ed9fb093a7f0110914f1bd9c0c75efe945527ecc8cd98ef5d4cb94a5b71e038e"
-    }
-  ],
   "screenshots": [
     "docs/release/images/app-window.png",
     "docs/release/images/stage6-compact.png",
@@ -179,5 +167,73 @@
     "manualValidationRequestedByUser": true,
     "checklist": "docs/release/VM_VALIDATION.md"
   },
-  "publicReleasePublished": false
+  "publicReleasePublished": false,
+  "followUps": [
+    {
+      "date": "2026-10-02",
+      "change": "Select ready engines by clicking the card; preserve internal control actions",
+      "nativeUi": {
+        "result": "PASS",
+        "scale": "1.0",
+        "log": "build/stage6-card-click-ui.log",
+        "coverage": [
+          "card background",
+          "engine name",
+          "capacity label",
+          "state label",
+          "unavailable engine guard",
+          "independent internal controls"
+        ]
+      },
+      "releaseLog": "build/stage6-card-click-release.log",
+      "releaseResult": "PASS",
+      "testsPassed": 101,
+      "skipped": 2,
+      "failures": 0,
+      "errors": 0,
+      "previousPdfSuffixFixIncluded": true,
+      "packagedUiSmoke": {
+        "source": "build/smoke/a5dc5d6f-50b3-4347-b93b-a6a6abf96570/smoke.json",
+        "result": "PASS"
+      },
+      "packagedJarSha256": "4d4af2dc0826bc7d7ee0de05e18d80054be4f52419aa2fe66e18e6b40fa3e58b",
+      "releaseArtifacts": [
+        {
+          "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+          "bytes": 51616020,
+          "sha256": "18d0fc46c61b1390a351867900ffe6ebc1feaf455e26120533b5045d001b0674"
+        },
+        {
+          "file": "build/release/ParseForge-Setup-0.1.0.exe",
+          "bytes": 49501620,
+          "sha256": "f5026697db9e628f1ceee450b0e42eca62d0108fc29be1a93d3111d2fd90072a"
+        }
+      ]
+    }
+  ],
+  "initialReleaseArtifacts": [
+    {
+      "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+      "bytes": 51615485,
+      "sha256": "a382e7a8560a77b4a443d15d0de85f4df08975afe7b612a5a9d78fd90a07dfef"
+    },
+    {
+      "file": "build/release/ParseForge-Setup-0.1.0.exe",
+      "bytes": 49501030,
+      "sha256": "ed9fb093a7f0110914f1bd9c0c75efe945527ecc8cd98ef5d4cb94a5b71e038e"
+    }
+  ],
+  "releaseArtifacts": [
+    {
+      "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+      "bytes": 51616020,
+      "sha256": "18d0fc46c61b1390a351867900ffe6ebc1feaf455e26120533b5045d001b0674"
+    },
+    {
+      "file": "build/release/ParseForge-Setup-0.1.0.exe",
+      "bytes": 49501620,
+      "sha256": "f5026697db9e628f1ceee450b0e42eca62d0108fc29be1a93d3111d2fd90072a"
+    }
+  ],
+  "lastRebuilt": "2026-10-02"
 }

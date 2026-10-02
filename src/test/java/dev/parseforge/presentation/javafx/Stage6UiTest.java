@@ -67,6 +67,8 @@ class Stage6UiTest {
             fx(() -> {
                 assertTrue(button("convert-pdf").isDisabled());
                 assertTrue(radio(marker).isDisabled()); assertTrue(radio(md).isDisabled());
+                click(node("marker-card")); click(label("markitdown-capacity"));
+                assertFalse(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
                 assertFalse(node("marker-details").isVisible()); assertFalse(node("markitdown-details").isVisible());
                 assertTrue(label("marker-capacity").getText().contains("Avanzado"));
                 assertTrue(label("markitdown-capacity").getText().contains("Ligero"));
@@ -96,14 +98,20 @@ class Stage6UiTest {
             fx(() -> {
                 assertTrue(radio(md).isSelected()); assertFalse(radio(marker).isSelected());
                 button("expand-marker").fire(); assertFalse(node("markitdown-details").isVisible());
-                radio(marker).fire(); assertTrue(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
+                click(button("expand-marker")); click(button("repair-marker"));
+                assertTrue(radio(md).isSelected(), "Los controles internos no deben cambiar el motor seleccionado");
+                click(node("marker-card").lookup(".engine-name"));
+                assertTrue(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
+                assertTrue(node("marker-details").isVisible(), "Seleccionar no debe cambiar la expansión");
                 ((CheckBox)node("force-ocr")).setSelected(true);
                 button("convert-pdf").fire(); return null;
             });
             waitFor(() -> converted.get().engineId().equals(marker) && !button("convert-pdf").isDisabled());
             assertTrue(converted.get().forceOcr());
             fx(() -> {
-                radio(md).fire(); assertTrue(radio(md).isSelected()); assertFalse(radio(marker).isSelected());
+                click(node("markitdown-card")); assertTrue(radio(md).isSelected()); assertFalse(radio(marker).isSelected());
+                click(label("marker-capacity")); assertTrue(radio(marker).isSelected());
+                click(label("engine-state-markitdown")); assertTrue(radio(md).isSelected());
                 radio(md).fire(); assertTrue(radio(md).isSelected(), "No se puede deseleccionar el único motor listo elegido");
                 // Built-in Button behavior must support Space and Enter.
                 stage.toFront(); stage.requestFocus(); button("expand-markitdown").requestFocus();
@@ -164,6 +172,12 @@ class Stage6UiTest {
     private Label label(String id) { return (Label)node(id); }
     private RadioButton radio(EngineId id) { return (RadioButton)node(id + "-selection"); }
     private boolean effectiveVisible(Node node) { for (Node n = node; n != null; n = n.getParent()) if (!n.isVisible()) return false; return true; }
+    private void click(Node target) {
+        javafx.event.Event.fireEvent(target, new javafx.scene.input.MouseEvent(javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+                0, 0, 0, 0, javafx.scene.input.MouseButton.PRIMARY, 1,
+                false, false, false, false, false, false, false, true, false, true,
+                new javafx.scene.input.PickResult(target, 0, 0)));
+    }
     private void key(Node target, KeyCode key) {
         key(target, key, false);
     }

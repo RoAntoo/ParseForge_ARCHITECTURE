@@ -70,12 +70,12 @@ package hashes, observed UI scales and captures.
   Its existing installed runtime was preserved; lifecycle regression also passed
   the automated staging/rollback/install/repair/uninstall tests.
 
-Release artifacts under `build/release`:
+Release artifacts under `build/release` (rebuilt 2026-10-02):
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
-| ParseForge-Setup-0.1.0.exe | 49,501,030 | ed9fb093a7f0110914f1bd9c0c75efe945527ecc8cd98ef5d4cb94a5b71e038e |
-| ParseForge-0.1.0-win-x64.zip | 51,615,485 | a382e7a8560a77b4a443d15d0de85f4df08975afe7b612a5a9d78fd90a07dfef |
+| ParseForge-Setup-0.1.0.exe | 49,501,620 | f5026697db9e628f1ceee450b0e42eca62d0108fc29be1a93d3111d2fd90072a |
+| ParseForge-0.1.0-win-x64.zip | 51,616,020 | 18d0fc46c61b1390a351867900ffe6ebc1feaf455e26120533b5045d001b0674 |
 
 ![Stage 6 compact sidebar](images/stage6-compact.png)
 
@@ -86,3 +86,13 @@ The user chose to run the clean Windows VM validation manually. Follow
 Actual Windows display scaling, OS prerequisites, installed-app lifecycle and
 cross-engine independence on that VM remain unchecked until those results arrive.
 Host probes and JavaFX scaling tests do not establish a VM pass.
+
+## Follow-up — 2026-10-02
+
+Ready engines can now be selected by clicking the card background, name, state
+or capacity label as well as the radio. Internal buttons/options retain their
+own actions, and unavailable/busy engines remain unselectable. Stage6UiTest
+passed at 100%, including these click targets and control independence. The
+release rebuild passed **101 tests** with two opt-in UI tests skipped; the
+packaged UI startup passed with private Java. The prior PDF-suffix correction
+is also included in this rebuilt setup/ZIP. VM validation remains pending.

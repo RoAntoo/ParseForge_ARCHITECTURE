@@ -5,6 +5,7 @@ Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been publ
 - Windows x64 installer and portable ZIP include a private Temurin Java runtime.
 - Install/repair Marker or MarkItDown from the Motores de conversión sidebar with verified downloads.
 - Compact engine cards with exclusive ready-engine selection, independent accordion details and persisted safe fallback.
+- Select a ready engine by clicking its card or radio; internal controls keep their own actions.
 - MarkItDown 0.1.8 uses independent private CPython 3.12.10 and locked PDF dependencies (~194 MB installed, ~80 MB downloaded).
 - Ligero / Avanzado indicate scope/resources. Forzar OCR is available only in Marker's details.
 - Digital, Unicode/spaced-path PDF conversion, malformed PDF detection and cancellation for MarkItDown.

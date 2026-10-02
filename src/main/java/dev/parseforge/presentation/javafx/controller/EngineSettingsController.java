@@ -137,6 +137,15 @@ public final class EngineSettingsController {
         card.setMinHeight(Region.USE_PREF_SIZE); card.setId(id + "-card");
         card.setAccessibleRole(AccessibleRole.PARENT);
         card.getStyleClass().add("engine-card");
+        card.setOnMouseClicked(event -> {
+            if (event.getButton() != javafx.scene.input.MouseButton.PRIMARY || selection.isDisabled()) return;
+            // Actions inside the card keep their own behavior, including when disabled.
+            for (javafx.scene.Node target = event.getTarget() instanceof javafx.scene.Node node ? node : null;
+                    target != null && target != card; target = target.getParent()) {
+                if (target instanceof ButtonBase || target instanceof TitledPane) return;
+            }
+            selection.fire();
+        });
         requirements = new Label(profile.ocr() ? "Para instalar Marker necesitás Internet y al menos 7 GB libres." : "Necesitás Internet y al menos 500 MB libres para preparar el motor.");
         requirements.setWrapText(true); requirements.setMinHeight(Region.USE_PREF_SIZE);
         requirements.getStyleClass().add("muted");
