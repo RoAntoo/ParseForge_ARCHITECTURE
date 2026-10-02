@@ -1,7 +1,7 @@
 # ParseForge
 
 ParseForge is a Windows-first desktop app that converts PDFs to Markdown using
-Marker as its first engine. Documents are processed locally.
+Marker or MarkItDown. Documents are processed locally.
 
 ## Managed Marker
 
@@ -25,6 +25,24 @@ Internet is needed to install or repair. Model revisions are pinned; the Hugging
 Face cache runs offline during conversion. Repair safely reinstalls. Uninstall
 requires confirmation and removes private models/caches. Documents and outputs
 remain independent of the engine directory.
+
+## Managed MarkItDown and engine selection
+
+**MarkItDown 0.1.8** is the lightweight profile for digital PDFs with selectable
+text. Expand its card and click **Instalar MarkItDown**. Its private CPython
+3.12.10 runtime is physically independent of Marker. The measured footprint is
+approximately **194 MB installed**, **80 MB downloaded**; allow **500 MB free**
+for staging. Exact PDF-only packages, artifacts and hashes are pinned. Core
+Magika/ONNX detection dependencies are included; there is no OCR support, cloud
+service or external plugin. See the [measured spike](docs/spikes/STAGE_6_MARKITDOWN_SPIKE.md).
+
+Radio buttons select the ready engine used to convert. Chevrons show details;
+expanding a card collapses the other. Selection persists across restarts, with
+a fallback to the first ready engine. With no ready engine, Convertir remains
+disabled. **Ligero / Avanzado** describe processing scope and resource needs;
+they are not quality scores. **Forzar OCR** belongs only to Marker's details.
+Each card provides installation, cancellation, verification, repair and removal.
+Removing either engine does not remove the other's private runtime.
 
 ## Download and install (0.1.0 candidate)
 
@@ -86,10 +104,10 @@ Release: `.\scripts\release.ps1` downloads hash-verified pinned build tools,
 runs tests, builds the runtime/image/setup/ZIP and generates hashes. No automatic
 publishing, updater, Docling/MinerU or batch is included.
 
-The Stage 5 UI uses a warm cream/navy palette, a selectable Marker card,
-installation/repair controls in the sidebar, a versioned welcome preference and
+The Stage 6 UI uses a warm cream/navy palette, compact accordion cards for both
+engines, separate selection/detail controls, a versioned welcome preference and
 independent vertical scrolling. Conversion is enabled only with a ready engine,
-an accessible PDF and a usable output folder. See [Stage 5 validation](docs/release/STAGE_5_RESULT.md).
+an accessible PDF and a usable output folder. See [Stage 6 validation](docs/release/STAGE_6_RESULT.md).
 
 Opt-in native UI regression tests (requires a Windows desktop session):
 
@@ -99,6 +117,11 @@ mvn test "-Dtest=Stage5UiTest" "-Dparseforge.uiTests=true" "-Dglass.win.uiScale=
 
 Repeat with `1.25` and `1.5` for JavaFX scaling checks. Snapshots are written to
 `target/stage5-ui/<scale>`. These use fixture engines and do not download models.
+
+Run `Stage6UiTest` with the same options for multi-engine, accordion, keyboard,
+persistence and fallback checks. Its snapshots are in `build/stage6-ui/<scale>`.
+The opt-in `Stage6HostSmoke` harness additionally installs/repairs/removes a real
+private MarkItDown through the actual application UI using isolated data.
 
 Optional isolated data root:
 

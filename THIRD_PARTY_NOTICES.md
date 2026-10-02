@@ -1,8 +1,8 @@
 # Third-party notices — ParseForge 0.1.0
 
 The application is Apache-2.0; this does not replace third-party licenses.
-Review date: 2026-09-30. Installer contains the Java application and runtime,
-not Marker, Python, llama.cpp, wheels, fonts or inference models.
+Review date: 2026-10-01. Installer contains the Java application and runtime,
+not Marker, MarkItDown, Python, llama.cpp, wheels, fonts or inference models.
 
 ## Distributed in the application
 
@@ -40,6 +40,17 @@ permits research, personal use and startups below its funding/revenue threshold,
 and requires additional terms for other commercial use. The pinned model terms
 must be read; ParseForge grants no additional model rights. No engine/model
 bundle is distributed in this candidate installer. Retain wheel license files.
+
+## Downloaded by the user for MarkItDown
+
+MarkItDown 0.1.8 is MIT licensed (https://github.com/microsoft/markitdown).
+It has a separate embedded CPython 3.12.10 runtime (PSF terms) and pip 25.0.1
+bootstrap (MIT). Only the PDF extra is requested. The exact 32 wheels and their
+license metadata are listed in `docs/release/MARKITDOWN_LICENSE_INVENTORY.md`;
+versions/artifact hashes are fixed by `markitdown-requirements.lock` and its
+Windows manifest. This includes Magika/ONNX Runtime's bundled dependencies and
+detection assets; no separate OCR/model download is performed. Installed wheel
+and bundled native dependency notices are retained and hash checked.
 
 ## Build tools and system prerequisites
 

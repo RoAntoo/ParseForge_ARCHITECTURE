@@ -45,8 +45,11 @@ public final class MainController {
     private final StartConversionUseCase startConversion;
     private final CancelConversionUseCase cancelConversion;
     private final UserSettingsRepository settingsRepository;
-    private final EngineSettingsController engineSettings;
-    private final EngineId selectedEngineId;
+    private final java.util.Map<EngineId, EngineSettingsController> engineCards = new java.util.LinkedHashMap<>();
+    private final ToggleGroup selections = new ToggleGroup();
+    private boolean initializingEngines = true;
+    private boolean reconcilingEngines;
+    private EngineId selectedEngineId;
 
     private final BorderPane root = new BorderPane();
     private final Label selectedPdfLabel = new Label("Ningún PDF seleccionado");
@@ -92,25 +95,41 @@ public final class MainController {
             UserSettings settings,
             boolean developmentOverrideAvailable
     ) {
+        this(stage, startConversion, cancelConversion, settingsRepository, installEngine, repairEngine, uninstallEngine,
+                checkEngine, cancelEngine, java.util.List.of(dev.parseforge.application.settings.EngineProfile.marker()), settings, developmentOverrideAvailable);
+    }
+    public MainController(Stage stage, StartConversionUseCase startConversion, CancelConversionUseCase cancelConversion,
+            UserSettingsRepository settingsRepository, InstallEngineUseCase installEngine, RepairEngineUseCase repairEngine,
+            UninstallEngineUseCase uninstallEngine, CheckEngineStatusUseCase checkEngine, CancelEngineOperationUseCase cancelEngine,
+            java.util.List<dev.parseforge.application.settings.EngineProfile> profiles, UserSettings settings, boolean developmentOverrideAvailable) {
         this.stage = Objects.requireNonNull(stage, "stage");
         this.startConversion = Objects.requireNonNull(startConversion, "startConversion");
         this.cancelConversion = Objects.requireNonNull(cancelConversion, "cancelConversion");
         this.settingsRepository = Objects.requireNonNull(settingsRepository, "settingsRepository");
-        this.selectedEngineId = Objects.requireNonNull(selectedEngineId, "selectedEngineId");
         this.developmentOverrideAvailable = developmentOverrideAvailable;
         this.settings = settings;
 
         lastInputDirectory = settings.lastInputDirectory();
-        engineSettings = new EngineSettingsController(stage, selectedEngineId, installEngine, repairEngine,
-                uninstallEngine, checkEngine, cancelEngine, busy -> {
-                    engineBusy = busy; updateConvertState();
-                }, line -> appendLog("INSTALL", line));
+        for (var profile : profiles) {
+            var card = new EngineSettingsController(stage, profile, installEngine, repairEngine, uninstallEngine, checkEngine,
+                    cancelEngine, ignored -> engineStateChanged(), line -> appendLog("INSTALL", line), selections,
+                    () -> selectEngine(profile.id()), expanded -> engineCards.values().forEach(c -> c.expanded(c == expanded)));
+            card.expanded(profiles.size() == 1); engineCards.put(profile.id(), card);
+            if (profile.ocr()) card.addConversionOption(forceOcr);
+        }
         outputDirectoryField.setText(defaultOutputDirectory(settings.lastOutputDirectory().isBlank()
                 ? settings.outputDirectory() : settings.lastOutputDirectory()));
         elapsedTimer = new Timeline(new KeyFrame(Duration.seconds(1), ignored -> updateElapsedTime()));
         elapsedTimer.setCycleCount(Timeline.INDEFINITE);
         buildView();
-        engineSettings.refresh();
+        var checks = engineCards.values().stream().map(EngineSettingsController::refresh).toArray(java.util.concurrent.CompletableFuture[]::new);
+        java.util.concurrent.CompletableFuture.allOf(checks).whenComplete((ignored, error) -> Platform.runLater(() -> {
+            initializingEngines = false;
+            selectedEngineId = dev.parseforge.application.settings.EngineSelection.restore(settings.selectedEngine(),
+                    java.util.List.copyOf(engineCards.keySet()), id -> engineCards.get(id).ready()
+                        ? dev.parseforge.domain.model.EngineState.READY : dev.parseforge.domain.model.EngineState.NOT_INSTALLED);
+            engineStateChanged();
+        }));
     }
 
     public Parent view() {
@@ -126,7 +145,8 @@ public final class MainController {
         header.getStyleClass().add("brand-header");
         Label enginesTitle = new Label("MOTORES DE CONVERSIÓN");
         enginesTitle.getStyleClass().add("eyebrow");
-        VBox engines = new VBox(18, enginesTitle, engineSettings.view());
+        VBox engines = new VBox(12, enginesTitle);
+        engineCards.values().forEach(card -> engines.getChildren().add(card.view()));
         engines.setPadding(new Insets(24, 18, 24, 18));
         ScrollPane engineScroll = scrollPane(engines, "engine-scroll");
         engineScroll.setId("engine-scroll");
@@ -167,9 +187,7 @@ public final class MainController {
         VBox destination = new VBox(12, destinationTitle, destinationRow, outputDirectoryField);
         destination.getStyleClass().add("destination-panel"); destination.setMinWidth(0);
         forceOcr.setTooltip(new Tooltip("Activá OCR para reconocer texto en páginas escaneadas."));
-        VBox options = new VBox(10, new Label("OPCIONES DE CONVERSIÓN"), forceOcr);
-        options.getStyleClass().add("options-panel");
-        VBox content = new VBox(24, dropZone, destination, options, buildStatusPanel());
+        VBox content = new VBox(24, dropZone, destination, buildStatusPanel());
         content.setMinWidth(0); content.getStyleClass().add("workspace");
         ScrollPane workspaceScroll = scrollPane(content, "workspace-scroll");
         workspaceScroll.setId("workspace-scroll");
@@ -280,9 +298,9 @@ public final class MainController {
 
     private void startConversion() {
         if (conversionBusy || engineBusy || startConversion.hasActiveConversion()) return;
-        if (!engineSettings.selected() && !developmentOverrideAvailable) {
-            showAlert(Alert.AlertType.INFORMATION, "Marker necesita instalarse o repararse",
-                    "Usá Instalar Marker o Reparar en el panel Motores de conversión para continuar.");
+        if (!selectedEngineReady() && !developmentOverrideAvailable) {
+            showAlert(Alert.AlertType.INFORMATION, "Instalá o repará un motor para continuar",
+                    "Elegí un motor listo desde el panel Motores de conversión.");
             return;
         }
         String validationError = validateInputs();
@@ -300,6 +318,7 @@ public final class MainController {
             return;
         }
 
+        if (selectedEngineId == null && developmentOverrideAvailable) selectedEngineId = new EngineId("marker");
         saveSettings();
         setBusy(true);
         conversionStatus.setVisible(true); conversionStatus.setManaged(true);
@@ -311,7 +330,7 @@ public final class MainController {
         elapsedTimer.playFromStart();
 
         ConversionRequest request = new ConversionRequest(
-                selectedPdf, output, selectedEngineId, OutputFormat.MARKDOWN, forceOcr.isSelected());
+                selectedPdf, output, selectedEngineId, OutputFormat.MARKDOWN, selectedEngineId.value().equals("marker") && forceOcr.isSelected());
         startConversion.start(request, event -> Platform.runLater(() -> handleEvent(event)))
                 .whenComplete((result, error) -> Platform.runLater(() -> finishConversion(result, error)));
     }
@@ -346,16 +365,16 @@ public final class MainController {
         if (result.status() == ConversionStatus.COMPLETED) {
             phaseLabel.setText("Conversión completada");
             appendLog("SYSTEM", result.outputFiles().isEmpty()
-                    ? "Marker finalizó correctamente. Revisá la carpeta de salida."
+                    ? "El motor finalizó correctamente. Revisá la carpeta de salida."
                     : "Conversión completada.");
         } else if (result.status() == ConversionStatus.CANCELLED) {
             phaseLabel.setText("Conversión cancelada");
             appendLog("SYSTEM", "Conversión cancelada por el usuario.");
         } else {
             phaseLabel.setText("Conversión fallida");
-            String message = result.error().orElse("Marker no pudo completar la conversión.");
+            String message = result.error().orElse("El motor no pudo completar la conversión.");
             appendLog("ERROR", message);
-            showAlert(Alert.AlertType.ERROR, "Marker finalizó con un error", message);
+            showAlert(Alert.AlertType.ERROR, "El motor finalizó con un error", message);
         }
     }
 
@@ -369,7 +388,7 @@ public final class MainController {
 
     private void setBusy(boolean busy) {
         conversionBusy = busy;
-        engineSettings.converting(busy);
+        engineCards.values().forEach(card -> card.converting(busy));
         updateConvertState();
         cancelButton.setDisable(!busy);
         progress.setVisible(busy);
@@ -392,13 +411,38 @@ public final class MainController {
         } catch (java.nio.file.InvalidPathException | SecurityException error) { return false; }
     }
 
+    private boolean selectedEngineReady() {
+        return selectedEngineId != null && engineCards.containsKey(selectedEngineId) && engineCards.get(selectedEngineId).selected();
+    }
+    private void selectEngine(EngineId id) {
+        if (conversionBusy || engineBusy || !engineCards.get(id).ready()) return;
+        selectedEngineId = id; engineStateChanged();
+    }
+    private void engineStateChanged() {
+        if (reconcilingEngines || initializingEngines) return;
+        reconcilingEngines = true;
+        try {
+            engineBusy = engineCards.values().stream().anyMatch(EngineSettingsController::busy);
+            // Preserve the active preference during repair/verification. Choose a
+            // safe fallback after lifecycle operations release their lease.
+            if (!engineBusy && !conversionBusy && (selectedEngineId == null || !engineCards.get(selectedEngineId).ready()))
+                selectedEngineId = dev.parseforge.application.settings.EngineSelection.restore("", java.util.List.copyOf(engineCards.keySet()),
+                        id -> engineCards.get(id).ready() ? dev.parseforge.domain.model.EngineState.READY : dev.parseforge.domain.model.EngineState.NOT_INSTALLED);
+            engineCards.forEach((id, card) -> {
+                card.selected(id.equals(selectedEngineId));
+                card.otherBusy(engineBusy && !card.busy());
+            });
+            updateConvertState(); saveSettings();
+        } finally { reconcilingEngines = false; }
+    }
+
     private void updateConvertState() {
-        boolean ready = engineSettings != null && engineSettings.selected();
+        boolean ready = selectedEngineReady();
         String validationError = validateInputs();
         String reason;
         if (conversionBusy) reason = "CONVERSIÓN EN CURSO";
         else if (engineBusy) reason = "ESPERÁ A QUE TERMINE LA OPERACIÓN DEL MOTOR";
-        else if (!ready && !developmentOverrideAvailable) reason = "INSTALÁ O REPARÁ MARKER PARA CONTINUAR";
+        else if (!ready && !developmentOverrideAvailable) reason = "INSTALÁ O REPARÁ UN MOTOR PARA CONTINUAR";
         else if (validationError != null) reason = selectedPdf == null ? "SELECCIONÁ UN PDF PARA CONTINUAR" : validationError;
         else reason = "TODO LISTO PARA CONVERTIR";
         boolean enabled = !conversionBusy && !engineBusy && !startConversion.hasActiveConversion()
@@ -406,7 +450,7 @@ public final class MainController {
         convertButton.setDisable(!enabled);
         actionHint.setText(reason);
         systemState.setText(conversionBusy ? "● CONVIRTIENDO DOCUMENTO" : engineBusy ? "● COMPROBANDO / PREPARANDO MOTOR"
-                : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ MARKER REQUIERE ATENCIÓN");
+                : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ INSTALÁ UN MOTOR PARA COMENZAR");
     }
 
     private void acceptPdfDrag(DragEvent event, VBox dropZone) {
@@ -508,7 +552,7 @@ public final class MainController {
 
     private void saveSettings() {
         settings = new UserSettings(settings.markerExecutable(), outputDirectoryField.getText(), lastInputDirectory,
-                outputDirectoryField.getText(), settings.language(), selectedEngineId.value(), settings.welcomeDialogVersion());
+                outputDirectoryField.getText(), settings.language(), selectedEngineId == null ? "" : selectedEngineId.value(), settings.welcomeDialogVersion());
         settingsRepository.save(settings);
     }
 
@@ -520,7 +564,7 @@ public final class MainController {
         Label title = new Label("Bienvenido a ParseForge"); title.getStyleClass().add("welcome-title"); title.setWrapText(true);
         Label message = new Label("Convertí tus documentos PDF a Markdown en tu equipo.\n\n"
                 + "ParseForge utiliza motores de conversión instalables. Para comenzar, instalá un motor desde el panel Motores de conversión.\n\n"
-                + "Actualmente está disponible Marker, recomendado para documentos complejos y OCR. Si ya está listo, podés seleccionar un PDF y convertirlo.\n\n"
+                + "Marker permite estructura avanzada y OCR. MarkItDown es ligero y está orientado a PDFs digitales con texto seleccionable. Elegí un motor listo para convertir.\n\n"
                 + "Tus documentos se procesan localmente. Internet solo es necesario para instalar o reparar el motor.");
         message.setWrapText(true); message.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         CheckBox hide = new CheckBox("No volver a mostrar al iniciar"); hide.setId("hide-welcome"); hide.setWrapText(true);

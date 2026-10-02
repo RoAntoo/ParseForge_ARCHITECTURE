@@ -11,14 +11,17 @@ public final class EngineManifestRepository {
     public EngineManifestRepository() throws IOException {
         this(read("/engines/marker-windows-x64.json"), read("/engines/marker-requirements.lock"));
     }
+    public EngineManifestRepository(String id) throws IOException {
+        this(read("/engines/" + id + "-windows-x64.json"), read("/engines/" + id + "-requirements.lock"));
+    }
     public EngineManifestRepository(byte[] json, byte[] lock) throws IOException {
         this.manifest = new ObjectMapper().readTree(json);
         this.lock = lock.clone();
         if (manifest.path("schemaVersion").asInt() != 1 ||
-                !"marker".equals(manifest.path("id").asText()) ||
+                !Set.of("marker", "markitdown").contains(manifest.path("id").asText()) ||
                 !"windows-x64".equals(manifest.path("platform").asText()) ||
                 manifest.path("criticalFiles").isEmpty() || manifest.path("packages").path("wheels").isEmpty() ||
-                manifest.path("models").isEmpty())
+                ("marker".equals(manifest.path("id").asText()) && manifest.path("models").isEmpty()))
             throw new IOException("Manifiesto de motor no compatible o incompleto");
     }
     private static byte[] read(String resource) throws IOException {
@@ -32,6 +35,8 @@ public final class EngineManifestRepository {
     public EngineDescriptor descriptor() {
         return new EngineDescriptor(new EngineId(manifest.path("id").asText()),
                 manifest.path("displayName").asText(), manifest.path("engineVersion").asText(),
-                Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.OCR, EngineCapability.LOCAL_PROCESSING));
+                "marker".equals(manifest.path("id").asText())
+                    ? Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.OCR, EngineCapability.LOCAL_PROCESSING)
+                    : Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.LOCAL_PROCESSING));
     }
 }
