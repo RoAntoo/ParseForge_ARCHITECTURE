@@ -5,7 +5,7 @@ Marker as its first engine. Documents are processed locally.
 
 ## Managed Marker
 
-Open **Configuración > Motores** and click **Instalar Marker**. ParseForge
+Open the **Motores de conversión** sidebar and click **Instalar Marker**. ParseForge
 downloads pinned private CPython, llama.cpp CPU, locked packages and private
 models. It validates SHA-256, prepares staging and activates
 the runtime. Normal conversion needs no Python, Marker, pip, WinGet, manual
@@ -45,7 +45,7 @@ Runtime x64 and Internet for initial installation. Missing DLLs block engine
 installation with the [official Microsoft download](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 Optional native health checks validate compatibility; clean Windows validation is pending.
 
-Open **Configuración > Motores > Instalar Marker**, wait for **Listo**, then
+Click **Instalar Marker** in the sidebar, wait for **Listo**, then
 select/drop a PDF, choose output folder and press **Convertir**. Use **Forzar OCR**
 for scanned pages. Downloads show actual bytes/smoothed speed and a per-file ETA only when
 the measurement is stable; other phases show elapsed time without a percentage.
@@ -84,7 +84,21 @@ mvn clean verify
 
 Release: `.\scripts\release.ps1` downloads hash-verified pinned build tools,
 runs tests, builds the runtime/image/setup/ZIP and generates hashes. No automatic
-publishing, updater, Docling/MinerU, batch or Stage 5 is included.
+publishing, updater, Docling/MinerU or batch is included.
+
+The Stage 5 UI uses a warm cream/navy palette, a selectable Marker card,
+installation/repair controls in the sidebar, a versioned welcome preference and
+independent vertical scrolling. Conversion is enabled only with a ready engine,
+an accessible PDF and a usable output folder. See [Stage 5 validation](docs/release/STAGE_5_RESULT.md).
+
+Opt-in native UI regression tests (requires a Windows desktop session):
+
+```powershell
+mvn test "-Dtest=Stage5UiTest" "-Dparseforge.uiTests=true" "-Dglass.win.uiScale=1.0"
+```
+
+Repeat with `1.25` and `1.5` for JavaFX scaling checks. Snapshots are written to
+`target/stage5-ui/<scale>`. These use fixture engines and do not download models.
 
 Optional isolated data root:
 

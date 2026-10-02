@@ -3,7 +3,11 @@
 Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been published.
 
 - Windows x64 installer and portable ZIP include a private Temurin Java runtime.
-- Install/repair Marker from Configuración > Motores with verified downloads.
+- Install/repair Marker from the Motores de conversión sidebar with verified downloads.
+- Cream/navy workspace with a full-card Marker selector, PDF drop area and destination path tooltips.
+- First-start welcome dialog with a persisted "No volver a mostrar" preference.
+- Independent vertical scroll for the workspace/sidebar; conversion action stays visible.
+- Convertir reflects engine, input, destination and operation readiness.
 - Download feedback shows actual bytes, rolling speed and approximate ETA when stable.
 - Preparation stages show elapsed time and indeterminate progress.
 - Installation/repair shows an estimate of 20 minutes or more (it may finish sooner).

@@ -22,8 +22,17 @@ class JsonUserSettingsRepositoryTest {
         Files.writeString(config, "{\"markerExecutable\":\"old.exe\",\"outputDirectory\":\"legacy-output\"}");
         assertEquals("legacy-output", repository.load().lastOutputDirectory());
         assertEquals("", repository.load().lastInputDirectory());
+        assertEquals(0, repository.load().welcomeDialogVersion());
         Files.writeString(config, "{invalid");
         assertEquals(UserSettings.empty(), repository.load());
+    }
+
+    @Test void persistsVersionedWelcomePreferenceWithoutLosingExistingSettings() {
+        Path config = temporaryDirectory.resolve("config.json");
+        var repository = new JsonUserSettingsRepository(config);
+        var settings = new UserSettings("override.exe", "out", "in", "last-out", "es", "marker", 1);
+        repository.save(settings);
+        assertEquals(settings, new JsonUserSettingsRepository(config).load());
     }
 
     @Test

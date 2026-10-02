@@ -1,0 +1,82 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-01",
+  "timezone": "America/Buenos_Aires",
+  "status": "PACKAGE BUILT - VM VALIDATION PENDING",
+  "releaseCommand": ".\\scripts\\release.ps1",
+  "releaseLog": "build/stage5-release.log",
+  "maven": {
+    "errors": 0,
+    "failures": 0,
+    "command": "mvn -B clean verify dependency:copy-dependencies (release build)",
+    "jdk": "Temurin 21.0.12.1",
+    "testsPassed": 80,
+    "skipped": 1,
+    "skipReason": "Native Stage5UiTest is opt-in and was run separately at each scale",
+    "testsDiscovered": 81
+  },
+  "ui": [
+    {
+      "snapshotCount": 17,
+      "fixtureEngines": true,
+      "observedScale": "1.0",
+      "result": "PASS",
+      "snapshots": "target/stage5-ui/1.0",
+      "requestedScale": "1.0"
+    },
+    {
+      "snapshotCount": 17,
+      "fixtureEngines": true,
+      "observedScale": "1.25",
+      "result": "PASS",
+      "snapshots": "target/stage5-ui/1.25",
+      "requestedScale": "1.25"
+    },
+    {
+      "snapshotCount": 17,
+      "fixtureEngines": true,
+      "observedScale": "1.5",
+      "result": "PASS",
+      "snapshots": "target/stage5-ui/1.5",
+      "requestedScale": "1.5"
+    }
+  ],
+  "packagedJarMatchesVerifiedBuild": true,
+  "startupSmoke": {
+    "source": "build/smoke/38db9ca8-0d8a-4c72-a5a2-d0fb025ba5ca/smoke.json",
+    "settingsPersisted": true,
+    "privateRuntime": true,
+    "javaVersion": "21.0.12.1",
+    "windowsJob": true,
+    "settingsReadable": true,
+    "result": "PASS"
+  },
+  "windowSmoke": {
+    "uiOpened": true,
+    "source": "build/smoke/44ea09cc-caec-42b6-ac86-a86b8e74eeb7/smoke.json",
+    "privateRuntime": true,
+    "isolatedData": true,
+    "screenshot": "docs/release/images/app-window.png",
+    "windowsJob": true,
+    "result": "PASS"
+  },
+  "artifacts": [
+    {
+      "sha256": "b0264e9c8c3071581696f83269dff437cd064c522e23482ee313161ed49d85f4",
+      "bytes": 49210680,
+      "file": "build/release/ParseForge-Setup-0.1.0.exe"
+    },
+    {
+      "sha256": "51dfc6ef425b225f1c596149f51067e7a74d935702493c65ee0b0a3dac53b8cd",
+      "bytes": 51326447,
+      "file": "build/release/ParseForge-0.1.0-win-x64.zip"
+    }
+  ],
+  "pending": [
+    "Clean VM setup / first launch",
+    "Actual Windows display settings at 100/125/150%",
+    "Explorer drag/drop",
+    "Real installed Marker digital/OCR conversion",
+    "VM upgrade/uninstall checks"
+  ]
+}
