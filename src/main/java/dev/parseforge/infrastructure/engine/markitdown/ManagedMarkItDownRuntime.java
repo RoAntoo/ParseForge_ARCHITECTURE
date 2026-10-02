@@ -40,7 +40,9 @@ public final class ManagedMarkItDownRuntime implements ManagedPythonRuntime {
     }
     public static Path output(ConversionRequest request) {
         String filename = request.inputFile().getFileName().toString();
-        return request.outputDirectory().toAbsolutePath().normalize().resolve(filename.substring(0, filename.length() - 4) + ".md");
+        String stem = filename.toLowerCase(Locale.ROOT).endsWith(".pdf")
+                ? filename.substring(0, filename.length() - 4) : filename;
+        return request.outputDirectory().toAbsolutePath().normalize().resolve(stem + ".md");
     }
     public ProcessSpec conversion(ConversionRequest request) throws IOException {
         if (request.forceOcr()) throw new IllegalArgumentException("MarkItDown no admite Forzar OCR.");

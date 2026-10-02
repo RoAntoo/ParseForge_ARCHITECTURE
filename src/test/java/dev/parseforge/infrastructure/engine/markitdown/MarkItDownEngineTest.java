@@ -5,6 +5,8 @@ import dev.parseforge.domain.model.*;
 import dev.parseforge.infrastructure.engine.EngineManifestRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
@@ -41,6 +43,13 @@ class MarkItDownEngineTest {
         assertTrue(spec.executable().toString().endsWith("runtime\\python\\python.exe"));
         assertThrows(IllegalArgumentException.class, () -> new ManagedMarkItDownRuntime(temp,
                 new EngineManifestRepository("markitdown").manifest()).conversion(new ConversionRequest(request.inputFile(), request.outputDirectory(), request.engineId(), request.outputFormat(), true)));
+    }
+    @ParameterizedTest
+    @CsvSource({"document.pdf,document.md", "document.PDF,document.md", "document.PdF,document.md",
+            "document.txt,document.txt.md", "document,document.md", "a,a.md", "document.pdf.txt,document.pdf.txt.md"})
+    void outputRemovesOnlyCaseInsensitivePdfSuffix(String filename, String expected) {
+        var input = new ConversionRequest(temp.resolve(filename), request.outputDirectory(), MarkItDownEngine.ID, OutputFormat.MARKDOWN);
+        assertEquals(request.outputDirectory().resolve(expected), ManagedMarkItDownRuntime.output(input));
     }
     @Test void successReportsOnlyExpectedMarkdownAndReleasesLease() throws Exception {
         Files.writeString(ManagedMarkItDownRuntime.output(request), "# fixture");
