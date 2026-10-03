@@ -54,6 +54,7 @@ public final class ManagedMarkerRuntime implements dev.parseforge.infrastructure
                 isolated, environment(), root, timeout, false);
     }
     public ProcessSpec conversion(dev.parseforge.domain.model.ConversionRequest request) throws IOException {
+        dev.parseforge.infrastructure.engine.ConversionStorageGuard.check(request.inputFile(), root);
         var args = new ArrayList<>(List.of("-c", ENTRYPOINT, request.inputFile().toRealPath().toString(),
                 "--output_dir", request.outputDirectory().toAbsolutePath().toString(),
                 "--output_format", request.outputFormat().commandValue(),

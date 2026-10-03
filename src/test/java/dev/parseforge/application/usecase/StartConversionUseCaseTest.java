@@ -27,6 +27,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StartConversionUseCaseTest {
     private static final EngineId ENGINE_ID = new EngineId("marker");
+    @Test void cancellationDuringEngineExceptionIsNotPresentedAsFailure() {
+        AtomicReference<StartConversionUseCase> holder = new AtomicReference<>();
+        ConversionEngine engine = new ConversionEngine() {
+            public EngineDescriptor descriptor() { return new EngineDescriptor(ENGINE_ID, "Marker", "test"); }
+            public EngineState state() { return EngineState.READY; }
+            public void cancel() { }
+            public ConversionResult convert(ConversionRequest request, ConversionEventListener listener) {
+                holder.get().cancelActive(); throw new IllegalStateException("Process terminated during cancellation");
+            }
+        };
+        var useCase = new StartConversionUseCase(id -> engine, Runnable::run); holder.set(useCase);
+        assertEquals(ConversionStatus.CANCELLED, useCase.start(request(), e -> {}).join().status());
+        assertFalse(useCase.hasActiveConversion());
+    }
 
     @Test void rejectedSubmissionReleasesBusyStateAndAllowsRetry() {
         var reject = new java.util.concurrent.atomic.AtomicBoolean(true);

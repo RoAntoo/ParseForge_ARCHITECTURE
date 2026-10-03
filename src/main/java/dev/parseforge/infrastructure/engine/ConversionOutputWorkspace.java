@@ -24,6 +24,7 @@ public final class ConversionOutputWorkspace implements AutoCloseable {
         try {
             Files.createDirectories(original.outputDirectory());
             destination = original.outputDirectory().toRealPath();
+            ConversionStorageGuard.check(original.inputFile(), destination);
             Path staging = Files.createTempDirectory(destination, ".parseforge-");
             request = new ConversionRequest(original.inputFile(), staging, original.engineId(),
                     original.outputFormat(), original.forceOcr());

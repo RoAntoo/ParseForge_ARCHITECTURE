@@ -2,6 +2,12 @@
 
 Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been published.
 
+- Local background PDF preflight: page count, size, estimated type, selectable text and OCR advice.
+- Explicit contextual engine recommendations, with no automatic selection; scanned PDFs require Marker.
+- Distributed sampling for long PDFs, eight-second analysis timeout and nonblocking fallback for inconclusive inspection.
+- Persistent conversion sidebar with engine, elapsed time, real phase and Cancelar; indeterminate progress, no synthetic ETA.
+- Clear typed errors, cancellation as a normal outcome, destination/temp low-space checks for large inputs and bounded UI logs.
+
 - Windows x64 installer and portable ZIP include a private Temurin Java runtime.
 - Install/repair Marker or MarkItDown from the Motores de conversión sidebar with verified downloads.
 - Compact engine cards with exclusive ready-engine selection, independent accordion details and persisted safe fallback.

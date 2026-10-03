@@ -117,19 +117,20 @@ public final class MarkerEngine implements ConversionEngine {
         }
         if (processResult.timedOut()) {
             return new ConversionResult(ConversionStatus.FAILED, processResult.exitCode(),
-                    List.of(), "Marker excedió el tiempo máximo de ejecución", processResult.duration());
+                    List.of(), "Marker excedió el tiempo máximo de ejecución", processResult.duration(), ErrorCode.PROCESS_TIMEOUT);
         }
         if (processResult.exitCode() != 0) {
             return new ConversionResult(ConversionStatus.FAILED, processResult.exitCode(),
-                    List.of(), "Marker terminó con código " + processResult.exitCode(), processResult.duration());
+                    List.of(), "Marker terminó con código " + processResult.exitCode(), processResult.duration(), ErrorCode.PROCESS_CRASHED);
         }
 
         List<Path> outputs;
+        listener.onEvent(new ConversionEvent.PhaseChanged("Guardando Markdown..."));
         try {
             outputs = workspace.publish(output(workspace.request()));
         } catch (ConversionException error) {
             return new ConversionResult(ConversionStatus.FAILED, processResult.exitCode(),
-                    List.of(), error.getMessage(), processResult.duration());
+                    List.of(), error.getMessage(), processResult.duration(), error.code());
         }
         outputs.forEach(path -> listener.onEvent(new ConversionEvent.OutputCreated(path)));
         return new ConversionResult(ConversionStatus.COMPLETED, processResult.exitCode(),

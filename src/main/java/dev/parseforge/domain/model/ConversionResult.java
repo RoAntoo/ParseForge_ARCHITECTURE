@@ -10,8 +10,12 @@ public record ConversionResult(
         int exitCode,
         List<Path> outputFiles,
         String errorMessage,
-        Duration duration
+        Duration duration,
+        dev.parseforge.domain.exception.ErrorCode errorCode
 ) {
+    public ConversionResult(ConversionStatus status, int exitCode, List<Path> outputFiles, String errorMessage, Duration duration) {
+        this(status, exitCode, outputFiles, errorMessage, duration, null);
+    }
     public ConversionResult {
         if (status == null || !status.isTerminal()) {
             throw new IllegalArgumentException("A conversion result must have a terminal status");

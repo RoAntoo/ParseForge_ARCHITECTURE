@@ -85,7 +85,7 @@ class Stage5UiTest {
                 controller = new MainController(stage, start, new CancelConversionUseCase(start), settings,
                         new InstallEngineUseCase(manager, engineExecutor), new RepairEngineUseCase(manager, engineExecutor),
                         new UninstallEngineUseCase(manager, engineExecutor), new CheckEngineStatusUseCase(manager, engineExecutor),
-                        new CancelEngineOperationUseCase(manager), id, UserSettings.empty(), false);
+                        new CancelEngineOperationUseCase(manager), id, UserSettings.empty(), false, neutralPreflight());
                 Scene scene = new Scene(controller.view(), 1100, 760);
                 scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
                 stage.setScene(scene); stage.setMinWidth(800); stage.setMinHeight(500); stage.show();
@@ -138,7 +138,11 @@ class Stage5UiTest {
                 assertTrue(label("engine-state").localToScene(label("engine-state").getBoundsInLocal()).getMinY() >= 95,
                         "El estado del motor debe quedar visible debajo del encabezado");
                 button("expand-marker").fire();
-                controller.selectPdf(pdf); assertFalse(button("convert-pdf").isDisabled());
+                controller.selectPdf(pdf); return null;
+            });
+            waitFor(() -> !button("convert-pdf").isDisabled());
+            fx(() -> {
+                assertFalse(button("convert-pdf").isDisabled());
                 String longPath = temporary.resolve("carpeta-de-destino-".repeat(7)).toString();
                 ((TextField)stage.getScene().lookup("#output-directory")).setText(longPath);
                 stage.getScene().getRoot().applyCss(); stage.getScene().getRoot().layout();
@@ -154,7 +158,7 @@ class Stage5UiTest {
                 ((TextField)stage.getScene().lookup("#output-directory")).setText(temporary.resolve("output").toString());
                 stage.setWidth(800); stage.setHeight(500); return null;
             });
-            waitFor(() -> stage.getWidth() <= 801);
+            waitFor(() -> stage.getWidth() <= 801 && !button("convert-pdf").isDisabled());
             fx(() -> {
                 stage.getScene().getRoot().applyCss(); stage.getScene().getRoot().layout();
                 ScrollPane workspace = (ScrollPane)stage.getScene().lookup("#workspace-scroll");
@@ -202,10 +206,13 @@ class Stage5UiTest {
         } finally {
             installationRelease.countDown(); conversionRelease.countDown();
             engineExecutor.shutdownNow(); conversionExecutor.shutdownNow();
-            fx(() -> { for (Window window : List.copyOf(Window.getWindows())) window.hide(); Platform.exit(); return null; });
+            fx(() -> { controller.close(); for (Window window : List.copyOf(Window.getWindows())) window.hide(); Platform.exit(); return null; });
         }
     }
 
+    private AnalyzeDocumentUseCase neutralPreflight() {
+        return new AnalyzeDocumentUseCase(file -> new DocumentPreflightResult(file, 100, 1, DocumentType.UNKNOWN, false, false, 0, 1, 0));
+    }
     private Button button(String id) { return (Button)stage.getScene().lookup("#" + id); }
     private Label label(String id) { return (Label)stage.getScene().lookup("#" + id); }
     private Stage welcome() {

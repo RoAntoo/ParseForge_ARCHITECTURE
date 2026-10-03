@@ -121,6 +121,7 @@ public final class StartConversionUseCase {
             if (!job.status().isTerminal()) {
                 if (job.status() == ConversionStatus.CANCELLING) {
                     job.transitionTo(ConversionStatus.CANCELLED);
+                    return new ConversionResult(ConversionStatus.CANCELLED, -1, null, "Conversión cancelada", null);
                 } else {
                     job.fail(error.getMessage());
                 }

@@ -45,6 +45,7 @@ public final class ManagedMarkItDownRuntime implements ManagedPythonRuntime {
         return request.outputDirectory().toAbsolutePath().normalize().resolve(stem + ".md");
     }
     public ProcessSpec conversion(ConversionRequest request) throws IOException {
+        ConversionStorageGuard.check(request.inputFile(), root);
         if (request.forceOcr()) throw new IllegalArgumentException("MarkItDown no admite Forzar OCR.");
         return python(List.of("-c", ENTRYPOINT, request.inputFile().toRealPath().toString(), "-o", output(request).toString()), Duration.ofHours(1));
     }

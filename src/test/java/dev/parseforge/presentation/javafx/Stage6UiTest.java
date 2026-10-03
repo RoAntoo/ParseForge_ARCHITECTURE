@@ -85,7 +85,10 @@ class Stage6UiTest {
             waitFor(() -> radio(md).isSelected() && !radio(md).isDisabled());
             Path pdf = Files.writeString(temp.resolve("PDF digital ñ con espacios.pdf"), "%PDF fixture");
             fx(() -> {
-                controller.selectPdf(pdf);
+                controller.selectPdf(pdf); return null;
+            });
+            waitFor(() -> !button("convert-pdf").isDisabled());
+            fx(() -> {
                 assertFalse(button("convert-pdf").isDisabled());
                 assertEquals(md.value(), settings.load().selectedEngine());
                 button("convert-pdf").fire(); return null;
@@ -162,21 +165,24 @@ class Stage6UiTest {
             });
         } finally {
             worker.shutdownNow();
-            fx(() -> { stage.hide(); Platform.exit(); return null; });
+            fx(() -> { controller.close(); stage.hide(); Platform.exit(); return null; });
         }
     }
     private void open(UserSettings initial) throws Exception {
         fx(() -> {
-            if (stage != null) stage.hide(); stage = new Stage();
+            if (stage != null) { controller.close(); stage.hide(); } stage = new Stage();
             controller = new MainController(stage, start, new CancelConversionUseCase(start), settings,
                     new InstallEngineUseCase(manager, worker), new RepairEngineUseCase(manager, worker), new UninstallEngineUseCase(manager, worker),
                     new CheckEngineStatusUseCase(manager, worker), new CancelEngineOperationUseCase(manager),
-                    List.of(EngineProfile.marker(), EngineProfile.markItDown(193538258)), initial, false);
+                    List.of(EngineProfile.marker(), EngineProfile.markItDown(193538258)), initial, false, neutralPreflight());
             Scene scene = new Scene(controller.view(), 1100, 760); scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
             stage.setScene(scene); stage.show(); return null;
         });
     }
     private Node node(String id) { return stage.getScene().lookup("#" + id); }
+    private AnalyzeDocumentUseCase neutralPreflight() {
+        return new AnalyzeDocumentUseCase(file -> new DocumentPreflightResult(file, 100, 1, DocumentType.UNKNOWN, false, false, 0, 1, 0));
+    }
     private Button button(String id) { return (Button)node(id); }
     private Label label(String id) { return (Label)node(id); }
     private RadioButton radio(EngineId id) { return (RadioButton)node(id + "-selection"); }

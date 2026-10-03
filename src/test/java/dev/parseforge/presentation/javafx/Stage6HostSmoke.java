@@ -54,15 +54,23 @@ public final class Stage6HostSmoke {
             fx(() -> { button("expand-markitdown").fire(); button("repair-markitdown").fire(); return null; });
             waitFor(() -> radio().isSelected() && !radio().isDisabled(), 240);
             evidence.put("uiRepair", "PASS"); System.out.println("HOST UI REPAIR PASS");
-            // Invalid PDF must fail and report an error, preserving usable controls.
-            fx(() -> { app.controller.selectPdf(Path.of(args[3])); button("convert-pdf").fire(); return null; });
+            // An unclassified preflight parser error allows an engine attempt, which must fail.
+            fx(() -> { app.controller.selectPdf(Path.of(args[3])); return null; });
+            waitFor(() -> label("document-advice").getText().contains("Podés intentar convertirlo"), 40);
+            fx(() -> {
+                if (button("convert-pdf").isDisabled()) throw new IllegalStateException("Soft preflight failure blocked conversion");
+                button("convert-pdf").fire();
+                return null;
+            });
             waitFor(() -> label("conversion-state").getText().equals("Conversión fallida") && Window.getWindows().size() > 1, 40);
             fx(() -> {
                 Stage error = (Stage)Window.getWindows().stream().filter(w -> w != stage && w.isShowing()).findFirst().orElseThrow();
                 ((Button)((DialogPane)error.getScene().lookup(".dialog-pane")).lookupButton(ButtonType.OK)).fire(); return null;
             });
             evidence.put("invalidPdf", "PASS");
-            fx(() -> { app.controller.selectPdf(Path.of(args[4])); button("convert-pdf").fire(); return null; });
+            fx(() -> { app.controller.selectPdf(Path.of(args[4])); return null; });
+            waitFor(() -> !button("convert-pdf").isDisabled(), 15);
+            fx(() -> { button("convert-pdf").fire(); return null; });
             waitFor(() -> label("conversion-state").getText().contains("Procesando PDF digital"), 30);
             fx(() -> { button("cancel-conversion").fire(); return null; });
             waitFor(() -> label("conversion-state").getText().equals("Conversión cancelada") && !button("convert-pdf").isDisabled(), 30);
@@ -94,7 +102,9 @@ public final class Stage6HostSmoke {
         }
     }
     private static void convert(Path pdf, String key) throws Exception {
-        fx(() -> { app.controller.selectPdf(pdf); button("convert-pdf").fire(); return null; });
+        fx(() -> { app.controller.selectPdf(pdf); return null; });
+        waitFor(() -> !button("convert-pdf").isDisabled(), 15);
+        fx(() -> { button("convert-pdf").fire(); return null; });
         waitFor(() -> label("conversion-state").getText().equals("Conversión completada"), 45);
         Path output = root.resolve("output ñ").resolve(pdf.getFileName().toString().replaceFirst("\\.pdf$", ".md"));
         if (!Files.readString(output).contains("Readable Markdown")) throw new IllegalStateException("Incorrect Markdown " + output);

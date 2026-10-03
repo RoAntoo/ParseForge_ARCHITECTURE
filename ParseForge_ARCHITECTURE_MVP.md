@@ -1712,3 +1712,31 @@ sin compartir archivos con Marker. La interfaz depende de perfiles/casos de uso,
 no de Python, pip, flags o rutas internas. Selección y expansión son independientes;
 solo motores READY pueden seleccionarse y la selección persiste con fallback.
 El alcance continúa siendo PDF → Markdown local. Ver `docs/release/STAGE_6_RESULT.md`.
+
+## Implementación de Stage 7 (0.1.0)
+
+`MainController` consume `AnalyzeDocumentUseCase`, que ejecuta el puerto
+`DocumentPreflightService` fuera del hilo JavaFX. La composición inyecta
+`PdfBoxDocumentPreflight` (PDFBox 3.0.8). El dominio define `DocumentType` y
+`DocumentPreflightResult`; la clasificación no depende de JavaFX ni de Python.
+Un worker dedicado evita colas de archivos obsoletos. Cambiar de archivo
+interrumpe el anterior y una revisión de selección descarta callbacks tardíos.
+El timeout de 8 segundos libera la UI; una operación de PDFBox que no responda
+inmediatamente a interrupción puede terminar después, sin publicar su resultado.
+No hay caché persistente, OCR previo, renderizado ni subida de datos.
+
+Se inspeccionan hasta 20 páginas, distribuidas entre primera y última. Cuarenta
+caracteres alfanuméricos indican texto suficiente; 80% de páginas con texto
+clasifica DIGITAL. Hasta 10% con texto y al menos 80% con imágenes sin texto
+suficiente clasifica SCANNED; al menos 20% de cada clase clasifica MIXED.
+El resto es UNKNOWN. Las imágenes se detectan como XObjects, también en Forms
+acotados a ocho niveles; no se decodifican sus píxeles. La clasificación es
+aproximada y puede omitir imágenes inline o confundir adornos y texto escaso.
+
+`DocumentAdvice` produce recomendaciones sin mutar la selección. `ConversionMessages`
+traduce códigos estructurados, conservando detalles en logs. `ConversionResult`
+incluye un código opcional compatible con los constructores previos.
+`ConversionStorageGuard` comprueba destino y unidad temporal privada para entradas
+de 50 MiB o más, bloqueando únicamente con menos de 100 MiB disponibles. Es un
+piso prudente, no una estimación de espacio total. Los Job Objects y leases siguen
+siendo responsables del ciclo de procesos. Ver `docs/release/STAGE_7_RESULT.md`.
