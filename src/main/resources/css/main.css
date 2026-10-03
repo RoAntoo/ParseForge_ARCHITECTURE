@@ -3,9 +3,9 @@
    JavaFX supports color lookup, not CSS custom properties for dimensions. */
 .root {
     -pf-primary: #233e60;
-    -pf-convert: #F63A48;
-    -pf-convert-hover: #fb4b58;
-    -pf-convert-pressed: #ed3442;
+    -pf-convert: #D92535;
+    -pf-convert-hover: #DF2939;
+    -pf-convert-pressed: #C51F2E;
     -pf-convert-text: #ffffff;
     -pf-background: #faf5eb;
     -pf-surface: #fffdf8;

@@ -92,12 +92,15 @@ class Stage8UiTest {
                 radio("markitdown").requestFocus(); key(radio("markitdown"), KeyCode.ENTER);
                 assertTrue(radio("markitdown").isSelected()); assertFalse(home("force-ocr").isVisible());
                 assertEquals("Convertir a Markdown", button("convert-pdf").getText());
-                layout(); assertEquals(Color.web("#F63A48"), background(button("convert-pdf")));
+                layout(); assertEquals(Color.web("#D92535"), background(button("convert-pdf")));
                 assertContrast(button("convert-pdf")); snapshot(stage.getScene(), "home-digital-markitdown");
                 for (String state : List.of("hover", "pressed", "focused")) {
                     button("convert-pdf").pseudoClassStateChanged(PseudoClass.getPseudoClass(state), true);
                     layout(); assertContrast(button("convert-pdf"));
-                    if (state.equals("focused")) assertEquals(Color.web("#2466a8"), button("convert-pdf").getBorder().getStrokes().getFirst().getTopStroke());
+                    if (state.equals("focused")) {
+                        assertEquals(Color.web("#D92535"), background(button("convert-pdf")));
+                        assertEquals(Color.web("#2466a8"), button("convert-pdf").getBorder().getStrokes().getFirst().getTopStroke());
+                    }
                     snapshot(stage.getScene(), "cta-" + state);
                     button("convert-pdf").pseudoClassStateChanged(PseudoClass.getPseudoClass(state), false);
                 }
@@ -106,7 +109,7 @@ class Stage8UiTest {
             waitFor(() -> label("document-summary").getText().contains("PDF escaneado"));
             fx(() -> {
                 assertTrue(button("convert-pdf").isDisabled()); layout();
-                assertNotEquals(Color.web("#F63A48"), background(button("convert-pdf"))); assertContrast(button("convert-pdf"));
+                assertNotEquals(Color.web("#D92535"), background(button("convert-pdf"))); assertContrast(button("convert-pdf"));
                 snapshot(stage.getScene(), "scanned-markitdown-disabled");
                 key(button("use-suggested-engine"), KeyCode.ENTER);
                 assertTrue(radio("marker").isSelected()); assertTrue(home("force-ocr").isVisible());
@@ -171,7 +174,7 @@ class Stage8UiTest {
                 assertFalse(button("cancel-conversion").isDisabled());
                 layout(); var bounds = button("cancel-conversion").localToScene(button("cancel-conversion").getBoundsInLocal());
                 assertTrue(bounds.getMinY() > 0 && bounds.getMaxY() < stage.getScene().getHeight());
-                assertNotEquals(Color.web("#F63A48"), background(button("cancel-conversion")));
+                assertNotEquals(Color.web("#D92535"), background(button("cancel-conversion")));
                 snapshot(stage.getScene(), "conversion-in-progress"); return null;
             });
             release.countDown(); waitFor(() -> label("conversion-state").getText().equals("Conversión completada"));
@@ -210,7 +213,6 @@ class Stage8UiTest {
     private void assertContrast(Button button) {
         if (!button.isDisabled()) {
             assertEquals(Color.WHITE, button.getTextFill(), "Active CTA uses the requested white lettering");
-            return;
         }
         double a = luminance(background(button)), b = luminance((Color)button.getTextFill());
         assertTrue((Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5, "CTA text contrast must be >= 4.5:1: " + background(button) + " / " + button.getTextFill() + " ratio=" + (Math.max(a,b)+.05)/(Math.min(a,b)+.05));
