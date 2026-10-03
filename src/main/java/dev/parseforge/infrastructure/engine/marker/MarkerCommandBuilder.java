@@ -22,7 +22,15 @@ public final class MarkerCommandBuilder {
         if (request.forceOcr()) arguments.add("--force_ocr");
         return new ProcessSpec(
                 executable,
+<<<<<<< HEAD
                 arguments,
+=======
+                List.of(
+                        request.inputFile().toString(),
+                        "--output_dir", request.outputDirectory().toString(),
+                        "--output_format", request.outputFormat().commandValue(),
+                        "--disable_multiprocessing"),
+>>>>>>> origin/main
                 Map.of("PYTHONUTF8", "1"),
                 request.outputDirectory(),
                 DEFAULT_TIMEOUT);

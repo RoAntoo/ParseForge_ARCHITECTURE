@@ -28,6 +28,8 @@ failures preserve the previous installation and a separate `*.health-check.log`
 under `%LOCALAPPDATA%\ParseForge\logs`, including output and timeout details.
 
 Marker installs under `%LOCALAPPDATA%\ParseForge\engines\marker`.
+PDF text extraction runs in a single process to avoid Windows worker-pool
+failures (`WinError 6` / `BrokenProcessPool`) when launched by the desktop app.
 It uses approximately 3.2 GB; have at least 7 GB free for preparation/repair.
 Internet is needed to install or repair. Model revisions are pinned; the Hugging
 Face cache runs offline during conversion. Repair safely reinstalls. Uninstall
