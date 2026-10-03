@@ -3,7 +3,9 @@ package dev.parseforge.infrastructure.engine.markitdown;
 import dev.parseforge.application.port.out.*;
 import dev.parseforge.domain.model.*;
 import dev.parseforge.domain.exception.EngineInstallException;
+import dev.parseforge.domain.exception.ConversionException;
 import dev.parseforge.infrastructure.engine.CancellableProcessRunner;
+import dev.parseforge.infrastructure.engine.ConversionOutputWorkspace;
 import java.nio.file.*;
 import java.time.*;
 import java.util.*;
@@ -24,7 +26,8 @@ public final class MarkItDownEngine implements ConversionEngine {
         var token = new OperationCancellation();
         if (!active.compareAndSet(null, token)) throw new IllegalStateException("MarkItDown está ocupado.");
         Instant start = Instant.now();
-        try (var runtime = locator.acquire(request)) {
+        try (var workspace = new ConversionOutputWorkspace(request);
+             var runtime = locator.acquire(workspace.request())) {
             token.check();
             listener.onEvent(new ConversionEvent.EngineStarted("MarkItDown"));
             listener.onEvent(new ConversionEvent.PhaseChanged("Procesando PDF digital con MarkItDown..."));
@@ -35,8 +38,12 @@ public final class MarkItDownEngine implements ConversionEngine {
             if (result.cancelled()) return result(ConversionStatus.CANCELLED, result, "Conversión cancelada");
             if (result.timedOut()) return result(ConversionStatus.FAILED, result, "MarkItDown excedió el tiempo máximo.");
             if (result.exitCode() != 0) return result(ConversionStatus.FAILED, result, "MarkItDown terminó con código " + result.exitCode());
-            Path output = ManagedMarkItDownRuntime.output(request);
-            if (!Files.isRegularFile(output)) return result(ConversionStatus.FAILED, result, "MarkItDown no generó el Markdown esperado.");
+            Path output;
+            try {
+                output = workspace.publish(ManagedMarkItDownRuntime.output(workspace.request())).getFirst();
+            } catch (ConversionException error) {
+                return result(ConversionStatus.FAILED, result, error.getMessage());
+            }
             listener.onEvent(new ConversionEvent.OutputCreated(output));
             return new ConversionResult(ConversionStatus.COMPLETED, 0, List.of(output), null, result.duration());
         } catch (EngineInstallException error) {

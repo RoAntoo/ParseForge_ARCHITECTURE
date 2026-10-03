@@ -29,7 +29,12 @@ class MarkItDownEngineTest {
         executor = mock(ProcessExecutor.class);
         var locator = mock(EngineRuntimeLocator.class); lease = mock(EngineRuntimeLocator.EngineRuntime.class);
         when(locator.descriptor(MarkItDownEngine.ID)).thenReturn(new EngineDescriptor(MarkItDownEngine.ID, "MarkItDown", "0.1.8"));
-        when(locator.acquire(request)).thenReturn(lease); when(lease.command()).thenReturn(spec);
+        when(lease.command()).thenReturn(spec);
+        when(locator.acquire(any())).thenAnswer(invocation -> {
+            when(lease.command()).thenReturn(new ManagedMarkItDownRuntime(root,
+                    new EngineManifestRepository("markitdown").manifest()).conversion(invocation.getArgument(0)));
+            return lease;
+        });
         engine = new MarkItDownEngine(executor, locator);
     }
     @Test void privateCommandPreservesUnicodeAndSpacesAndUsesExplicitOutputWithoutOcr() throws Exception {
@@ -52,14 +57,20 @@ class MarkItDownEngineTest {
         assertEquals(request.outputDirectory().resolve(expected), ManagedMarkItDownRuntime.output(input));
     }
     @Test void successReportsOnlyExpectedMarkdownAndReleasesLease() throws Exception {
-        Files.writeString(ManagedMarkItDownRuntime.output(request), "# fixture");
+        Files.writeString(ManagedMarkItDownRuntime.output(request), "previous");
         Files.writeString(request.outputDirectory().resolve("unrelated.md"), "other document");
-        when(executor.execute(any(), any())).thenReturn(new ProcessResult(0, false, false, Duration.ZERO));
+        when(executor.execute(any(), any())).thenAnswer(invocation -> {
+            ProcessSpec command = invocation.getArgument(0);
+            Files.writeString(Path.of(command.arguments().getLast()), "# fixture");
+            return new ProcessResult(0, false, false, Duration.ZERO);
+        });
         List<ConversionEvent> events = new ArrayList<>();
         var result = engine.convert(request, events::add);
         assertEquals(ConversionStatus.COMPLETED, result.status());
         assertEquals(List.of(ManagedMarkItDownRuntime.output(request)), result.outputFiles());
         assertTrue(events.stream().anyMatch(e -> e instanceof ConversionEvent.OutputCreated));
+        assertEquals("# fixture", Files.readString(ManagedMarkItDownRuntime.output(request)));
+        assertEquals("other document", Files.readString(request.outputDirectory().resolve("unrelated.md")));
         verify(lease).close();
     }
     @Test void nonzeroExitFailsEvenIfPreviousOutputExists() throws Exception {
@@ -68,6 +79,27 @@ class MarkItDownEngineTest {
         var result = engine.convert(request, e -> {});
         assertEquals(ConversionStatus.FAILED, result.status()); assertTrue(result.outputFiles().isEmpty());
         assertTrue(result.error().orElseThrow().contains("7")); verify(lease).close();
+    }
+    @Test void zeroExitCannotReusePreviousOutput() throws Exception {
+        Path output = ManagedMarkItDownRuntime.output(request);
+        Files.writeString(output, "previous");
+        when(executor.execute(any(), any())).thenReturn(new ProcessResult(0, false, false, Duration.ZERO));
+        assertEquals(ConversionStatus.FAILED, engine.convert(request, e -> {}).status());
+        assertEquals("previous", Files.readString(output));
+    }
+    @Test void failedProcessDoesNotOverwritePreviousOutputWithPartialMarkdown() throws Exception {
+        Path output = ManagedMarkItDownRuntime.output(request);
+        Files.writeString(output, "previous");
+        when(executor.execute(any(), any())).thenAnswer(invocation -> {
+            ProcessSpec command = invocation.getArgument(0);
+            Files.writeString(Path.of(command.arguments().getLast()), "partial");
+            return new ProcessResult(7, false, false, Duration.ZERO);
+        });
+        assertEquals(ConversionStatus.FAILED, engine.convert(request, e -> {}).status());
+        assertEquals("previous", Files.readString(output));
+        try (var entries = Files.list(request.outputDirectory())) {
+            assertEquals(List.of(output), entries.toList());
+        }
     }
     @Test void timeoutAndMissingOutputFail() {
         when(executor.execute(any(), any())).thenReturn(new ProcessResult(1, false, true, Duration.ZERO));

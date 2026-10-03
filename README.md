@@ -3,6 +3,14 @@
 ParseForge is a Windows-first desktop app that converts PDFs to Markdown using
 Marker or MarkItDown. Documents are processed locally.
 
+Conversions use a temporary folder inside the selected output directory. Only a
+successful process that produces the expected, nonempty Markdown is published,
+along with its images and metadata. Engine failure, timeout or cancellation
+leaves previous exports intact. Successful exports replace matching files. If
+saving the generated files fails, the error identifies a retained temporary
+folder for recovery. Marker checks only the current conversion's output instead
+of scanning all previously exported documents.
+
 ## Managed Marker
 
 Open the **Motores de conversión** sidebar and click **Instalar Marker**. ParseForge
