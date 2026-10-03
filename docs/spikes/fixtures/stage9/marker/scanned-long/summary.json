@@ -1,0 +1,21 @@
+{
+  "engine": "marker",
+  "case": "scanned-long",
+  "status": "TIMEOUT_INCOMPLETE",
+  "exitCode": 0,
+  "seconds": 241.422,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\scanned-long.pdf",
+  "sourceSha256": "609e469719f3ee0ac945932c8072179057ea90a5fab784c3eff8f9f309608a4e",
+  "limitSeconds": 240,
+  "outputs": {},
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\scanned-long",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/scanned-long",
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "processSnapshots": 99,
+  "inventoryChanges": 1
+}

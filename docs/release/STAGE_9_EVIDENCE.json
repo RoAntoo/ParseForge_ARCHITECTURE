@@ -1,0 +1,477 @@
+{
+  "date": "2026-10-03",
+  "timezone": "America/Buenos_Aires",
+  "stage": 9,
+  "decision": "NO-GO",
+  "result": "ABORTED BY DESIGN",
+  "scope": "Installed versions and CPU/llamacpp managed profile only",
+  "productionChanges": false,
+  "releaseRun": false,
+  "versions": {
+    "marker": {
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "packages": {
+        "marker-pdf": "2.0.0",
+        "surya-ocr": "0.22.1",
+        "tqdm": "4.70.1"
+      }
+    },
+    "markitdown": {
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "packages": {
+        "markitdown": "0.1.8",
+        "pdfminer-six": "20260107",
+        "pdfplumber": "0.11.10"
+      }
+    }
+  },
+  "sourceHashes": {
+    "marker/marker/scripts/convert_single.py": "a1602804e08cc0e97a838a9e396cb323e77ec1b371053b87c762d272c770dab2",
+    "marker/surya/common/batch_service/client.py": "62cd681a53d974fff3b210babb74a97b4cc76e073ddc5a8812cecdc7908659da",
+    "marker/surya/common/batch_service/server.py": "78855af4b58a5738cd1902ad4c72ab1c397276806b4841a972544f211f30fa46",
+    "marker/surya/ocr_error/server.py": "de6e7f89aa61b20b67fdd6372e73e9b5dc244498ec722e406840b1130ca5c653",
+    "marker/surya/ocr_error/__init__.py": "83b2ed758c273a7967c6eb77611b576bf7de10f27528fa163a92bbed52b97086",
+    "marker/surya/fast_layout/__init__.py": "1e50361a1ed77b427eb047d92699909a2419deee77fa164b58745aeb36606d2b",
+    "marker/surya/layout/__init__.py": "980ec5c9be1650aba6d637ee0a462d1da9922738c71b814ca0c859f9a72bfe93",
+    "marker/surya/recognition/__init__.py": "6aa7ec482e83e2c41759e74d28f9ac33c8afc7ea8a58d930c446d8cb6f796e72",
+    "marker/surya/inference/backends/openai_client.py": "aa196ea026f158a481acc39e97cd62dc03a05ca9cde1c22e106b0ca21b926822",
+    "marker/surya/inference/backends/llamacpp.py": "fd2a097e21b913c0e89e14a747221fdbe3a2173ea5e1e97805bf5caf5e819df1",
+    "markitdown/markitdown/converters/_pdf_converter.py": "8a48783a111f8c240ab87320921455e879a5f6753421a6cc472e6d2b89bf2c92",
+    "markitdown/markitdown/__main__.py": "782f0c24a927fa5d629f3f66c7b1891a657239e8cceafdcd0968985c7358245a"
+  },
+  "runs": [
+    {
+      "engine": "marker",
+      "case": "digital-short",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 86.297,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-text.pdf",
+      "sourceSha256": "5c181803a743fb96534102cab930c5cab30e2264b40ba4465ed566ce3f710910",
+      "limitSeconds": 240,
+      "outputs": {
+        "digital-text/digital-text.md": {
+          "bytes": 164,
+          "sha256": "3865359644b0c55b68c63e0b28d7b6344bc10d3b3b2fbb14f0ce16c7908b5225"
+        },
+        "digital-text/digital-text_meta.json": {
+          "bytes": 1103,
+          "sha256": "de4e76125b9617c020d7dae8fe450c0f82bf55457304275c4e09ba279297b75d"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\digital-short",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "4bd19827dd00ef42a7b7b3368d418d6620299bae31cb81d34935da6503d9b616"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/digital-short",
+      "stdoutBytes": 0,
+      "stderrBytes": 268,
+      "processSnapshots": 35,
+      "inventoryChanges": 2
+    },
+    {
+      "engine": "marker",
+      "case": "digital-long",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 144.0,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+      "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+      "limitSeconds": 240,
+      "outputs": {
+        "digital-long/digital-long.md": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "digital-long/digital-long_meta.json": {
+          "bytes": 120235,
+          "sha256": "6030c5047ff3662e19e85e39019787dbf811542b8091740075a7c171d38cc41c"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\digital-long",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "412b4028e25a3fba0f93ce08c12960fb2ed07b6007741b59e55fb6d67bac0111"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/digital-long",
+      "stdoutBytes": 0,
+      "stderrBytes": 267,
+      "processSnapshots": 59,
+      "inventoryChanges": 2
+    },
+    {
+      "engine": "marker",
+      "case": "scanned-short",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 121.172,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\scanned-image-only.pdf",
+      "sourceSha256": "0eca99e252e86058ab5d04a87761290dcf5db8741ec95f7bfb12d3eea94b4439",
+      "limitSeconds": 240,
+      "outputs": {
+        "scanned-image-only/scanned-image-only.md": {
+          "bytes": 1080,
+          "sha256": "2aa1044591cdeed02a1542ef7a86de6111b4388607db87e0d94e417c3b90479d"
+        },
+        "scanned-image-only/scanned-image-only_meta.json": {
+          "bytes": 887,
+          "sha256": "60de1925e0e3d3e1835569f4309ad315c515087678254fceabc0a6fa8ccd7de1"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\scanned-short",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "3d77e91d776437d1118a78b6670417c961b0cdaba06a01427d017e57f722275e"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/scanned-short",
+      "stdoutBytes": 0,
+      "stderrBytes": 272,
+      "processSnapshots": 51,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "marker",
+      "case": "scanned-long",
+      "status": "TIMEOUT_INCOMPLETE",
+      "exitCode": 0,
+      "seconds": 241.422,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\scanned-long.pdf",
+      "sourceSha256": "609e469719f3ee0ac945932c8072179057ea90a5fab784c3eff8f9f309608a4e",
+      "limitSeconds": 240,
+      "outputs": {},
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\scanned-long",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/scanned-long",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 99,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "marker",
+      "case": "mixed",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 107.125,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\mixed.pdf",
+      "sourceSha256": "a9a37d22b2bf796f12aaa2988f210adc95eb63b4a0bd48b077f85a7774eeaa8d",
+      "limitSeconds": 240,
+      "outputs": {
+        "mixed/mixed.md": {
+          "bytes": 622,
+          "sha256": "18474c38cb3b8a0be74091b3396667ab11e14117911ebf8086a79a4b9a909dba"
+        },
+        "mixed/mixed_meta.json": {
+          "bytes": 985,
+          "sha256": "a84f4b0492cc00c909227e05f08e54e7c5e7f8ead5c4585fff8f50ce0ad2755b"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\mixed",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "0c722567cc5ab80acc5a099b6eba7f83f0a672bc718fb212f57f8c0337bd3dc8"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/mixed",
+      "stdoutBytes": 0,
+      "stderrBytes": 251,
+      "processSnapshots": 45,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "marker",
+      "case": "digital-repeat",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 77.64,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-text.pdf",
+      "sourceSha256": "5c181803a743fb96534102cab930c5cab30e2264b40ba4465ed566ce3f710910",
+      "limitSeconds": 240,
+      "outputs": {
+        "digital-text/digital-text.md": {
+          "bytes": 164,
+          "sha256": "3865359644b0c55b68c63e0b28d7b6344bc10d3b3b2fbb14f0ce16c7908b5225"
+        },
+        "digital-text/digital-text_meta.json": {
+          "bytes": 1103,
+          "sha256": "de4e76125b9617c020d7dae8fe450c0f82bf55457304275c4e09ba279297b75d"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\digital-repeat",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "fac9658f68e134792ef6948d8908c6569cd432f8c5f3b634512d3dd17348eca2"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/digital-repeat",
+      "stdoutBytes": 0,
+      "stderrBytes": 268,
+      "processSnapshots": 32,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "digital-short",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 1.547,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-text.pdf",
+      "sourceSha256": "5c181803a743fb96534102cab930c5cab30e2264b40ba4465ed566ce3f710910",
+      "limitSeconds": 120,
+      "outputs": {
+        "digital-text.md": {
+          "bytes": 169,
+          "sha256": "9becd99869c200d17c165767fb4e574958eebe0766a1ef41122f68c075f63998"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\digital-short",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/digital-short",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "digital-long",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 2.875,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+      "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+      "limitSeconds": 120,
+      "outputs": {
+        "digital-long.md": {
+          "bytes": 20399,
+          "sha256": "58bbd7d1580a5f2a4f252aabea0b4bd5fc8dc0b991db907399383791476cd17e"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\digital-long",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/digital-long",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "many-pages",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 1.813,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+      "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+      "limitSeconds": 120,
+      "outputs": {
+        "digital-long.md": {
+          "bytes": 20399,
+          "sha256": "58bbd7d1580a5f2a4f252aabea0b4bd5fc8dc0b991db907399383791476cd17e"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\many-pages",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/many-pages",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "corrupt",
+      "status": "FAILED",
+      "exitCode": 1,
+      "seconds": 1.39,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\corrupt.pdf",
+      "sourceSha256": "952900690268304407739cf0ee71792f672f789c4a4943853cccea3bc8ad4404",
+      "limitSeconds": 120,
+      "outputs": {},
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\corrupt",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "0df8361b8c5da0646667d0edc6928925eef620596134d17e8e6e4404a2ad41de"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/corrupt",
+      "stdoutBytes": 0,
+      "stderrBytes": 372,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "cancel",
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "seconds": 1.844,
+      "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+      "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+      "limitSeconds": 2,
+      "outputs": {
+        "digital-long.md": {
+          "bytes": 20399,
+          "sha256": "58bbd7d1580a5f2a4f252aabea0b4bd5fc8dc0b991db907399383791476cd17e"
+        }
+      },
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\cancel",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/cancel",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    },
+    {
+      "engine": "markitdown",
+      "case": "cancel-many-pages",
+      "status": "CANCELLED",
+      "exitCode": 0,
+      "seconds": 2.078,
+      "source": "<REPO>\\build\\stage9-progress\\1791063671045944500\\cancel-15000.pdf",
+      "sourceSha256": "69b3e196d3b6ead96d086b66675a70947d38bcbc76373758a169e04c2fe71745",
+      "limitSeconds": 2,
+      "outputs": {},
+      "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\cancel-many-pages",
+      "rawStreamHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "processSnapshots": 1,
+      "inventoryChanges": 1
+    }
+  ],
+  "longProbeLimitSeconds": 240,
+  "limitations": [
+    "Synthetic PDFs; not a representative corpus of scanned books.",
+    "TIMEOUT_INCOMPLETE means bounded observation, not a completed conversion.",
+    "COMPLETED describes CLI exit 0, not ParseForge output validation.",
+    "Shared server logs contain prior invocations and are not job-scoped.",
+    "CIM snapshots every approximately 2-3 seconds can miss short-lived children.",
+    "No full book throughput, clean-VM or ETA validation claimed."
+  ],
+  "tests": {
+    "functional": {
+      "passed": 39,
+      "failed": 0,
+      "log": "build/stage9-tests.log"
+    },
+    "ui": {
+      "passed": 1,
+      "failed": 0,
+      "suite": "Stage7UiTest",
+      "scale": "1.0",
+      "log": "build/stage9-ui.log"
+    }
+  },
+  "signals": [
+    {
+      "signal": "Marker main stdout/stderr",
+      "classification": "PARTIALLY_RELIABLE",
+      "use": "Terminal saved/time messages, errors; no current/total"
+    },
+    {
+      "signal": "OCR-error tqdm",
+      "classification": "UNRELIABLE",
+      "use": "Disabled by installed server; not exposed in actual managed execution"
+    },
+    {
+      "signal": "Shared Loading weights counters",
+      "classification": "UNRELIABLE",
+      "use": "Real model-load counts; not document progress, not job-scoped, includes history"
+    },
+    {
+      "signal": "Child server presence",
+      "classification": "PARTIALLY_RELIABLE",
+      "use": "Service readiness/lifecycle only; not active processing phase or percent"
+    },
+    {
+      "signal": "llama tokens/slots",
+      "classification": "UNRELIABLE",
+      "use": "Variable generation work; max tokens is a ceiling, not total required work"
+    },
+    {
+      "signal": "Temp/output sizes",
+      "classification": "UNRELIABLE",
+      "use": "No proven deterministic relation to conversion completion"
+    },
+    {
+      "signal": "MarkItDown successful CLI",
+      "classification": "UNRELIABLE",
+      "use": "Silent during processing; no current/total"
+    }
+  ],
+  "fixtureHashes": {
+    "docs/spikes/fixtures/stage9/shared-server-logs/fast_layout_server.log": "230421f4642f5efdc61809077782a919736cdaac6786bcb1dac357514f63ec2a",
+    "docs/spikes/fixtures/stage9/shared-server-logs/llamacpp_server.log": "1696c59f0a6998266a713d1618fced422468c8769e4957f37d2995f97839f177",
+    "docs/spikes/fixtures/stage9/shared-server-logs/ocr_error_server.log": "2851f3ee882d342696d01c713a8f79849d6bf18dae8c070f522d7c477f3009e2",
+    "docs/spikes/fixtures/stage9/tests/stage9-tests.log": "f823d40f91c747c2208cde1ad2597c3ea44113825a372101e3fb0525fca3a233",
+    "docs/spikes/fixtures/stage9/tests/stage9-ui.log": "8aea66773652ed0e7e195282f3b3b7eecc5505ac42776884614cc85e84e187bf",
+    "docs/spikes/fixtures/stage9/marker/digital-long/events.jsonl": "c3e681433dbb3841ea273d9056219e58e86d1fcd203f07c8efaed682fb729668",
+    "docs/spikes/fixtures/stage9/marker/digital-long/stderr.log": "ea0b06d53119333d411159af6a9e1b915dac57014e6b1780109f05209e7ef965",
+    "docs/spikes/fixtures/stage9/marker/digital-long/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/digital-long/summary.json": "baea29730963dceddadab0bd52497a00beb25903096786403f83d09eb967f0ef",
+    "docs/spikes/fixtures/stage9/marker/digital-repeat/events.jsonl": "7aa5b5f9734d7248617523ccbcee09e61e773880d2d63366b27e9eb2770498e1",
+    "docs/spikes/fixtures/stage9/marker/digital-repeat/stderr.log": "a1502d5ca2d443c9bf5dbad74c851ca8be7d48d837a1fc558af9c9d80e58cde8",
+    "docs/spikes/fixtures/stage9/marker/digital-repeat/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/digital-repeat/summary.json": "a11d57d1fdfa4d5546dcf120eb980b0661052f395350b10447f4c6e2d0ee77fb",
+    "docs/spikes/fixtures/stage9/marker/digital-short/events.jsonl": "68bcf8a677c4a7a81664a556e08e6c67eb6b55d4a56bbee12fa874c7e6e651b2",
+    "docs/spikes/fixtures/stage9/marker/digital-short/stderr.log": "8e45e36d4e65dc795b6672d0707ba8fe41a632fa308028c7d0abd581146c3f54",
+    "docs/spikes/fixtures/stage9/marker/digital-short/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/digital-short/summary.json": "608e1fa6ef39ff24e31b704c3e3c902978e3f5b1c43f77cc2640035d10fc585f",
+    "docs/spikes/fixtures/stage9/marker/mixed/events.jsonl": "361b71324e4319a4af1816dfdd5cfa54c50a3af469d19d1aceb122a050e5a71d",
+    "docs/spikes/fixtures/stage9/marker/mixed/stderr.log": "34e341d60b44c2b3e900af407ce58eef47d9d1823fa5232b54e530cdbe9dedf7",
+    "docs/spikes/fixtures/stage9/marker/mixed/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/mixed/summary.json": "48a8bb57ba68860fed94444d7ce363e44e5ad8153821ce820244911343e6ba89",
+    "docs/spikes/fixtures/stage9/marker/scanned-long/events.jsonl": "97a997def2c809f1e164c45f07490261798b2902d1c31380193d4064b5fb3ac2",
+    "docs/spikes/fixtures/stage9/marker/scanned-long/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/scanned-long/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/scanned-long/summary.json": "620e79da8bbb646244e0fe754917ac3bb38cce5265fec579efc13a61ebe8892e",
+    "docs/spikes/fixtures/stage9/marker/scanned-short/events.jsonl": "09bdc4cb8c5d25be0328237482e0d636670caf6c4930e39e9b421211a5474a08",
+    "docs/spikes/fixtures/stage9/marker/scanned-short/stderr.log": "5bdfe0171053088f50c74cbbc3035ad85980fc476a6a982b2f7a5677847d1c85",
+    "docs/spikes/fixtures/stage9/marker/scanned-short/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/marker/scanned-short/summary.json": "7e7455222ae4bca253c97e2e435ec0c4187e9e07709204f09a0f73a7c25eff16",
+    "docs/spikes/fixtures/stage9/markitdown/cancel/events.jsonl": "6fed4af0f3a84fbb0256c2af92840f89ced089a1d2025d8048aabab13cd42912",
+    "docs/spikes/fixtures/stage9/markitdown/cancel/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/cancel/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/cancel/summary.json": "9303493b853b3ca291c35e4469252292b385f39ac97dab408463fe414d08c3e5",
+    "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages/events.jsonl": "88e631938495841c077f336c1864ebb6d4983d7442ffbd7fb66f0b173a4e2c04",
+    "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages/summary.json": "8921845451dfee8016d2f922e308ae50b15da760a69069444a826458d0aa29ea",
+    "docs/spikes/fixtures/stage9/markitdown/corrupt/events.jsonl": "cd9b149ba69ec6e98041d24674e32f689f0729835edcf24c1ddd3ee2ffd3fd54",
+    "docs/spikes/fixtures/stage9/markitdown/corrupt/stderr.log": "a110f53217de158fab624d64b047acb0be9cb3e7b7b3673913129c085190da20",
+    "docs/spikes/fixtures/stage9/markitdown/corrupt/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/corrupt/summary.json": "a858912415b086f23116011ed1b7288c8302ba14d4910ab52777576adcdbe4d7",
+    "docs/spikes/fixtures/stage9/markitdown/digital-long/events.jsonl": "c51b0f4b70d6f50b5c6b588c4d47c8be58dd4aec31de27ff79c18541e2e4a5da",
+    "docs/spikes/fixtures/stage9/markitdown/digital-long/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/digital-long/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/digital-long/summary.json": "792b57a84a8a4f8170611f8e929edb39b2d87ff143e08ebe1c02ae210b0faa4c",
+    "docs/spikes/fixtures/stage9/markitdown/digital-short/events.jsonl": "919e55cf98a5d4b741636c46f588aa290c7d07bd49276e6b72b8023da7370bf4",
+    "docs/spikes/fixtures/stage9/markitdown/digital-short/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/digital-short/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/digital-short/summary.json": "12a1fa5070a7a7a08a075e79ddab425e054a04e4d568dc8a1a6ab8245f8315b5",
+    "docs/spikes/fixtures/stage9/markitdown/many-pages/events.jsonl": "85dbc1ed6ea06686845d5a73cb7e5c7a18dfe360877851e9bc3f83237f489c3c",
+    "docs/spikes/fixtures/stage9/markitdown/many-pages/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/many-pages/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/spikes/fixtures/stage9/markitdown/many-pages/summary.json": "991b3f1114468d6806ffa8ed2864052d7077b873ebfba3685e3e253f5b101e47"
+  },
+  "runtimeProcessesAfterMatrix": []
+}

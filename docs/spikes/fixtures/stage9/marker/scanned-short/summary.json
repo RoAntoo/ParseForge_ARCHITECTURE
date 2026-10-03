@@ -1,0 +1,30 @@
+{
+  "engine": "marker",
+  "case": "scanned-short",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 121.172,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\scanned-image-only.pdf",
+  "sourceSha256": "0eca99e252e86058ab5d04a87761290dcf5db8741ec95f7bfb12d3eea94b4439",
+  "limitSeconds": 240,
+  "outputs": {
+    "scanned-image-only/scanned-image-only.md": {
+      "bytes": 1080,
+      "sha256": "2aa1044591cdeed02a1542ef7a86de6111b4388607db87e0d94e417c3b90479d"
+    },
+    "scanned-image-only/scanned-image-only_meta.json": {
+      "bytes": 887,
+      "sha256": "60de1925e0e3d3e1835569f4309ad315c515087678254fceabc0a6fa8ccd7de1"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\scanned-short",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "3d77e91d776437d1118a78b6670417c961b0cdaba06a01427d017e57f722275e"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/scanned-short",
+  "stdoutBytes": 0,
+  "stderrBytes": 272,
+  "processSnapshots": 51,
+  "inventoryChanges": 1
+}

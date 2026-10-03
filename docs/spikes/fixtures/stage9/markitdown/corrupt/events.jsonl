@@ -1,0 +1,5 @@
+{"seconds": 1.031, "kind": "start", "data": {"pid": 5152, "command": ["<ENGINE>\\runtime\\python\\python.exe", "-I", "-X", "utf8", "-u", "-B", "-c", "import sys; from pdfminer.pdfparser import PDFParser; from pdfminer.pdfdocument import PDFDocument; f=open(sys.argv[1],'rb'); PDFDocument(PDFParser(f)); f.close(); from markitdown.__main__ import main; main()", "<REPO>\\build\\stage7-host\\fixtures\\corrupt.pdf", "-o", "<REPO>\\build\\stage9-progress\\1791063671045944500\\markitdown\\corrupt\\output\\corrupt.md"]}}
+{"seconds": 1.265, "kind": "stderr", "data": "Traceback (most recent call last):\r\n"}
+{"seconds": 1.265, "kind": "stderr", "data": "  File \"<string>\", line 1, in <module>\r\n  File \"<ENGINE>\\runtime\\python\\Lib\\site-packages\\pdfminer\\pdfdocument.py\", line 744, in __init__\r\n    raise PDFSyntaxError(\"No /Root object! - Is this really a PDF?\")\r\npdfminer.pdfparser.PDFSyntaxError: No /Root object! - Is this really a PDF?\r\n"}
+{"seconds": 1.39, "kind": "process_snapshot", "data": {"exit": 0, "json": "", "error": ""}}
+{"seconds": 1.39, "kind": "inventory", "data": {}}

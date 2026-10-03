@@ -1,0 +1,30 @@
+{
+  "engine": "marker",
+  "case": "digital-long",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 144.0,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+  "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+  "limitSeconds": 240,
+  "outputs": {
+    "digital-long/digital-long.md": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "digital-long/digital-long_meta.json": {
+      "bytes": 120235,
+      "sha256": "6030c5047ff3662e19e85e39019787dbf811542b8091740075a7c171d38cc41c"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\digital-long",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "412b4028e25a3fba0f93ce08c12960fb2ed07b6007741b59e55fb6d67bac0111"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/digital-long",
+  "stdoutBytes": 0,
+  "stderrBytes": 267,
+  "processSnapshots": 59,
+  "inventoryChanges": 2
+}

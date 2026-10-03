@@ -1,0 +1,26 @@
+{
+  "engine": "markitdown",
+  "case": "cancel",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 1.844,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-long.pdf",
+  "sourceSha256": "a8930f672ca07db3490c5fdeb7b202a45caf814079bb9e6293b38c83600e1088",
+  "limitSeconds": 2,
+  "outputs": {
+    "digital-long.md": {
+      "bytes": 20399,
+      "sha256": "58bbd7d1580a5f2a4f252aabea0b4bd5fc8dc0b991db907399383791476cd17e"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\cancel",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/cancel",
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "processSnapshots": 1,
+  "inventoryChanges": 1
+}
