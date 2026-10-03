@@ -65,14 +65,26 @@ class Stage7UiTest {
         });
         doAnswer(i -> { cancelled.set(true); engineRelease.countDown(); return null; }).when(engine).cancel();
         var start = new StartConversionUseCase(id -> engine, worker);
-        var preflight = new AnalyzeDocumentUseCase(file -> {
+        var staleResult = new CompletableFuture<DocumentPreflightResult>();
+        var staleCallbackQueued = new CountDownLatch(1);
+        var preflight = spy(new AnalyzeDocumentUseCase(file -> {
             if (file.equals(stale)) {
                 staleEntered.countDown();
                 while (staleRelease.getCount() > 0) try { staleRelease.await(); } catch (InterruptedException ignored) { }
             }
             if (file.equals(unavailable)) throw new IllegalStateException("unsupported inspection edge case");
             return new PdfBoxDocumentPreflight().inspect(file);
-        });
+        }));
+        doAnswer(invocation -> {
+            var actual = (CompletableFuture<DocumentPreflightResult>) invocation.callRealMethod();
+            actual.whenComplete((result, error) -> {
+                if (error == null) staleResult.complete(result);
+                else staleResult.completeExceptionally(error);
+                // complete() runs the controller's registered callback, which enqueues its FX update.
+                staleCallbackQueued.countDown();
+            });
+            return staleResult;
+        }).when(preflight).analyze(stale);
         try {
             fx(() -> {
                 stage = new Stage(); controller = new MainController(stage, start, new CancelConversionUseCase(start),
@@ -106,7 +118,14 @@ class Stage7UiTest {
             fx(() -> { controller.selectPdf(scan); return null; });
             waitFor(() -> label("document-summary").getText().contains("PDF escaneado"));
             staleRelease.countDown();
-            fx(() -> { assertEquals(scan.getFileName().toString(), label("selected-pdf").getText()); return null; });
+            assertTrue(staleCallbackQueued.await(5, TimeUnit.SECONDS));
+            assertEquals(stale, staleResult.join().file());
+            // This FX assertion is queued after the stale update, so it observes the state it leaves behind.
+            fx(() -> {
+                assertEquals(scan.getFileName().toString(), label("selected-pdf").getText());
+                assertTrue(label("document-summary").getText().contains("PDF escaneado"));
+                return null;
+            });
             choose(unavailable, "Análisis previo no disponible");
             fx(() -> { assertFalse(button("convert-pdf").isDisabled()); return null; });
             choose(corrupt, "Análisis previo no disponible");
