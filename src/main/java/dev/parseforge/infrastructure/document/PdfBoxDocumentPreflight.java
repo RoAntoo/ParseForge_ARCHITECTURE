@@ -19,7 +19,7 @@ public final class PdfBoxDocumentPreflight implements DocumentPreflightService {
     public static final int MAX_SAMPLE = 20, MIN_CHARACTERS = 40;
     public DocumentPreflightResult inspect(Path file) {
         long started = System.nanoTime();
-        if (!Files.isRegularFile(file) || !Files.isReadable(file))
+        if (Files.notExists(file) || Files.isDirectory(file))
             throw new ConversionException(ErrorCode.FILE_INACCESSIBLE, "PDF inaccessible: " + file);
         try (var document = open(file)) {
             int total = document.getNumberOfPages();
@@ -54,8 +54,15 @@ public final class PdfBoxDocumentPreflight implements DocumentPreflightService {
             // A protected PDF is not evidence of corruption. Allow the engine to try it.
             throw new IllegalStateException("PDF protegido; análisis previo no disponible", error);
         } catch (IOException error) {
-            throw new ConversionException(Files.isReadable(file) ? ErrorCode.PDF_INVALID : ErrorCode.FILE_INACCESSIBLE,
-                    "PDF inspection failed: " + file, error);
+            if (error instanceof NoSuchFileException || error instanceof AccessDeniedException)
+                throw new ConversionException(ErrorCode.FILE_INACCESSIBLE, "PDF inaccessible: " + file, error);
+            // PDFBox can report both parser limitations and access errors as generic IOExceptions.
+            // Only an actual failed read confirms that the file is inaccessible.
+            try (var input = Files.newInputStream(file)) { input.read(); }
+            catch (IOException accessError) {
+                throw new ConversionException(ErrorCode.FILE_INACCESSIBLE, "PDF inaccessible: " + file, accessError);
+            }
+            throw new IllegalStateException("PDF inspection unavailable: " + file, error);
         }
     }
     public static int[] samplePages(int total) {

@@ -103,13 +103,14 @@ class Stage7UiTest {
             choose(mixed, "PDF mixto"); choose(blank, "Tipo indeterminado");
             fx(() -> { controller.selectPdf(stale); assertEquals("Analizando documento...", label("document-summary").getText()); return null; });
             assertTrue(staleEntered.await(5, TimeUnit.SECONDS));
-            fx(() -> { controller.selectPdf(scan); return null; }); staleRelease.countDown();
+            fx(() -> { controller.selectPdf(scan); return null; });
             waitFor(() -> label("document-summary").getText().contains("PDF escaneado"));
+            staleRelease.countDown();
             fx(() -> { assertEquals(scan.getFileName().toString(), label("selected-pdf").getText()); return null; });
             choose(unavailable, "Análisis previo no disponible");
             fx(() -> { assertFalse(button("convert-pdf").isDisabled()); return null; });
             choose(corrupt, "Análisis previo no disponible");
-            fx(() -> { assertTrue(button("convert-pdf").isDisabled()); assertTrue(label("document-advice").getText().contains("dañado")); return null; });
+            fx(() -> { assertFalse(button("convert-pdf").isDisabled()); assertTrue(label("document-advice").getText().contains("Podés intentar convertirlo")); return null; });
             dragPdf(digital);
             waitFor(() -> label("document-summary").getText().contains("PDF digital"));
             choose(longScan, "PDF escaneado");

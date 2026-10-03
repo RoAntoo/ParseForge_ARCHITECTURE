@@ -26,7 +26,7 @@ public final class Stage7HostSmoke {
                     "milliseconds", result.elapsedMillis(), "bytes", result.fileSize(), "textRatio", result.textPageRatio()));
         }
         try { new PdfBoxDocumentPreflight().inspect(fixtures.resolve("corrupt.pdf")); throw new AssertionError("Corruption accepted"); }
-        catch (ConversionException expected) { if (expected.code() != ErrorCode.PDF_INVALID) throw expected; evidence.put("corruptPreflight", "PASS"); }
+        catch (IllegalStateException expected) { evidence.put("unclassifiedParserFailureSoftFallback", "PASS"); }
         write(evidenceRoot, evidence);
         var paths = new EnginePathResolver(); var checksum = new ChecksumVerifier();
         var markerManifest = new EngineManifestRepository();

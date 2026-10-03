@@ -8,6 +8,9 @@ import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.encryption.*;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.io.IOException;
+import org.apache.pdfbox.Loader;
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PdfBoxDocumentPreflightTest {
@@ -37,10 +40,34 @@ class PdfBoxDocumentPreflightTest {
     @Test void zeroPages() throws Exception {
         assertEquals(DocumentType.UNKNOWN, service.inspect(PdfFixtures.create(temp.resolve("empty.pdf"))).type());
     }
-    @Test void corruptAndMissingHaveDistinctCodes() throws Exception {
+    @Test void parserFailureIsSoftWhileMissingFileIsConfirmedInaccessible() throws Exception {
         Path corrupt = Files.writeString(temp.resolve("corrupt.pdf"), "%PDF-1.7\nnot a PDF");
-        assertEquals(ErrorCode.PDF_INVALID, assertThrows(ConversionException.class, () -> service.inspect(corrupt)).code());
+        assertThrows(IllegalStateException.class, () -> service.inspect(corrupt));
         assertEquals(ErrorCode.FILE_INACCESSIBLE, assertThrows(ConversionException.class, () -> service.inspect(temp.resolve("missing.pdf"))).code());
+    }
+    @Test void ambiguousLoaderFailureDoesNotDeclareAReadablePdfInvalid() throws Exception {
+        Path file = PdfFixtures.create(temp.resolve("readable.pdf"), "text");
+        IOException failure = new IOException("Unsupported parser case");
+        try (var loader = mockStatic(Loader.class)) {
+            loader.when(() -> Loader.loadPDF(file.toFile())).thenThrow(failure);
+            assertSame(failure, assertThrows(IllegalStateException.class, () -> service.inspect(file)).getCause());
+        }
+    }
+    @Test void confirmedAccessDenialRemainsBlocking() throws Exception {
+        Path file = PdfFixtures.create(temp.resolve("denied.pdf"), "text");
+        try (var loader = mockStatic(Loader.class)) {
+            loader.when(() -> Loader.loadPDF(file.toFile())).thenThrow(new AccessDeniedException(file.toString()));
+            assertEquals(ErrorCode.FILE_INACCESSIBLE, assertThrows(ConversionException.class, () -> service.inspect(file)).code());
+        }
+    }
+    @Test void fileRemovedDuringLoadIsConfirmedByAnActualRead() throws Exception {
+        Path file = PdfFixtures.create(temp.resolve("removed.pdf"), "text");
+        try (var loader = mockStatic(Loader.class)) {
+            loader.when(() -> Loader.loadPDF(file.toFile())).thenAnswer(ignored -> {
+                Files.delete(file); throw new IOException("Load failed");
+            });
+            assertEquals(ErrorCode.FILE_INACCESSIBLE, assertThrows(ConversionException.class, () -> service.inspect(file)).code());
+        }
     }
     @Test void protectedDocumentDoesNotClaimCorruption() throws Exception {
         Path file = temp.resolve("protected.pdf");
