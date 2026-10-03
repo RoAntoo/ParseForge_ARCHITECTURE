@@ -5,6 +5,7 @@ import dev.parseforge.domain.model.ConversionRequest;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,13 +15,15 @@ public final class MarkerCommandBuilder {
 
     public ProcessSpec build(Path executable, ConversionRequest request) {
         Objects.requireNonNull(request, "request");
+        var arguments = new ArrayList<>(List.of(
+                request.inputFile().toString(),
+                "--output_dir", request.outputDirectory().toString(),
+                "--output_format", request.outputFormat().commandValue(),
+                "--disable_multiprocessing"));
+        if (request.forceOcr()) arguments.add("--force_ocr");
         return new ProcessSpec(
                 executable,
-                List.of(
-                        request.inputFile().toString(),
-                        "--output_dir", request.outputDirectory().toString(),
-                        "--output_format", request.outputFormat().commandValue(),
-                        "--disable_multiprocessing"),
+                arguments,
                 Map.of("PYTHONUTF8", "1"),
                 request.outputDirectory(),
                 DEFAULT_TIMEOUT);

@@ -11,6 +11,13 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MarkerCommandBuilderTest {
+    @Test void forwardsForceOcrForDevelopmentOverride() {
+        var request = new ConversionRequest(Path.of("input.pdf"), Path.of("output"),
+                new EngineId("marker"), OutputFormat.MARKDOWN, true);
+        var spec = new MarkerCommandBuilder().build(Path.of("marker.exe"), request);
+        assertEquals("--force_ocr", spec.arguments().getLast());
+    }
+
     @Test
     void keepsUserPathsAsSeparateProcessArguments() {
         Path executable = Path.of("C:/Marker Runtime/marker_single.exe");

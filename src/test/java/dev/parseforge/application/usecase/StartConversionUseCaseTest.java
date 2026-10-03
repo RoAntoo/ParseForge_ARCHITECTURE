@@ -28,6 +28,46 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class StartConversionUseCaseTest {
     private static final EngineId ENGINE_ID = new EngineId("marker");
 
+    @Test void rejectedSubmissionReleasesBusyStateAndAllowsRetry() {
+        var reject = new java.util.concurrent.atomic.AtomicBoolean(true);
+        var engine = new FakeEngine(new ConversionResult(ConversionStatus.COMPLETED, 0, List.of(), null, Duration.ZERO));
+        var useCase = new StartConversionUseCase(id -> engine, task -> {
+            if (reject.getAndSet(false)) throw new java.util.concurrent.RejectedExecutionException("busy");
+            task.run();
+        });
+        assertTrue(useCase.start(request(), e -> {}).isCompletedExceptionally());
+        assertFalse(useCase.hasActiveConversion());
+        assertEquals(ConversionStatus.COMPLETED, useCase.start(request(), e -> {}).join().status());
+    }
+
+    @Test void cancellingQueuedFutureReleasesBusyStateWhenWorkerRunsWithoutStartingEngine() {
+        AtomicReference<Runnable> scheduled = new AtomicReference<>();
+        var engine = new FakeEngine(new ConversionResult(ConversionStatus.COMPLETED, 0, List.of(), null, Duration.ZERO));
+        var useCase = new StartConversionUseCase(id -> engine, scheduled::set);
+        var result = useCase.start(request(), e -> {});
+        assertTrue(result.cancel(false));
+        scheduled.get().run();
+        assertFalse(useCase.hasActiveConversion());
+        assertEquals(0, engine.conversions);
+    }
+
+    @Test void cancellingRunningFutureDoesNotReleaseBusyStateBeforeEngineStops() throws Exception {
+        var started = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        var engine = new BlockingEngine(started, release);
+        try (var worker = Executors.newSingleThreadExecutor()) {
+            var useCase = new StartConversionUseCase(id -> engine, worker);
+            var result = useCase.start(request(), e -> {});
+            assertTrue(started.await(2, TimeUnit.SECONDS));
+            assertTrue(result.cancel(false));
+            assertTrue(useCase.hasActiveConversion());
+            assertTrue(useCase.start(request(), e -> {}).isCompletedExceptionally());
+            release.countDown();
+            worker.submit(() -> {}).get(2, TimeUnit.SECONDS);
+            assertFalse(useCase.hasActiveConversion());
+        } finally { release.countDown(); }
+    }
+
     @Test void cancellationBeforeProcessRegistrationIsDeliveredWhenEngineStarts() {
         AtomicReference<StartConversionUseCase> holder = new AtomicReference<>();
         var registered = new java.util.concurrent.atomic.AtomicBoolean();

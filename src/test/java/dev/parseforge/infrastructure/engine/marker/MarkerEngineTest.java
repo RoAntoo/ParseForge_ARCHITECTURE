@@ -61,6 +61,12 @@ class MarkerEngineTest {
         doAnswer(invocation -> {
             var listener = (dev.parseforge.application.port.out.ProcessOutputListener) invocation.getArgument(1);
             listener.onLine(ProcessStream.STDOUT, "marker-log");
+            ProcessSpec command = invocation.getArgument(0);
+            Path generated = Path.of(command.arguments().get(2)).resolve("input/input.md");
+            Files.createDirectories(generated.getParent());
+            Files.writeString(generated, "# converted");
+            // Output detection must not depend on filesystem timestamp resolution.
+            Files.setLastModifiedTime(generated, java.nio.file.attribute.FileTime.fromMillis(0));
             return new ProcessResult(0, false, false, Duration.ofSeconds(2));
         }).when(processExecutor).execute(any(), any());
         MarkerEngine engine = new MarkerEngine(
@@ -70,6 +76,7 @@ class MarkerEngineTest {
         ConversionResult result = engine.convert(request(output), events::add);
 
         assertEquals(ConversionStatus.COMPLETED, result.status());
+        assertEquals(List.of(output.resolve("input/input.md")), result.outputFiles());
         assertTrue(events.stream().anyMatch(event ->
                 event instanceof ConversionEvent.LogReceived log
                         && log.stream() == ConversionEvent.Stream.STDOUT
@@ -104,6 +111,22 @@ class MarkerEngineTest {
         engine.cancel();
 
         verify(processExecutor).cancel();
+    }
+
+    @Test void zeroExitWithoutMarkdownFailsAndDoesNotReportUnrelatedOrPreviousFiles() throws Exception {
+        Path executable = Files.createFile(temporaryDirectory.resolve("marker_single.exe"));
+        Path output = Files.createDirectories(temporaryDirectory.resolve("output/input"));
+        Files.writeString(output.resolve("input.md"), "previous");
+        ProcessExecutor executor = mock(ProcessExecutor.class);
+        when(executor.execute(any(), any())).thenAnswer(invocation -> {
+            Files.writeString(output.getParent().resolve("unrelated.md"), "another conversion");
+            return new ProcessResult(0, false, false, Duration.ZERO);
+        });
+        var engine = new MarkerEngine(() -> executable, executor, new MarkerCommandBuilder());
+        var result = engine.convert(request(output.getParent()), ignored -> {});
+        assertEquals(ConversionStatus.FAILED, result.status());
+        assertTrue(result.outputFiles().isEmpty());
+        assertEquals("previous", Files.readString(output.resolve("input.md")));
     }
 
     private ConversionRequest request(Path outputDirectory) {

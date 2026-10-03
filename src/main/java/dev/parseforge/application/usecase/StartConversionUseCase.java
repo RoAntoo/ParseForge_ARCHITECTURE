@@ -39,8 +39,27 @@ public final class StartConversionUseCase {
                     new IllegalStateException("There is already an active conversion"));
         }
 
-        return CompletableFuture.supplyAsync(() -> run(conversion, request, listener), executor)
-                .whenComplete((ignored, error) -> active.compareAndSet(conversion, null));
+        var result = new CompletableFuture<ConversionResult>();
+        try {
+            executor.execute(() -> {
+                ConversionResult value = null;
+                Throwable failure = null;
+                try {
+                    if (!result.isCancelled()) value = run(conversion, request, listener);
+                } catch (Throwable error) {
+                    failure = error;
+                } finally {
+                    // Cleanup belongs to the worker, even if the caller cancels its future.
+                    active.compareAndSet(conversion, null);
+                }
+                if (failure == null) result.complete(value);
+                else result.completeExceptionally(failure);
+            });
+        } catch (RuntimeException error) {
+            active.compareAndSet(conversion, null);
+            result.completeExceptionally(error);
+        }
+        return result;
     }
 
     public boolean cancelActive() {
