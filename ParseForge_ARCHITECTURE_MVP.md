@@ -1740,3 +1740,22 @@ incluye un código opcional compatible con los constructores previos.
 de 50 MiB o más, bloqueando únicamente con menos de 100 MiB disponibles. Es un
 piso prudente, no una estimación de espacio total. Los Job Objects y leases siguen
 siendo responsables del ciclo de procesos. Ver `docs/release/STAGE_7_RESULT.md`.
+
+
+## Stage 8 — estructura visual implementada (2026-10-03)
+
+La presentación JavaFX separa el home de conversión de la administración técnica.
+`MainController` compone header, selector compacto de motores, documento/preflight,
+destino, Forzar OCR y CTA coral `#F63A48`. Durante la conversión el CTA se oculta;
+la barra lateral conserva Cancelar, motor, fase y tiempo. Los colores se centralizan
+como tokens JavaFX en `main.css`; espaciados y radios siguen escalas documentadas.
+
+El diálogo modal y redimensionable de Ajustes pertenece a la ventana principal.
+Sus pestañas seleccionan qué motor administrar, independientemente del motor de
+conversión. Cada `EngineSettingsController` expone la tarjeta compacta y el panel
+técnico, compartiendo el mismo estado y las operaciones existentes. Cerrar Ajustes
+no cancela una instalación; la tarjeta permite volver a su progreso. Se conserva
+la confirmación de desinstalación y la semántica por conversión de Forzar OCR.
+
+No se modifican casos de uso, motores, preflight, instaladores, persistencia ni
+administración de procesos. Evidencia y límites: `docs/release/STAGE_8_RESULT.md`.

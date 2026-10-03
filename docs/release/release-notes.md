@@ -2,6 +2,11 @@
 
 Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been published.
 
+- Stage 8: clean header with Ajustes, compact engine cards and a document-first home.
+- Separate engine settings dialog with per-state actions, version and size details; uninstall confirmation retained.
+- Main Convertir a Markdown CTA uses #F63A48, white text and distinct interaction states.
+- Marker Forzar OCR remains a per-conversion option beside the document flow.
+- Shared cream/navy color tokens, visible keyboard focus and responsive scrolling at 100/125/150%.
 - Local background PDF preflight: page count, size, estimated type, selectable text and OCR advice.
 - Explicit contextual engine recommendations, with no automatic selection; scanned PDFs require Marker.
 - Distributed sampling for long PDFs, eight-second analysis timeout and nonblocking fallback for inconclusive inspection.
@@ -9,15 +14,15 @@ Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been publ
 - Clear typed errors, cancellation as a normal outcome, destination/temp low-space checks for large inputs and bounded UI logs.
 
 - Windows x64 installer and portable ZIP include a private Temurin Java runtime.
-- Install/repair Marker or MarkItDown from the Motores de conversión sidebar with verified downloads.
-- Compact engine cards with exclusive ready-engine selection, independent accordion details and persisted safe fallback.
+- Install/repair Marker or MarkItDown from Ajustes with verified downloads.
+- Compact engine cards with exclusive ready-engine selection, separate technical settings and persisted safe fallback.
 - Select a ready engine by clicking its card or radio; internal controls keep their own actions.
 - MarkItDown 0.1.8 uses independent private CPython 3.12.10 and locked PDF dependencies (~194 MB installed, ~80 MB downloaded).
-- Ligero / Avanzado indicate scope/resources. Forzar OCR is available only in Marker's details.
+- Ligero / Avanzado indicate scope/resources. Forzar OCR is available in the conversion flow when Marker is selected.
 - Digital, Unicode/spaced-path PDF conversion, malformed PDF detection and cancellation for MarkItDown.
 - Cream/navy workspace with PDF drop area and destination path tooltips.
 - First-start welcome dialog with a persisted "No volver a mostrar" preference.
-- Independent vertical scroll for the workspace/sidebar; conversion action stays visible.
+- Independent vertical scroll for the workspace/sidebar; Convertir is reachable by scrolling; Cancelar stays visible during conversion.
 - Convertir reflects engine, input, destination and operation readiness.
 - Download feedback shows actual bytes, rolling speed and approximate ETA when stable.
 - Preparation stages show elapsed time and indeterminate progress.

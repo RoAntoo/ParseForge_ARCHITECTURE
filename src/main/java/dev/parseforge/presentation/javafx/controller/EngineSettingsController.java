@@ -19,10 +19,9 @@ public final class EngineSettingsController {
     private final Stage owner;
     private final dev.parseforge.application.settings.EngineProfile profile;
     private final Runnable selectionChanged;
-    private final java.util.function.Consumer<EngineSettingsController> expansionChanged;
     private final VBox details = new VBox(12);
-    private final Button expand = new Button("▾");
-    private boolean expanded = true;
+    private final Button quickInstall = new Button("Instalar");
+    private final Button attention = new Button("Abrir ajustes");
     private boolean otherBusy;
     private final EngineId id;
     private final InstallEngineUseCase install;
@@ -65,9 +64,9 @@ public final class EngineSettingsController {
     public EngineSettingsController(Stage owner, dev.parseforge.application.settings.EngineProfile profile, InstallEngineUseCase install,
             RepairEngineUseCase repair, UninstallEngineUseCase uninstall, CheckEngineStatusUseCase check,
             CancelEngineOperationUseCase cancel, Consumer<Boolean> busyListener, Consumer<String> log,
-            ToggleGroup selections, Runnable selectionChanged, Consumer<EngineSettingsController> expansionChanged) {
+            ToggleGroup selections, Runnable selectionChanged, Consumer<EngineSettingsController> openSettings) {
         EngineId id = profile.id();
-        this.profile = profile; this.selectionChanged = selectionChanged; this.expansionChanged = expansionChanged;
+        this.profile = profile; this.selectionChanged = selectionChanged;
         this.owner = owner; this.id = id; this.install = install; this.repair = repair;
         this.uninstall = uninstall; this.check = check; this.cancel = cancel;
         this.busyListener = busyListener; this.log = log;
@@ -111,9 +110,7 @@ public final class EngineSettingsController {
                 new FlowPane(8, 8, checkButton, uninstallButton));
         if (profile.ocr()) advanced.getChildren().add(2, prerequisite);
         advanced.getStyleClass().add("engine-advanced");
-        TitledPane settings = new TitledPane("Opciones del motor", advanced);
-        settings.setId(controlId("engine-options")); settings.setExpanded(false);
-        settings.setMinHeight(Region.USE_PREF_SIZE);
+        advanced.setId(controlId("engine-options"));
         Label name = new Label(profile.name()); name.getStyleClass().add("engine-name");
         selection.setId(id + "-selection"); selection.setToggleGroup(selections);
         selection.setAccessibleText("Seleccionar " + profile.name() + " para convertir");
@@ -124,15 +121,17 @@ public final class EngineSettingsController {
         description.setWrapText(true); description.setMinHeight(Region.USE_PREF_SIZE);
         state.setWrapText(true); state.setMinHeight(Region.USE_PREF_SIZE);
         state.getStyleClass().add("engine-state");
-        Label capacity = new Label("▰".repeat(profile.scopeBars()) + "▱".repeat(5 - profile.scopeBars()) + "  " + profile.level());
+        Label capacity = new Label(profile.level());
         capacity.setId(id + "-capacity"); capacity.getStyleClass().add("engine-capacity");
         capacity.setTooltip(new Tooltip("El nivel describe el alcance y complejidad del motor; no es una puntuación de calidad."));
         capacity.setAccessibleText("Capacidad: " + profile.level() + ". El nivel describe el alcance y complejidad del motor; no es una puntuación de calidad.");
-        expand.setId("expand-" + id); expand.getStyleClass().add("engine-chevron");
-        expand.setOnAction(ignored -> { expanded(!expanded); if (expanded) expansionChanged.accept(this); });
-        Region stateSpacer = new Region(); HBox.setHgrow(stateSpacer, Priority.ALWAYS);
-        HBox stateRow = new HBox(8, state, stateSpacer, expand); stateRow.setAlignment(Pos.CENTER_LEFT);
-        card.getChildren().setAll(heading, capacity, stateRow, details);
+        quickInstall.setId("quick-install-" + id);
+        quickInstall.setOnAction(ignored -> { openSettings.accept(this); installButton.fire(); });
+        attention.setId("attention-" + id);
+        attention.setOnAction(ignored -> openSettings.accept(this));
+        Label brief = new Label(profile.ocr() ? "OCR y documentos complejos" : "PDFs digitales");
+        brief.setWrapText(true); brief.setMinHeight(Region.USE_PREF_SIZE);
+        card.getChildren().setAll(heading, capacity, brief, state, quickInstall, attention);
         card.setMaxWidth(Double.MAX_VALUE); card.setMinWidth(0);
         card.setMinHeight(Region.USE_PREF_SIZE); card.setId(id + "-card");
         card.setAccessibleRole(AccessibleRole.PARENT);
@@ -150,8 +149,14 @@ public final class EngineSettingsController {
         requirements.setWrapText(true); requirements.setMinHeight(Region.USE_PREF_SIZE);
         requirements.getStyleClass().add("muted");
         installButton.getStyleClass().add("primary-button");
-        details.getChildren().setAll(description, info, requirements, actions, operation, progress, elapsed, timing, settings);
+        Label settingsName = new Label(profile.name()); settingsName.getStyleClass().add("title");
+        Label settingsState = new Label(); settingsState.textProperty().bind(state.textProperty());
+        settingsState.getStyleClass().add("engine-state");
+        Label settingsProfile = new Label("Perfil: " + profile.level());
+        details.getChildren().setAll(settingsName, description, settingsState, info, settingsProfile, requirements,
+                actions, operation, progress, elapsed, timing, advanced);
         details.setId(id + "-details"); details.setMinWidth(0);
+        details.getStyleClass().add("engine-settings");
         view = new VBox(0, card);
         view.setMinWidth(0); view.getStyleClass().add("engine-list");
         timer.setCycleCount(Timeline.INDEFINITE);
@@ -170,7 +175,7 @@ public final class EngineSettingsController {
             cancellationRequested = true; cancel.execute(id);
             cancelButton.setDisable(true); operation.setText("Cancelando...");
         });
-        for (ButtonBase button : java.util.List.of(selection, expand, installButton, repairButton, uninstallButton, cancelButton, checkButton)) {
+        for (ButtonBase button : java.util.List.of(selection, quickInstall, attention, installButton, repairButton, uninstallButton, cancelButton, checkButton)) {
             button.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
                 if (event.getCode() == javafx.scene.input.KeyCode.ENTER && !button.isDisabled()) {
                     button.fire(); event.consume();
@@ -187,11 +192,8 @@ public final class EngineSettingsController {
     public boolean busy() { return busy || check.state(id) == EngineState.BUSY; }
     public void selected(boolean value) { selection.setSelected(value && ready()); updateSelectedStyle(); }
     private void updateSelectedStyle() { card.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("selected"), selected()); }
-    public void expanded(boolean value) {
-        expanded = value; show(details, value); expand.setText(value ? "▾" : "▸");
-        expand.setAccessibleText((value ? "Ocultar detalles de " : "Mostrar detalles de ") + profile.name());
-    }
-    public void addConversionOption(javafx.scene.Node option) { details.getChildren().add(option); }
+    public VBox settingsView() { return details; }
+    public String name() { return profile.name(); }
     public void otherBusy(boolean value) { otherBusy = value; refreshButtons(); }
     public void converting(boolean value) { converting = value; refreshButtons(); }
     public CompletableFuture<Void> refresh() {
@@ -266,19 +268,20 @@ public final class EngineSettingsController {
     }
     private void refreshButtons() {
         EngineState value = check.state(id);
-        state.setText("Estado: " + switch (value) {
-            case READY -> "✓ Listo";
-            case NOT_INSTALLED -> "No instalado";
-            case BROKEN -> "Necesita reparación";
-            case DOWNLOADING -> "Descargando";
-            case INSTALLING -> "Instalando";
-            case VERIFYING -> "Verificando";
-            case REMOVING -> "Desinstalando";
-            case BUSY -> "En uso en otra ventana";
-            default -> "Preparando";
+        state.setText(switch (value) {
+            case READY -> "✓ LISTO";
+            case NOT_INSTALLED -> "NO INSTALADO";
+            case BROKEN -> "ERROR · Necesita atención";
+            case DOWNLOADING, INSTALLING -> "INSTALANDO";
+            case VERIFYING -> "VERIFICANDO";
+            case REMOVING -> "DESINSTALANDO";
+            case BUSY -> "EN USO";
+            default -> "PREPARANDO";
         });
-        if (checking) state.setText("Estado: Comprobando " + profile.name() + "...");
-        else if (busy && value == EngineState.NOT_INSTALLED) state.setText("Estado: Preparando instalación...");
+        if (checking) state.setText("COMPROBANDO…");
+        else if (busy && value == EngineState.NOT_INSTALLED) state.setText("INSTALANDO");
+        state.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("ready"), value == EngineState.READY && !busy);
+        state.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("error"), value == EngineState.BROKEN && !busy);
         if (!ready()) selection.setSelected(false);
         card.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("selected"), selection.isSelected());
         selection.setDisable(!ready() || converting || otherBusy);
@@ -290,8 +293,14 @@ public final class EngineSettingsController {
         uninstallButton.setDisable(occupied || value == EngineState.NOT_INSTALLED);
         checkButton.setDisable(busy || converting || otherBusy);
         cancelButton.setDisable(!busy || checking || cancellationRequested || value == EngineState.REMOVING);
+        quickInstall.setDisable(occupied);
+        show(quickInstall, value == EngineState.NOT_INSTALLED && !busy);
+        attention.setText(busy ? "Ver progreso" : "Abrir ajustes");
+        show(attention, value == EngineState.BROKEN || busy || value == EngineState.BUSY);
         show(installButton, value == EngineState.NOT_INSTALLED && !busy);
-        show(repairButton, !busy && value != EngineState.NOT_INSTALLED);
+        show(repairButton, !busy && (value == EngineState.READY || value == EngineState.BROKEN));
+        show(uninstallButton, !busy && (value == EngineState.READY || value == EngineState.BROKEN));
+        show(checkButton, !busy && (value == EngineState.READY || value == EngineState.BROKEN));
         show(cancelButton, busy && !checking);
         show(requirements, value != EngineState.READY && !checking);
         show(timing, busy && !checking);

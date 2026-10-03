@@ -91,7 +91,7 @@ class Stage5UiTest {
                 stage.setScene(scene); stage.setMinWidth(800); stage.setMinHeight(500); stage.show();
                 controller.showWelcomeIfNeeded(); return null;
             });
-            waitFor(() -> button("install-marker").isVisible() && !button("install-marker").isDisabled());
+            waitFor(() -> button("quick-install-marker").isVisible() && !button("quick-install-marker").isDisabled());
             fx(() -> {
                 assertTrue(button("convert-pdf").isDisabled());
                 assertEquals("ParseForge 0.1.0", label("app-version").getText());
@@ -105,24 +105,24 @@ class Stage5UiTest {
                 assertEquals(1, settings.load().welcomeDialogVersion());
                 controller.showWelcomeIfNeeded(); assertNull(welcome());
                 snapshot(stage.getScene(), "not-installed");
-                button("install-marker").fire(); return null;
+                button("quick-install-marker").fire(); settingsPane = (DialogPane)Window.getWindows().stream().filter(w -> w != stage && w.isShowing()).findFirst().orElseThrow().getScene().lookup("#engine-settings-dialog"); return null;
             });
             waitFor(() -> installationProgress.get() != null && label("engine-operation").getText().equals("Preparando Marker"));
             fx(() -> {
                 assertTrue(button("convert-pdf").isDisabled());
-                assertEquals(-1, ((ProgressBar)stage.getScene().lookup(".progress-bar")).getProgress());
+                assertEquals(-1, ((ProgressBar)settingsPane.lookup(".progress-bar")).getProgress());
                 snapshot(stage.getScene(), "installing"); return null;
             });
             installationProgress.get().onProgress(new EngineInstallProgress(EngineInstallProgress.Phase.DOWNLOADING, "Descargando archivo", 100, 1000));
-            waitFor(() -> ((ProgressBar)stage.getScene().lookup(".progress-bar")).getProgress() == 0.1);
+            waitFor(() -> ((ProgressBar)settingsPane.lookup(".progress-bar")).getProgress() == 0.1);
             fx(() -> { button("cancel-installation").fire(); return null; });
             waitFor(() -> button("install-marker").isVisible() && !button("install-marker").isDisabled());
             state.set(EngineState.BROKEN);
             fx(() -> { button("check-engine-state").fire(); return null; });
-            waitFor(() -> label("engine-state").getText().equals("Estado: Necesita reparación"));
+            waitFor(() -> label("engine-state").getText().equals("ERROR · Necesita atención"));
             fx(() -> { assertFalse(button("repair-marker").isDisabled()); snapshot(stage.getScene(), "broken"); return null; });
             fx(() -> { button("repair-marker").fire(); return null; });
-            waitFor(() -> label("engine-state").getText().equals("Estado: ✓ Listo") && !button("check-engine-state").isDisabled());
+            waitFor(() -> label("engine-state").getText().equals("✓ LISTO") && !button("check-engine-state").isDisabled());
             Path pdf = temporary.resolve("documento-con-un-nombre-muy-largo-".repeat(4) + ".pdf");
             Files.writeString(pdf, "%PDF-1.4\nfixture");
             fx(() -> {
@@ -131,13 +131,13 @@ class Stage5UiTest {
                 ((RadioButton)stage.getScene().lookup("#marker-selection")).fire();
                 assertTrue(((RadioButton)stage.getScene().lookup("#marker-selection")).isSelected());
                 snapshot(stage.getScene(), "ready");
-                button("expand-marker").fire();
+                button("close-settings").fire();
                 stage.getScene().getRoot().applyCss(); stage.getScene().getRoot().layout();
                 var card = stage.getScene().lookup("#marker-card");
                 assertTrue(card.getBoundsInLocal().getHeight() < 230, "La tarjeta debe conservar su altura natural");
                 assertTrue(label("engine-state").localToScene(label("engine-state").getBoundsInLocal()).getMinY() >= 95,
                         "El estado del motor debe quedar visible debajo del encabezado");
-                button("expand-marker").fire();
+
                 controller.selectPdf(pdf); return null;
             });
             waitFor(() -> !button("convert-pdf").isDisabled());
@@ -164,6 +164,7 @@ class Stage5UiTest {
                 ScrollPane workspace = (ScrollPane)stage.getScene().lookup("#workspace-scroll");
                 assertTrue(workspace.getContent().getLayoutBounds().getHeight() > workspace.getViewportBounds().getHeight());
                 assertTrue(workspace.getContent().getLayoutBounds().getWidth() <= workspace.getViewportBounds().getWidth() + 1);
+                workspace.setVvalue(1); stage.getScene().getRoot().layout();
                 assertTrue(button("convert-pdf").localToScene(button("convert-pdf").getBoundsInLocal()).getMaxY() < stage.getScene().getHeight());
                 snapshot(stage.getScene(), "small-top");
                 workspace.setVvalue(1); return null;
@@ -213,8 +214,13 @@ class Stage5UiTest {
     private AnalyzeDocumentUseCase neutralPreflight() {
         return new AnalyzeDocumentUseCase(file -> new DocumentPreflightResult(file, 100, 1, DocumentType.UNKNOWN, false, false, 0, 1, 0));
     }
-    private Button button(String id) { return (Button)stage.getScene().lookup("#" + id); }
-    private Label label(String id) { return (Label)stage.getScene().lookup("#" + id); }
+    private DialogPane settingsPane;
+    private javafx.scene.Node node(String id) {
+        var home = stage.getScene().lookup("#" + id);
+        return home != null ? home : settingsPane.lookup("#" + id);
+    }
+    private Button button(String id) { return (Button)node(id); }
+    private Label label(String id) { return (Label)node(id); }
     private Stage welcome() {
         return (Stage)Window.getWindows().stream().filter(window -> window != stage && window.isShowing()
                 && window.getScene().lookup("#welcome-dialog") != null).findFirst().orElse(null);

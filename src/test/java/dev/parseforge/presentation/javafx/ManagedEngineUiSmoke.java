@@ -15,6 +15,7 @@ public final class ManagedEngineUiSmoke {
     public static void main(String[] args) { Application.launch(SmokeApplication.class, args); }
     public static final class SmokeApplication extends Application {
         private ParseForgeApplication app;
+        private DialogPane settings;
         @Override public void start(Stage stage) throws Exception {
             List<String> args = getParameters().getRaw();
             System.setProperty("parseforge.dataDir", args.get(0));
@@ -22,19 +23,34 @@ public final class ManagedEngineUiSmoke {
             Thread.startVirtualThread(() -> {
                 try {
                     String action = args.get(1);
-                    waitFor(() -> (label(stage).equals("Estado: ✓ Listo") || label(stage).equals("Estado: No instalado")
-                            || label(stage).equals("Estado: Necesita reparación")) &&
-                            fx(() -> !((Button)stage.getScene().lookup("#check-engine-state")).isDisabled()), 120);
+                    fx(() -> {
+                        for (Window window : List.copyOf(Window.getWindows())) {
+                            Node welcome = window.getScene().lookup("#welcome-understood");
+                            if (welcome instanceof Button button) button.fire();
+                        }
+                        ((Button)stage.getScene().lookup("#open-settings")).fire();
+                        settings = (DialogPane)Window.getWindows().stream()
+                                .filter(w -> w != stage && w.isShowing() && w.getScene().lookup("#engine-settings-dialog") != null)
+                                .findFirst().orElseThrow().getScene().lookup("#engine-settings-dialog");
+                        return null;
+                    });
+                    waitFor(() -> (label(stage).equals("✓ LISTO") || label(stage).equals("NO INSTALADO")
+                            || label(stage).equals("ERROR · Necesita atención")) &&
+                            fx(() -> !((Button)node(stage, "#check-engine-state")).isDisabled()), 120);
                     snapshot(stage, action + "-before");
                     System.out.println("UI_INITIAL=" + label(stage));
                     if (List.of("digital", "ocr", "cancel").contains(action)) {
                         fx(() -> {
+                            ((Button)settings.lookup("#close-settings")).fire();
                             app.controller.selectPdf(Path.of(args.get(2)));
                             ((TextField)stage.getScene().lookup("#output-directory")).setText(
                                     Path.of(args.get(0), "validation", "ui-output-" + action + "-" + UUID.randomUUID()).toString());
                             ((CheckBox)stage.getScene().lookup("#force-ocr")).setSelected(!action.equals("digital"));
-                            ((Button)stage.getScene().lookup("#convert-pdf")).fire();
                             return null;
+                        });
+                        waitFor(() -> fx(() -> !((Button)stage.getScene().lookup("#convert-pdf")).isDisabled()), 20);
+                        fx(() -> {
+                            ((Button)stage.getScene().lookup("#convert-pdf")).fire(); return null;
                         });
                         Thread.sleep(5000);
                         snapshot(stage, action + "-processing");
@@ -59,7 +75,7 @@ public final class ManagedEngineUiSmoke {
                         fx(() -> {
                             if (action.equals("uninstall")) Platform.runLater(() -> {
                                 for (Window window : List.copyOf(Window.getWindows())) {
-                                    if (window instanceof Stage dialog && dialog != stage && dialog.getScene() != null) {
+                                    if (window instanceof Stage dialog && dialog != stage && dialog.getScene() != settings.getScene() && dialog.getScene() != null) {
                                         for (Node node : dialog.getScene().getRoot().lookupAll(".button")) {
                                             if (node instanceof Button confirm && confirm.isDefaultButton()) {
                                                 System.out.println("UI_CONFIRM_UNINSTALL=" + confirm.getText());
@@ -69,23 +85,23 @@ public final class ManagedEngineUiSmoke {
                                     }
                                 }
                             });
-                            var control = (Button)stage.getScene().lookup(button);
+                            var control = (Button)node(stage, button);
                             if (control.isDisabled()) throw new IllegalStateException("Acción no disponible: " + action);
                             control.fire();
                             return null;
                         });
                         if (action.equals("cancel-install")) {
                             Thread.sleep(1000);
-                            fx(() -> { ((Button)stage.getScene().lookup("#cancel-installation")).fire(); return null; });
+                            fx(() -> { ((Button)node(stage, "#cancel-installation")).fire(); return null; });
                         }
-                        String expected = List.of("uninstall", "cancel-install").contains(action) ? "Estado: No instalado" : "Estado: ✓ Listo";
+                        String expected = List.of("uninstall", "cancel-install").contains(action) ? "NO INSTALADO" : "✓ LISTO";
                         waitFor(() -> {
-                            boolean finished = fx(() -> !((Button)stage.getScene().lookup("#check-engine-state")).isDisabled());
+                            boolean finished = fx(() -> !((Button)node(stage, "#check-engine-state")).isDisabled());
                             if (finished && !label(stage).equals(expected))
-                                throw new IllegalStateException(fx(() -> ((Label)stage.getScene().lookup("#engine-operation")).getText()));
+                                throw new IllegalStateException(fx(() -> ((Label)node(stage, "#engine-operation")).getText()));
                             return finished && label(stage).equals(expected);
                         }, 1200);
-                    } else if (!label(stage).equals("Estado: ✓ Listo")) throw new IllegalStateException(label(stage));
+                    } else if (!label(stage).equals("✓ LISTO")) throw new IllegalStateException(label(stage));
                     snapshot(stage, action + "-after");
                     System.out.println("UI_PASS=" + action + " " + label(stage));
                     fx(() -> { app.stop(); stage.close(); Platform.exit(); return null; });
@@ -96,6 +112,10 @@ public final class ManagedEngineUiSmoke {
                     System.exit(1);
                 }
             });
+        }
+        private Node node(Stage stage, String selector) {
+            Node node = stage.getScene().lookup(selector);
+            return node != null ? node : settings.lookup(selector);
         }
         private String label(Stage stage) throws Exception {
             return fx(() -> ((Label)stage.getScene().lookup("#engine-state")).getText());
