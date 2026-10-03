@@ -1,0 +1,575 @@
+{
+  "stage": 8,
+  "version": "0.1.0",
+  "date": "2026-10-03",
+  "timezone": "America/Buenos_Aires",
+  "status": "IMPLEMENTED_AND_HOST_VERIFIED_VM_VALIDATION_PENDING",
+  "scope": "JavaFX presentation and regression tests only; conversion engines, preflight, use cases, installers and persistence unchanged.",
+  "release": {
+    "command": "./scripts/release.ps1",
+    "result": "PASS",
+    "log": "build/stage8-release.log",
+    "discovered": 140,
+    "passed": 136,
+    "failures": 0,
+    "errors": 0,
+    "skippedOptInUi": 4,
+    "artifacts": [
+      {
+        "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+        "bytes": 55317419,
+        "sha256": "8cda53f72a53bc39efd29e8533d78d2bb9e334dbb5154cd367ce32216da64342"
+      },
+      {
+        "file": "build/release/ParseForge-Setup-0.1.0.exe",
+        "bytes": 53152373,
+        "sha256": "443399b097b81d2be2afcbb5f4b6c4842829cc247eefd33b0645ed6b770ce78f"
+      }
+    ],
+    "packagedJarMatches": true,
+    "jarSha256": "80f36ae7790d6b2987929b29ef14a0e17327704bdd3aee8549886cbc9afc152c"
+  },
+  "uiMatrix": [
+    {
+      "scale": "100%",
+      "suites": [
+        "Stage5UiTest",
+        "Stage6UiTest",
+        "Stage7UiTest",
+        "Stage8UiTest"
+      ],
+      "result": "PASS",
+      "log": "build/stage8-matrix-100%.log"
+    },
+    {
+      "scale": "125%",
+      "suites": [
+        "Stage5UiTest",
+        "Stage6UiTest",
+        "Stage7UiTest",
+        "Stage8UiTest"
+      ],
+      "result": "PASS",
+      "log": "build/stage8-matrix-125%.log"
+    },
+    {
+      "scale": "150%",
+      "suites": [
+        "Stage5UiTest",
+        "Stage6UiTest",
+        "Stage7UiTest",
+        "Stage8UiTest"
+      ],
+      "result": "PASS",
+      "log": "build/stage8-matrix-150%.log"
+    }
+  ],
+  "finalScreenshotValidation": [
+    {
+      "scale": "100%",
+      "suite": "Stage8UiTest",
+      "result": "PASS",
+      "log": "build/stage8-final-100%.log"
+    },
+    {
+      "scale": "125%",
+      "suite": "Stage8UiTest",
+      "result": "PASS",
+      "log": "build/stage8-final-125%.log"
+    },
+    {
+      "scale": "150%",
+      "suite": "Stage8UiTest",
+      "result": "PASS",
+      "log": "build/stage8-final-150%.log"
+    }
+  ],
+  "layout": {
+    "header": [
+      "ParseForge",
+      "Ajustes"
+    ],
+    "home": [
+      "compact exclusive engine cards",
+      "PDF selection/drop",
+      "compact preflight",
+      "destination",
+      "per-conversion Marker OCR",
+      "Convertir a Markdown"
+    ],
+    "settings": "Owned resizable modal dialog; separate engine tabs; shared existing operation state; scrollable at small size.",
+    "technicalActionsInHome": false,
+    "quickInstallInHome": true,
+    "conversionSelectionIndependentOfSettingsTab": true,
+    "cancelVisibleInSmallWindow": true
+  },
+  "designSystem": {
+    "file": "src/main/resources/css/main.css",
+    "tokens": [
+      "primary",
+      "convert",
+      "background",
+      "surface",
+      "surface-muted",
+      "border",
+      "text",
+      "text-secondary",
+      "success",
+      "warning",
+      "error",
+      "focus",
+      "disabled"
+    ],
+    "spacing": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radii": [
+      8,
+      12,
+      16
+    ],
+    "cta": {
+      "normal": "#F63A48",
+      "hover": "#fb4b58",
+      "pressed": "#ed3442",
+      "text": "#101218",
+      "disabledBackground": "#d9d3ce",
+      "disabledText": "#233047",
+      "focus": "#2466a8"
+    },
+    "contrastRatios": {
+      "normal": 5.008,
+      "hover": 5.571,
+      "pressed": 4.61,
+      "disabled": 8.932
+    }
+  },
+  "verification": [
+    "native JavaFX rendering at outputScale 1.0 / 1.25 / 1.5",
+    "home technical controls absent",
+    "exclusive selection and persistent fallback",
+    "settings tabs independent of conversion selection",
+    "READY / BROKEN / NOT_INSTALLED actions",
+    "uninstall cancellation never calls manager",
+    "quick install opens progress dialog",
+    "preflight digital / scanned / mixed and race regressions",
+    "coral CSS computed value and contrast >= 4.5:1 in normal / hover / pressed / disabled / focus",
+    "Enter / Space / Tab / Shift+Tab",
+    "800x500 window, full destination tooltip, ellipsis and central scroll",
+    "conversion CTA hidden while running; neutral Cancelar remains reachable",
+    "onboarding, install cancellation, repair, errors, conversion cancellation and completion regressions"
+  ],
+  "screenshots": [
+    {
+      "file": "build/stage8-ui/100%/conversion-completed.png",
+      "bytes": 50767,
+      "sha256": "fa042613b9767303465a20e5f82bb485c22fe7d495eba5d31808a6ad757f2481",
+      "scale": "100%",
+      "width": 1084,
+      "height": 721
+    },
+    {
+      "file": "build/stage8-ui/100%/conversion-in-progress.png",
+      "bytes": 27967,
+      "sha256": "2c0f6787fe03c53e1897fd2657fda267897d338af0fa5d1303cf6cb0ebb4548d",
+      "scale": "100%",
+      "width": 784,
+      "height": 461
+    },
+    {
+      "file": "build/stage8-ui/100%/cta-focused.png",
+      "bytes": 40147,
+      "sha256": "aa153dc6c0a43407c9dab0f411ca5f30a2ade74ca385cfe410284756f26cad42",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/cta-hover.png",
+      "bytes": 39348,
+      "sha256": "f76a869f743a6e155efdaaacd00edc09bb32998b3e3bb02f0d7e249f352df31b",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/cta-pressed.png",
+      "bytes": 39348,
+      "sha256": "d3ec528e133524170f0b1a73530daac870b396fbbc6997b66b65dffcb4704078",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/engine-not-installed.png",
+      "bytes": 44470,
+      "sha256": "d32a2827f164c1ade224d437dbc8a9b92df41b2f2005cd0387a3ca347159a5d0",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/home-digital-markitdown.png",
+      "bytes": 39357,
+      "sha256": "275a8403ce8ed1b82a0956fea90b555a6e356a77c480c5ff72ae8b84a3716d74",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/home-empty.png",
+      "bytes": 39549,
+      "sha256": "10ddc3f79531f71d762c889ea339b76d42934bd63a02810dfb7d0ab28f1e7565",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/home-scanned-marker.png",
+      "bytes": 43474,
+      "sha256": "934bce3fb7b18ce51c8d5d6d5fc09a1ce1df712ef0f3b6303d8b5b98ef6dbbb7",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/scanned-markitdown-disabled.png",
+      "bytes": 44315,
+      "sha256": "6481047f20e1845976164d0d9923f703334da3bcb1dfe492ee117622885dcce7",
+      "scale": "100%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/100%/settings-broken.png",
+      "bytes": 24515,
+      "sha256": "5e1bca03c817690f0232d7eef1e1f0d5963b609a9bcb813f18fc887af5f66d07",
+      "scale": "100%",
+      "width": 664,
+      "height": 641
+    },
+    {
+      "file": "build/stage8-ui/100%/settings-marker.png",
+      "bytes": 22663,
+      "sha256": "c6263869aabb2f16e84bbb6da18845e858074b3baf1ae66129e798be2ac74603",
+      "scale": "100%",
+      "width": 644,
+      "height": 651
+    },
+    {
+      "file": "build/stage8-ui/100%/settings-markitdown.png",
+      "bytes": 22456,
+      "sha256": "c041b8d52f53e377ac7e3f7d4625f3e92a3f6daea453c5000956ba75b2640e45",
+      "scale": "100%",
+      "width": 644,
+      "height": 651
+    },
+    {
+      "file": "build/stage8-ui/100%/settings-not-installed.png",
+      "bytes": 22789,
+      "sha256": "d46d9dd23e963b4addcc0b242c693e16a54d082adb88405857f5048c275bc493",
+      "scale": "100%",
+      "width": 664,
+      "height": 641
+    },
+    {
+      "file": "build/stage8-ui/100%/small-settings.png",
+      "bytes": 15087,
+      "sha256": "5ddeb81c49c52fba5258e1bab867e589571a82335a2e5d96de53f003811199a2",
+      "scale": "100%",
+      "width": 664,
+      "height": 413
+    },
+    {
+      "file": "build/stage8-ui/100%/small-window.png",
+      "bytes": 25412,
+      "sha256": "b1b44979e3079c21ffc01e12660f68c0c451ea0536bd5eea5464f1291a676a13",
+      "scale": "100%",
+      "width": 784,
+      "height": 461
+    },
+    {
+      "file": "build/stage8-ui/125%/conversion-completed.png",
+      "bytes": 72001,
+      "sha256": "845364946338dee364555c6b37cba07c7afb4963349f3513f7570e59f1d1e318",
+      "scale": "125%",
+      "width": 1088,
+      "height": 729
+    },
+    {
+      "file": "build/stage8-ui/125%/conversion-in-progress.png",
+      "bytes": 37906,
+      "sha256": "e178b36e44e060175bc7d4ce7d6ef7941ef18e003f809df6adf6865c58bdf703",
+      "scale": "125%",
+      "width": 788,
+      "height": 469
+    },
+    {
+      "file": "build/stage8-ui/125%/cta-focused.png",
+      "bytes": 65031,
+      "sha256": "a6b45aac52c936c6ab08e3f0ff7daa13b9d55b54cabc5504482dc812ba0566d0",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/cta-hover.png",
+      "bytes": 63995,
+      "sha256": "3ed7dc5e415d4b1593b766597033315d7011ae3bb4e4965758021440f2becb50",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/cta-pressed.png",
+      "bytes": 64039,
+      "sha256": "cb5f08cc82b9a46e38c82892df6fab10a1429db0629248d64bb893ac6c82ac57",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/engine-not-installed.png",
+      "bytes": 66741,
+      "sha256": "1529e48326340e6412208e097e6a9d7a9fac01b867d04986ea6adf45fda680b9",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/home-digital-markitdown.png",
+      "bytes": 64023,
+      "sha256": "116a7db2b343c73362919bded863f10ad700e031fd763cc12215d463e55bdcfe",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/home-empty.png",
+      "bytes": 57186,
+      "sha256": "16cc29da4111058b1452403d620bc6a3540171cf929394cd8a0bda7f41ee1017",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/home-scanned-marker.png",
+      "bytes": 65349,
+      "sha256": "8562653a057f9308c32205010d922820c3daac250034b8a8808129a4bd142d1d",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/scanned-markitdown-disabled.png",
+      "bytes": 67346,
+      "sha256": "5ca86bac4183ecbb2052ec332a899c7728f405d5e14ef502931a2fb65d0f3422",
+      "scale": "125%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/125%/settings-broken.png",
+      "bytes": 25728,
+      "sha256": "ba60f40187e3b227b29f6f51ac810790d96786590ece7c638d5a9f4cc8a78bae",
+      "scale": "125%",
+      "width": 668,
+      "height": 649
+    },
+    {
+      "file": "build/stage8-ui/125%/settings-marker.png",
+      "bytes": 23806,
+      "sha256": "fa2c37829a841dddc1e37f43075e9f9695b03dd65802edccfe74aff109a80a4f",
+      "scale": "125%",
+      "width": 644,
+      "height": 653
+    },
+    {
+      "file": "build/stage8-ui/125%/settings-markitdown.png",
+      "bytes": 23634,
+      "sha256": "f537f2de9618b9f8c28da93a63399c73b9ac4d0f9e28d546a059c064bec02c55",
+      "scale": "125%",
+      "width": 644,
+      "height": 653
+    },
+    {
+      "file": "build/stage8-ui/125%/settings-not-installed.png",
+      "bytes": 23575,
+      "sha256": "e9e9675811bcc69460de34da6e91715736462c9b3676d968a72a8695699e3d43",
+      "scale": "125%",
+      "width": 668,
+      "height": 649
+    },
+    {
+      "file": "build/stage8-ui/125%/small-settings.png",
+      "bytes": 15864,
+      "sha256": "e55b7b78b5d9e37bc9106700f067daab0a8d82039a1f89f60f911984c025024e",
+      "scale": "125%",
+      "width": 668,
+      "height": 421
+    },
+    {
+      "file": "build/stage8-ui/125%/small-window.png",
+      "bytes": 38461,
+      "sha256": "900c00ef72aa42ec5f6b4074feb3887a25fef3ec5bfe0576ddf491eba24f5e5f",
+      "scale": "125%",
+      "width": 788,
+      "height": 469
+    },
+    {
+      "file": "build/stage8-ui/150%/conversion-completed.png",
+      "bytes": 73442,
+      "sha256": "2cacc2ff10fbd0a265c48895310dccd613fe22e84a3bfa60d565854dcfa9deb9",
+      "scale": "150%",
+      "width": 1090,
+      "height": 734
+    },
+    {
+      "file": "build/stage8-ui/150%/conversion-in-progress.png",
+      "bytes": 38003,
+      "sha256": "b01ef1154da8e1374a81b3ac39bb1f91f7419566e6c5b0a85b2d5c6de3d440be",
+      "scale": "150%",
+      "width": 790,
+      "height": 474
+    },
+    {
+      "file": "build/stage8-ui/150%/cta-focused.png",
+      "bytes": 64759,
+      "sha256": "ef66e5086b78ad78d2df53c602c9f2cfce74b2af79674e7a90b62e67637fdb7e",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/cta-hover.png",
+      "bytes": 63715,
+      "sha256": "c7ef8c5bd550d0acac99288b8a134cf96f2e4c761a531a745770e5e7911b0115",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/cta-pressed.png",
+      "bytes": 63731,
+      "sha256": "4bc9d883ed47bfb0296c84362308c408d2f9f55321ada9e49bec6e1c06683a30",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/engine-not-installed.png",
+      "bytes": 66537,
+      "sha256": "acd42dc7e72bcee2e5885e883a361683ff77476a1186db07d6c1b4026dfa95b6",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/home-digital-markitdown.png",
+      "bytes": 63741,
+      "sha256": "44c7764a427fda96cc6af611df1675724627db8682673ebe1ea7fe41b7b0d94d",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/home-empty.png",
+      "bytes": 57017,
+      "sha256": "7bd11b879f05234525626b8adb886109622acd058c324c54fe6fb83c80e76d70",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/home-scanned-marker.png",
+      "bytes": 65255,
+      "sha256": "330a81c37106829ed2e1cabc8d59b69f63ce62feaf6b2ab88a2952b77918292c",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/scanned-markitdown-disabled.png",
+      "bytes": 67068,
+      "sha256": "53453f271d7913af1ed1e4f7776bbeadb04f63a96379a8ba152aeda1286a6eda",
+      "scale": "150%",
+      "width": 1100,
+      "height": 760
+    },
+    {
+      "file": "build/stage8-ui/150%/settings-broken.png",
+      "bytes": 25867,
+      "sha256": "572a817dc1b9189d411aa35f147bf2cf566342f8a56b626ee4c85e935be91846",
+      "scale": "150%",
+      "width": 670,
+      "height": 654
+    },
+    {
+      "file": "build/stage8-ui/150%/settings-marker.png",
+      "bytes": 23596,
+      "sha256": "dae071f6db7c4ead683192193a692fd504f87e1a49ab45cc3fd9a19d4e962c41",
+      "scale": "150%",
+      "width": 644,
+      "height": 651
+    },
+    {
+      "file": "build/stage8-ui/150%/settings-markitdown.png",
+      "bytes": 23523,
+      "sha256": "db31d3ba02b4eb516f911347eac77fd08fa221ebfcc30f9ca3a73cc4f8966492",
+      "scale": "150%",
+      "width": 644,
+      "height": 651
+    },
+    {
+      "file": "build/stage8-ui/150%/settings-not-installed.png",
+      "bytes": 23663,
+      "sha256": "f8db9f6f60ebc46f0b398bae0df00fc8ee90c6c3ca56b29f79be9ce5b99e14cd",
+      "scale": "150%",
+      "width": 670,
+      "height": 654
+    },
+    {
+      "file": "build/stage8-ui/150%/small-settings.png",
+      "bytes": 15294,
+      "sha256": "72c3de5e366ccd72010c1a2287d87f6fdcaf1ff3bb9100bf7241592420dc6f65",
+      "scale": "150%",
+      "width": 670,
+      "height": 426
+    },
+    {
+      "file": "build/stage8-ui/150%/small-window.png",
+      "bytes": 38847,
+      "sha256": "e7b43d71ac5c21fe9670c0c73cca5c1814d4b7a148d752c33e2ec6451aa4fa47",
+      "scale": "150%",
+      "width": 790,
+      "height": 474
+    }
+  ],
+  "limitations": [
+    "UI engine operations and conversion results use controlled mocks; PDF preflight uses real PDFBox fixtures. No real engine reinstall/OCR benchmark was repeated for this visual-only stage.",
+    "Screenshots use JavaFX Scene.snapshot in logical pixels at the recorded output scale; they are not full Windows desktop captures.",
+    "Native file/folder chooser interactions and clean Windows VM installer acceptance remain manual checks.",
+    "Local release is unsigned and not published. Build logs, screenshots and packages are under gitignored build/."
+  ],
+  "legacyNativeSmokeDriver": {
+    "file": "src/test/java/dev/parseforge/presentation/javafx/ManagedEngineUiSmoke.java",
+    "change": "Updated settings-dialog selectors and status labels; waits for preflight before conversion.",
+    "compile": "PASS",
+    "log": "build/stage8-smoke-driver-compile.log",
+    "executedAgainstRealEngines": false
+  },
+  "postReleaseWhiteTextAdjustment": {
+    "requestedTextColor": "#ffffff",
+    "disabledTextUnchanged": true,
+    "uiTest": "Stage8UiTest PASS at 100%",
+    "log": "build/stage8-white-text.log",
+    "screenshot": "build/stage8-ui/1.0/home-digital-markitdown.png",
+    "releaseRebuilt": false,
+    "previousContrastAndReleaseEvidence": "Applies to the original dark-text version."
+  }
+}

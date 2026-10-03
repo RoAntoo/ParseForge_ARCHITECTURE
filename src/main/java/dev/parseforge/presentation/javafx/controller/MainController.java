@@ -68,7 +68,10 @@ public final class MainController {
     private final VBox dropZone = new VBox(18);
     private javafx.scene.layout.StackPane uploadIcon;
     private final TextField outputDirectoryField = new TextField();
-    private final Button convertButton = new Button("CONVERTIR");
+    private final Button convertButton = new Button("Convertir a Markdown");
+    private final Button settingsButton = new Button("Ajustes");
+    private Dialog<Void> engineSettings;
+    private final java.util.Map<EngineId, ToggleButton> settingsTabs = new java.util.LinkedHashMap<>();
     private final CheckBox forceOcr = new CheckBox("Forzar OCR");
     private final Button cancelButton = new Button("Cancelar");
     private final Button openOutputButton = new Button("Abrir carpeta");
@@ -138,9 +141,8 @@ public final class MainController {
         for (var profile : profiles) {
             var card = new EngineSettingsController(stage, profile, installEngine, repairEngine, uninstallEngine, checkEngine,
                     cancelEngine, ignored -> engineStateChanged(), line -> appendLog("INSTALL", line), selections,
-                    () -> selectEngine(profile.id()), expanded -> engineCards.values().forEach(c -> c.expanded(c == expanded)));
-            card.expanded(profiles.size() == 1); engineCards.put(profile.id(), card);
-            if (profile.ocr()) card.addConversionOption(forceOcr);
+                    () -> selectEngine(profile.id()), selected -> openSettings(selected.id()));
+            engineCards.put(profile.id(), card);
         }
         outputDirectoryField.setText(defaultOutputDirectory(settings.lastOutputDirectory().isBlank()
                 ? settings.outputDirectory() : settings.lastOutputDirectory()));
@@ -166,9 +168,13 @@ public final class MainController {
         title.getStyleClass().add("title");
         Label privacy = new Label("PROCESAMIENTO LOCAL");
         privacy.getStyleClass().add("eyebrow");
-        VBox header = new VBox(3, title, privacy);
+        Region headerSpace = new Region(); HBox.setHgrow(headerSpace, Priority.ALWAYS);
+        settingsButton.setId("open-settings"); settingsButton.setOnAction(ignored -> openSettings(selectedEngineId));
+        HBox header = new HBox(16, title, headerSpace, settingsButton);
+        header.setAlignment(Pos.CENTER_LEFT);
         header.getStyleClass().add("brand-header");
-        Label enginesTitle = new Label("MOTORES DE CONVERSIÓN");
+        root.setTop(header);
+        Label enginesTitle = new Label("1. ELEGÍ UN MOTOR");
         enginesTitle.getStyleClass().add("eyebrow");
         VBox engines = new VBox(12, enginesTitle);
         engineCards.values().forEach(card -> engines.getChildren().add(card.view()));
@@ -176,7 +182,7 @@ public final class MainController {
         ScrollPane engineScroll = scrollPane(engines, "engine-scroll");
         engineScroll.setId("engine-scroll");
 
-        convertButton.getStyleClass().add("primary-button");
+        convertButton.getStyleClass().add("convert-button");
         convertButton.setOnAction(ignored -> startConversion());
         convertButton.setId("convert-pdf"); cancelButton.setId("cancel-conversion"); forceOcr.setId("force-ocr");
         outputDirectoryField.setId("output-directory"); logs.setId("engine-logs"); phaseLabel.setId("conversion-state");
@@ -185,10 +191,11 @@ public final class MainController {
         actionHint.setId("conversion-hint"); actionHint.setWrapText(true);
         actionHint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         actionHint.setMaxWidth(Double.MAX_VALUE); actionHint.setAlignment(Pos.CENTER);
-        VBox conversionAction = new VBox(12, liveStatus, convertButton, actionHint);
+        VBox conversionAction = new VBox(8, convertButton, actionHint);
         conversionAction.getStyleClass().add("conversion-action");
-        BorderPane sidebar = new BorderPane(engineScroll, header, null, conversionAction, null);
-        sidebar.getStyleClass().add("sidebar"); sidebar.setPrefWidth(300); sidebar.setMinWidth(300); sidebar.setMaxWidth(300);
+        VBox sidebarFoot = new VBox(12, liveStatus, privacy); sidebarFoot.getStyleClass().add("sidebar-foot");
+        BorderPane sidebar = new BorderPane(engineScroll, null, null, sidebarFoot, null);
+        sidebar.getStyleClass().add("sidebar"); sidebar.setPrefWidth(240); sidebar.setMinWidth(240); sidebar.setMaxWidth(240);
         root.setLeft(sidebar);
 
         buildDropZone();
@@ -213,12 +220,13 @@ public final class MainController {
         destination.getStyleClass().add("destination-panel"); destination.setMinWidth(0);
         forceOcr.setTooltip(new Tooltip("Activá OCR para reconocer texto en páginas escaneadas."));
         forceOcr.selectedProperty().addListener((o, before, after) -> refreshDocument());
-        VBox content = new VBox(24, dropZone, buildDocumentCard(), destination, buildStatusPanel());
+        VBox statusPanel = buildStatusPanel();
+        VBox content = new VBox(16, dropZone, buildDocumentCard(), destination, forceOcr, conversionAction, statusPanel);
         content.setMinWidth(0); content.getStyleClass().add("workspace");
         ScrollPane workspaceScroll = scrollPane(content, "workspace-scroll");
         workspaceScroll.setId("workspace-scroll");
-        dropZone.prefHeightProperty().bind(javafx.beans.binding.Bindings.max(330,
-                javafx.beans.binding.Bindings.min(480, workspaceScroll.heightProperty().multiply(0.48))));
+        dropZone.prefHeightProperty().bind(javafx.beans.binding.Bindings.max(240,
+                javafx.beans.binding.Bindings.min(360, workspaceScroll.heightProperty().multiply(0.48))));
         systemState.getStyleClass().add("system-state"); systemState.setWrapText(true);
         systemState.setMinWidth(0);
         Label version = new Label("ParseForge " + dev.parseforge.presentation.javafx.AppVersion.current());
@@ -228,7 +236,61 @@ public final class MainController {
         HBox footer = new HBox(12, systemState, spacer, version); footer.setAlignment(Pos.CENTER_LEFT);
         footer.getStyleClass().add("footer");
         root.setCenter(new BorderPane(workspaceScroll, null, null, footer, null));
+        // Enter and Space activate every action; Tab traversal stays native JavaFX.
+        for (Button button : java.util.List.of(settingsButton, selectPdfButton, changeDirectoryButton,
+                convertButton, cancelButton, openOutputButton, useSuggestedEngine)) {
+            button.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
+                if (event.getCode() == javafx.scene.input.KeyCode.ENTER && !button.isDisabled()) {
+                    button.fire(); event.consume();
+                }
+            });
+        }
         updateConvertState();
+    }
+
+    private void openSettings(EngineId initial) {
+        if (engineSettings == null) {
+            engineSettings = new Dialog<>(); engineSettings.initOwner(stage);
+            engineSettings.setTitle("Ajustes · ParseForge"); engineSettings.setResizable(true);
+            DialogPane pane = engineSettings.getDialogPane(); pane.setId("engine-settings-dialog");
+            pane.setMinSize(0, 0);
+            pane.getStylesheets().addAll(stage.getScene().getStylesheets());
+            Label title = new Label("Ajustes"); title.getStyleClass().add("title");
+            Label section = new Label("MOTORES"); section.getStyleClass().add("eyebrow");
+            ToggleGroup group = new ToggleGroup();
+            HBox tabs = new HBox(8); tabs.setId("settings-engines");
+            VBox panels = new VBox();
+            engineCards.forEach((id, card) -> {
+                ToggleButton tab = new ToggleButton(card.name()); tab.setToggleGroup(group);
+                tab.setId("settings-" + id); tab.getStyleClass().add("settings-tab");
+                tab.setOnAction(ignored -> showSettingsEngine(id));
+                tab.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
+                    if (event.getCode() == javafx.scene.input.KeyCode.ENTER) { tab.fire(); event.consume(); }
+                });
+                settingsTabs.put(id, tab); tabs.getChildren().add(tab); panels.getChildren().add(card.settingsView());
+            });
+            VBox body = new VBox(16, title, section, tabs, panels); body.setMinWidth(0);
+            ScrollPane scroll = scrollPane(body, "settings-scroll"); scroll.setId("settings-scroll");
+            scroll.setPrefViewportWidth(Math.min(600, stage.getScene().getWidth() - 100));
+            scroll.setPrefViewportHeight(Math.min(560, stage.getScene().getHeight() - 150));
+            pane.setContent(scroll);
+            ButtonType close = new ButtonType("Volver al home", ButtonBar.ButtonData.CANCEL_CLOSE);
+            pane.getButtonTypes().add(close); pane.lookupButton(close).setId("close-settings");
+            engineSettings.setOnHidden(ignored -> settingsButton.requestFocus());
+        }
+        showSettingsEngine(initial != null ? initial : engineCards.keySet().iterator().next());
+        if (!engineSettings.isShowing()) {
+            engineSettings.show();
+            engineSettings.setWidth(Math.min(680, stage.getWidth() - 48));
+            engineSettings.setHeight(Math.max(320, Math.min(680, stage.getHeight() - 48)));
+        }
+    }
+
+    private void showSettingsEngine(EngineId selected) {
+        settingsTabs.get(selected).setSelected(true);
+        engineCards.forEach((id, card) -> {
+            card.settingsView().setVisible(id.equals(selected)); card.settingsView().setManaged(id.equals(selected));
+        });
     }
 
     private VBox buildDropZone() {
@@ -249,7 +311,7 @@ public final class MainController {
         uploadIcon.setMinSize(72, 72); uploadIcon.setMaxSize(72, 72);
         dropZone.getChildren().setAll(uploadIcon, dropTitle, dropHint, selectPdfButton, selectedPdfLabel);
         dropZone.setId("pdf-drop-zone"); dropZone.setMinWidth(0);
-        dropZone.setMinHeight(330); dropZone.setPrefHeight(390);
+        dropZone.setMinHeight(240); dropZone.setPrefHeight(300);
         dropZone.setAlignment(Pos.CENTER);
         dropZone.getStyleClass().add("drop-zone");
         dropZone.setOnDragOver(event -> acceptPdfDrag(event, dropZone));
@@ -387,7 +449,7 @@ public final class MainController {
         }));
     }
 
-    public void close() { selectionRevision++; analyzeDocument.close(); elapsedTimer.stop(); }
+    public void close() { selectionRevision++; analyzeDocument.close(); elapsedTimer.stop(); if (engineSettings != null) engineSettings.close(); }
 
     private ScrollPane scrollPane(VBox content, String style) {
         ScrollPane scroll = new ScrollPane(content);
@@ -587,6 +649,9 @@ public final class MainController {
         boolean enabled = !conversionBusy && !engineBusy && !startConversion.hasActiveConversion()
                 && (ready || developmentOverrideAvailable) && validationError == null;
         convertButton.setDisable(!enabled);
+        convertButton.setVisible(!conversionBusy); convertButton.setManaged(!conversionBusy);
+        forceOcr.setVisible(selectedEngineId != null && selectedEngineId.value().equals("marker"));
+        forceOcr.setManaged(forceOcr.isVisible());
         actionHint.setText(reason);
         systemState.setText(conversionBusy ? "● CONVIRTIENDO DOCUMENTO" : engineBusy ? "● COMPROBANDO / PREPARANDO MOTOR"
                 : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ INSTALÁ UN MOTOR PARA COMENZAR");
@@ -642,7 +707,7 @@ public final class MainController {
         dropTitle.setText("PDF seleccionado"); dropHint.setText("Podés elegir otro archivo antes de convertir.");
         uploadIcon.setVisible(false); uploadIcon.setManaged(false);
         dropHint.setVisible(false); dropHint.setManaged(false);
-        dropZone.prefHeightProperty().unbind(); dropZone.setMinHeight(220); dropZone.setPrefHeight(220);
+        dropZone.prefHeightProperty().unbind(); dropZone.setMinHeight(180); dropZone.setPrefHeight(180);
         dropZone.getStyleClass().remove("drop-zone-invalid");
         selectPdfButton.setText("CAMBIAR ARCHIVO");
         beginPreflight();

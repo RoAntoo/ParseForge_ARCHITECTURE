@@ -40,7 +40,7 @@ class Stage6UiTest {
     private JsonUserSettingsRepository settings;
     private StartConversionUseCase start;
 
-    @Test void accordionSelectionPersistenceFallbackKeyboardAndConversion() throws Exception {
+    @Test void settingsSelectionPersistenceFallbackKeyboardAndConversion() throws Exception {
         CountDownLatch toolkit = new CountDownLatch(1);
         Platform.startup(() -> { Platform.setImplicitExit(false); toolkit.countDown(); });
         assertTrue(toolkit.await(20, TimeUnit.SECONDS));
@@ -69,14 +69,14 @@ class Stage6UiTest {
                 assertTrue(radio(marker).isDisabled()); assertTrue(radio(md).isDisabled());
                 click(node("marker-card")); click(label("markitdown-capacity"));
                 assertFalse(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
-                assertFalse(node("marker-details").isVisible()); assertFalse(node("markitdown-details").isVisible());
+                assertNull(stage.getScene().lookup("#marker-details")); assertNull(stage.getScene().lookup("#markitdown-details"));
                 assertTrue(label("marker-capacity").getText().contains("Avanzado"));
                 assertTrue(label("markitdown-capacity").getText().contains("Ligero"));
                 assertTrue(label("markitdown-capacity").getTooltip().getText().contains("no es una puntuación de calidad"));
-                assertTrue(node("marker-card").getBoundsInLocal().getHeight() < 190);
+                assertTrue(node("marker-card").getBoundsInLocal().getHeight() < 260);
                 snapshot("compact-both-not-installed");
-                button("expand-marker").fire(); assertTrue(node("marker-details").isVisible());
-                button("expand-markitdown").fire(); assertFalse(node("marker-details").isVisible());
+                openSettings("marker"); assertTrue(node("marker-details").isVisible());
+                openSettings("markitdown"); assertFalse(node("marker-details").isVisible());
                 assertTrue(node("markitdown-details").isVisible());
                 assertFalse(effectiveVisible(node("force-ocr")));
                 assertTrue(button("install-markitdown").isVisible());
@@ -85,7 +85,7 @@ class Stage6UiTest {
             waitFor(() -> radio(md).isSelected() && !radio(md).isDisabled());
             Path pdf = Files.writeString(temp.resolve("PDF digital ñ con espacios.pdf"), "%PDF fixture");
             fx(() -> {
-                controller.selectPdf(pdf); return null;
+                button("close-settings").fire(); controller.selectPdf(pdf); return null;
             });
             waitFor(() -> !button("convert-pdf").isDisabled());
             fx(() -> {
@@ -96,13 +96,13 @@ class Stage6UiTest {
             waitFor(() -> converted.get() != null && !button("convert-pdf").isDisabled());
             assertEquals(md, converted.get().engineId()); assertFalse(converted.get().forceOcr());
             states.put(marker, EngineState.READY);
-            fx(() -> { button("check-engine-state").fire(); return null; });
+            fx(() -> { openSettings("marker"); button("check-engine-state").fire(); return null; });
             waitFor(() -> !radio(marker).isDisabled());
             fx(() -> {
                 assertTrue(radio(md).isSelected()); assertFalse(radio(marker).isSelected());
-                button("expand-marker").fire(); assertFalse(node("markitdown-details").isVisible());
+                openSettings("marker"); assertFalse(node("markitdown-details").isVisible());
                 assertTrue(node("marker-details").isVisible());
-                assertTrue(radio(md).isSelected(), "Expandir Marker no debe cambiar el motor seleccionado");
+                assertTrue(radio(md).isSelected(), "Administrar Marker no debe cambiar el motor seleccionado");
                 button("repair-marker").fire();
                 assertTrue(radio(md).isSelected(), "Iniciar la reparación de Marker no debe cambiar el motor seleccionado");
                 return null;
@@ -112,9 +112,10 @@ class Stage6UiTest {
             fx(() -> {
                 assertTrue(radio(md).isSelected(), "Reparar Marker no debe cambiar el motor seleccionado");
                 assertFalse(radio(marker).isSelected());
+                button("close-settings").fire();
                 click(node("marker-card").lookup(".engine-name"));
                 assertTrue(radio(marker).isSelected()); assertFalse(radio(md).isSelected());
-                assertTrue(node("marker-details").isVisible(), "Seleccionar no debe cambiar la expansión");
+                assertTrue(node("marker-details").isVisible(), "Seleccionar no debe cambiar el panel de Ajustes");
                 ((CheckBox)node("force-ocr")).setSelected(true);
                 button("convert-pdf").fire(); return null;
             });
@@ -125,27 +126,30 @@ class Stage6UiTest {
                 click(label("marker-capacity")); assertTrue(radio(marker).isSelected());
                 click(label("engine-state-markitdown")); assertTrue(radio(md).isSelected());
                 radio(md).fire(); assertTrue(radio(md).isSelected(), "No se puede deseleccionar el único motor listo elegido");
-                // Built-in Button behavior must support Space and Enter.
-                stage.toFront(); stage.requestFocus(); button("expand-markitdown").requestFocus();
+                // Space opens settings; Enter selects a settings tab without changing conversion selection.
+                stage.toFront(); stage.requestFocus(); button("open-settings").requestFocus();
                 return null;
             });
-            waitFor(() -> button("expand-markitdown").isFocused());
-            fx(() -> { key(button("expand-markitdown"), KeyCode.SPACE); return null; });
-            waitFor(() -> node("markitdown-details").isVisible());
+            waitFor(() -> button("open-settings").isFocused());
+            fx(() -> { key(button("open-settings"), KeyCode.SPACE); return null; });
+            waitFor(() -> settingsPane.getScene().getWindow().isShowing());
             fx(() -> {
                 assertFalse(node("marker-details").isVisible()); assertFalse(effectiveVisible(node("force-ocr")));
-                key(button("expand-markitdown"), KeyCode.ENTER); assertFalse(node("markitdown-details").isVisible());
-                key(button("expand-markitdown"), KeyCode.ENTER); assertTrue(node("markitdown-details").isVisible());
-                key(button("expand-markitdown"), KeyCode.TAB);
-                assertNotSame(button("expand-markitdown"), stage.getScene().getFocusOwner());
-                key(stage.getScene().getFocusOwner(), KeyCode.TAB, true);
-                assertSame(button("expand-markitdown"), stage.getScene().getFocusOwner());
+                key(node("settings-marker"), KeyCode.ENTER); assertTrue(node("marker-details").isVisible());
+                assertTrue(radio(md).isSelected());
+                key(node("settings-markitdown"), KeyCode.ENTER); assertTrue(node("markitdown-details").isVisible());
+                node("settings-markitdown").requestFocus();
+                key(node("settings-markitdown"), KeyCode.TAB);
+                assertNotSame(node("settings-markitdown"), settingsPane.getScene().getFocusOwner());
+                key(settingsPane.getScene().getFocusOwner(), KeyCode.TAB, true);
+                assertSame(node("settings-markitdown"), settingsPane.getScene().getFocusOwner());
+                button("close-settings").fire();
                 snapshot("both-ready-markitdown-selected"); stage.setWidth(800); stage.setHeight(500); return null;
             });
             fx(() -> {
                 stage.getScene().getRoot().applyCss(); stage.getScene().getRoot().layout();
                 ScrollPane sidebar = (ScrollPane)node("engine-scroll"), workspace = (ScrollPane)node("workspace-scroll");
-                assertTrue(sidebar.getContent().getLayoutBounds().getHeight() > sidebar.getViewportBounds().getHeight());
+                assertEquals(ScrollPane.ScrollBarPolicy.AS_NEEDED, sidebar.getVbarPolicy());
                 assertTrue(workspace.getContent().getLayoutBounds().getHeight() > workspace.getViewportBounds().getHeight());
                 sidebar.setVvalue(1); workspace.setVvalue(1); snapshot("minimum-window-scrolled");
                 assertTrue(button("convert-pdf").localToScene(button("convert-pdf").getBoundsInLocal()).getMaxY() < stage.getScene().getHeight());
@@ -176,10 +180,21 @@ class Stage6UiTest {
                     new CheckEngineStatusUseCase(manager, worker), new CancelEngineOperationUseCase(manager),
                     List.of(EngineProfile.marker(), EngineProfile.markItDown(193538258)), initial, false, neutralPreflight());
             Scene scene = new Scene(controller.view(), 1100, 760); scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
-            stage.setScene(scene); stage.show(); return null;
+            stage.setScene(scene); stage.show();
+            button("open-settings").fire();
+            settingsPane = (DialogPane)javafx.stage.Window.getWindows().stream()
+                    .filter(w -> w != stage && w.isShowing()).findFirst().orElseThrow().getScene().lookup("#engine-settings-dialog");
+            button("close-settings").fire(); return null;
         });
     }
-    private Node node(String id) { return stage.getScene().lookup("#" + id); }
+    private DialogPane settingsPane;
+    private void openSettings(String id) {
+        button("open-settings").fire(); ((ToggleButton)node("settings-" + id)).fire();
+    }
+    private Node node(String id) {
+        var home = stage.getScene().lookup("#" + id);
+        return home != null ? home : settingsPane == null ? null : settingsPane.lookup("#" + id);
+    }
     private AnalyzeDocumentUseCase neutralPreflight() {
         return new AnalyzeDocumentUseCase(file -> new DocumentPreflightResult(file, 100, 1, DocumentType.UNKNOWN, false, false, 0, 1, 0));
     }

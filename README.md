@@ -13,7 +13,7 @@ of scanning all previously exported documents.
 
 ## Managed Marker
 
-Open the **Motores de conversión** sidebar and click **Instalar Marker**. ParseForge
+Use **Instalar** on the Marker card, or open **Ajustes → Marker → Instalar Marker**. ParseForge
 downloads pinned private CPython, llama.cpp CPU, locked packages and private
 models. It validates SHA-256, prepares staging and activates
 the runtime. Normal conversion needs no Python, Marker, pip, WinGet, manual
@@ -39,21 +39,42 @@ remain independent of the engine directory.
 ## Managed MarkItDown and engine selection
 
 **MarkItDown 0.1.8** is the lightweight profile for digital PDFs with selectable
-text. Expand its card and click **Instalar MarkItDown**. Its private CPython
+text. Use **Instalar** on its card or **Ajustes → MarkItDown → Instalar MarkItDown**. Its private CPython
 3.12.10 runtime is physically independent of Marker. The measured footprint is
 approximately **194 MB installed**, **80 MB downloaded**; allow **500 MB free**
 for staging. Exact PDF-only packages, artifacts and hashes are pinned. Core
 Magika/ONNX detection dependencies are included; there is no OCR support, cloud
 service or external plugin. See the [measured spike](docs/spikes/STAGE_6_MARKITDOWN_SPIKE.md).
 
-Click a ready engine's card or radio button to select it for conversion. Internal
-buttons and options keep their own actions. Chevrons show details;
-expanding a card collapses the other. Selection persists across restarts, with
-a fallback to the first ready engine. With no ready engine, Convertir remains
-disabled. **Ligero / Avanzado** describe processing scope and resource needs;
-they are not quality scores. **Forzar OCR** belongs only to Marker's details.
-Each card provides installation, cancellation, verification, repair and removal.
-Removing either engine does not remove the other's private runtime.
+Click a ready engine's card or radio button to select it for conversion. Compact
+cards show profile, short description and state. Selection persists across
+restarts, with a fallback to the first ready engine. With no ready engine,
+**Convertir a Markdown** remains disabled. **Ligero / Avanzado** describe processing
+scope and resource needs; they are not quality scores.
+
+**Ajustes** in the header opens a separate, scrollable engine administration dialog.
+Choose Marker or MarkItDown there to see version, approximate installed size,
+local-processing details, optional installation health checks and applicable
+install/verify/repair/uninstall actions. Changing the settings tab never changes
+the conversion engine. Uninstall still requires confirmation; repair safely
+reinstalls using the existing operation. Removing one engine leaves the other
+engine's runtime intact.
+
+## Visual redesign (Stage 8)
+
+The home follows engine → PDF → document advice → destination → options → conversion.
+**Forzar OCR** stays beside this conversion flow and appears only for Marker; its
+meaning and persistence are unchanged. The main **Convertir a Markdown** action
+uses coral **#F63A48** with white text and distinct hover, pressed, disabled and focus
+states. During conversion it is hidden, and **Cancelar**, engine and elapsed time
+remain visible in the sidebar. In short windows, scroll the central workspace to
+reach Convertir. Long paths keep ellipsis and full-path tooltips.
+
+Cream/navy color tokens live in `src/main/resources/css/main.css`. Settings uses
+the same design system and fits smaller windows with vertical scrolling. Native
+UI regression suites cover 100%, 125% and 150% JavaFX scaling. See
+[Stage 8 results](docs/release/STAGE_8_RESULT.md) and
+[machine-readable evidence](docs/release/STAGE_8_EVIDENCE.json).
 
 ## Document preflight (Stage 7)
 
@@ -99,8 +120,8 @@ Runtime x64 and Internet for initial installation. Missing DLLs block engine
 installation with the [official Microsoft download](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 Optional native health checks validate compatibility; clean Windows validation is pending.
 
-Click **Instalar Marker** in the sidebar, wait for **Listo**, then
-select/drop a PDF, choose output folder and press **Convertir**. Marker applies OCR automatically when needed; **Forzar OCR**
+Click **Instalar** on the Marker card, wait for **LISTO**, then
+select/drop a PDF, choose output folder and press **Convertir a Markdown**. Marker applies OCR automatically when needed; **Forzar OCR**
 remains available as a manual option. Downloads show actual bytes/smoothed speed and a per-file ETA only when
 the measurement is stable; other phases show elapsed time without a percentage.
 Times depend on connection and hardware. Marker uses ~3.2 GB and needs at least
