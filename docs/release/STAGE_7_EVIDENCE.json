@@ -1,0 +1,302 @@
+{
+  "stage": 7,
+  "version": "0.1.0",
+  "date": "2026-10-03",
+  "timezone": "America/Buenos_Aires",
+  "status": "IMPLEMENTED_AND_HOST_VERIFIED_VM_AND_REAL_BOOK_PENDING",
+  "release": {
+    "result": "PASS",
+    "log": "build/stage7-release.log",
+    "tests": 134,
+    "passed": 131,
+    "failures": 0,
+    "errors": 0,
+    "skippedOptInUi": 3,
+    "artifacts": [
+      {
+        "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+        "bytes": 55313948,
+        "sha256": "2a694304df7eaba406696dd2a55e28ecc8830d932b09771254a37a7e6d5d77c9"
+      },
+      {
+        "file": "build/release/ParseForge-Setup-0.1.0.exe",
+        "bytes": 53149147,
+        "sha256": "25a0b1cc62cf0bf88e121782c43914ea3461d0d7d6456c7889d741d60ac4a73f"
+      }
+    ],
+    "packagedJarMatches": true,
+    "jarSha256": "0feca1a38785f025ef9c624664462cb7a35322ed9508e31b7d1e6414ec337093"
+  },
+  "inspection": {
+    "library": "Apache PDFBox 3.0.8",
+    "localOnly": true,
+    "ocrDuringPreflight": false,
+    "renderImages": false,
+    "maxSamplePages": 20,
+    "sampling": "floor(i * (pages - 1) / (sampleCount - 1)); first and last included",
+    "minimumAlphanumericCharacters": 40,
+    "classification": {
+      "DIGITAL": "text ratio >= 0.8",
+      "SCANNED": "text ratio <= 0.1 and image-without-sufficient-text ratio >= 0.8",
+      "MIXED": "text ratio >= 0.2 and image-without-sufficient-text ratio >= 0.2",
+      "UNKNOWN": "all other cases, including blank pages"
+    },
+    "longDocumentPages": 200,
+    "uiTimeoutSeconds": 8,
+    "cache": "None; every selection inspected",
+    "imageDetection": "XObjects and Form resources, depth <= 8; no pixel decoding",
+    "storageFloor": {
+      "minimumInputMiB": 50,
+      "minimumFreeMiB": 100,
+      "locations": [
+        "destination staging volume",
+        "private engine temp volume"
+      ],
+      "notFullSpaceEstimate": true
+    }
+  },
+  "ui": [
+    {
+      "test": "Stage5UiTest",
+      "scale": "1.0",
+      "result": "PASS",
+      "log": "build/stage7-Stage5UiTest-1.0.log"
+    },
+    {
+      "test": "Stage6UiTest",
+      "scale": "1.0",
+      "result": "PASS",
+      "log": "build/stage7-Stage6UiTest-1.0.log"
+    },
+    {
+      "test": "Stage7UiTest",
+      "scale": "1.0",
+      "result": "PASS",
+      "log": "build/stage7-Stage7UiTest-1.0.log"
+    },
+    {
+      "test": "Stage5UiTest",
+      "scale": "1.25",
+      "result": "PASS",
+      "log": "build/stage7-Stage5UiTest-1.25.log"
+    },
+    {
+      "test": "Stage6UiTest",
+      "scale": "1.25",
+      "result": "PASS",
+      "log": "build/stage7-Stage6UiTest-1.25.log"
+    },
+    {
+      "test": "Stage7UiTest",
+      "scale": "1.25",
+      "result": "PASS",
+      "log": "build/stage7-Stage7UiTest-1.25.log"
+    },
+    {
+      "test": "Stage5UiTest",
+      "scale": "1.5",
+      "result": "PASS",
+      "log": "build/stage7-Stage5UiTest-1.5.log"
+    },
+    {
+      "test": "Stage6UiTest",
+      "scale": "1.5",
+      "result": "PASS",
+      "log": "build/stage7-Stage6UiTest-1.5.log"
+    },
+    {
+      "test": "Stage7UiTest",
+      "scale": "1.5",
+      "result": "PASS",
+      "log": "build/stage7-Stage7UiTest-1.5.log"
+    }
+  ],
+  "packagedSmokes": {
+    "startup": {
+      "result": "PASS",
+      "report": "build/smoke/fa286bf1-0a17-488f-95f2-0bf9dccca0ac/smoke.json"
+    },
+    "ui": {
+      "result": "PASS",
+      "report": "build/smoke/0c7b51a5-d21f-4ce9-a0a9-0cb5d5491278/smoke.json"
+    }
+  },
+  "packagedPreflight": {
+    "result": "PASS",
+    "types": [
+      "DIGITAL",
+      "SCANNED",
+      "MIXED",
+      "UNKNOWN"
+    ],
+    "log": "build/stage7-package-preflight.log",
+    "usesPrivateRuntime": true
+  },
+  "host": {
+    "preflight": {
+      "digital-text": {
+        "sampledPages": 2,
+        "milliseconds": 48,
+        "pages": 2,
+        "bytes": 1113,
+        "textRatio": 1.0,
+        "type": "DIGITAL"
+      },
+      "scanned-image-only": {
+        "sampledPages": 2,
+        "milliseconds": 6,
+        "pages": 2,
+        "bytes": 23308,
+        "textRatio": 0.0,
+        "type": "SCANNED"
+      },
+      "mixed": {
+        "sampledPages": 2,
+        "milliseconds": 4,
+        "pages": 2,
+        "bytes": 23439,
+        "textRatio": 0.5,
+        "type": "MIXED"
+      },
+      "blank": {
+        "sampledPages": 1,
+        "milliseconds": 1,
+        "pages": 1,
+        "bytes": 713,
+        "textRatio": 0.0,
+        "type": "UNKNOWN"
+      },
+      "digital-long": {
+        "sampledPages": 20,
+        "milliseconds": 43,
+        "pages": 240,
+        "bytes": 56262,
+        "textRatio": 1.0,
+        "type": "DIGITAL"
+      },
+      "scanned-long": {
+        "sampledPages": 20,
+        "milliseconds": 21,
+        "pages": 240,
+        "bytes": 57418,
+        "textRatio": 0.0,
+        "type": "SCANNED"
+      }
+    },
+    "corruptPreflight": "PASS",
+    "markitdown/digital-text": {
+      "phases": [
+        "Procesando PDF digital con MarkItDown...",
+        "Guardando Markdown..."
+      ],
+      "orphans": 0,
+      "status": "COMPLETED",
+      "outputs": [
+        "build/stage7-host/markitdown/digital-text/digital-text.md"
+      ],
+      "seconds": 1.606
+    },
+    "markitdown/digital-long": {
+      "phases": [
+        "Procesando PDF digital con MarkItDown...",
+        "Guardando Markdown..."
+      ],
+      "orphans": 0,
+      "status": "COMPLETED",
+      "outputs": [
+        "build/stage7-host/markitdown/digital-long/digital-long.md"
+      ],
+      "seconds": 2.071
+    },
+    "marker/digital-text": {
+      "phases": [
+        "Procesando documento con Marker...",
+        "Guardando Markdown..."
+      ],
+      "orphans": 0,
+      "status": "COMPLETED",
+      "outputs": [
+        "build/stage7-host/marker/digital-text/digital-text/digital-text.md"
+      ],
+      "seconds": 109.566
+    },
+    "marker/scanned-image-only": {
+      "phases": [
+        "Procesando documento con Marker...",
+        "Guardando Markdown..."
+      ],
+      "orphans": 0,
+      "status": "COMPLETED",
+      "outputs": [
+        "build/stage7-host/marker/scanned-image-only/scanned-image-only/scanned-image-only.md"
+      ],
+      "seconds": 170.324
+    },
+    "marker/mixed": {
+      "phases": [
+        "Procesando documento con Marker...",
+        "Guardando Markdown..."
+      ],
+      "orphans": 0,
+      "status": "COMPLETED",
+      "outputs": [
+        "build/stage7-host/marker/mixed/mixed/mixed.md"
+      ],
+      "seconds": 149.503
+    },
+    "marker/scanned-long-cancel": {
+      "phases": [
+        "Procesando documento con Marker..."
+      ],
+      "orphans": 0,
+      "status": "CANCELLED",
+      "outputs": [],
+      "seconds": 15.851
+    },
+    "fullLongScannedConversion": "NOT RUN: cancellation exercised; full book completion remains manual",
+    "fixtureOrigin": "Synthetic PDFs generated locally; no personal book used",
+    "markitdown/digital-long-cancel": {
+      "status": "CANCELLED",
+      "outputs": [],
+      "seconds": 1.652,
+      "phases": [
+        "Procesando PDF digital con MarkItDown..."
+      ],
+      "orphans": 0
+    }
+  },
+  "screenshots": [
+    "docs/release/images/stage7-digital.png",
+    "docs/release/images/stage7-scanned.png",
+    "docs/release/images/stage7-small-converting.png"
+  ],
+  "limits": [
+    "Clean Windows VM not executed",
+    "Real Windows display scaling not executed; JavaFX output scales tested",
+    "Drag handler exercised with synthetic JavaFX dragboard; native Robot drag was inconclusive, Windows Explorer drag remains manual",
+    "FileChooser callback uses the same selection path; native dialog not automated",
+    "Full conversion of a real large scanned book not run; synthetic 240-page image-only PDF preflight and cancellation passed",
+    "Synthetic pages reuse content and do not model real book size/complexity",
+    "No reliable per-page or OCR phase telemetry from pinned engines; indeterminate progress and genuine process/publishing phases only",
+    "Interrupted PDFBox work can finish late; stale results discarded",
+    "Sparse text, inline images and decorative images may affect heuristic classification"
+  ],
+  "initialAttempt": {
+    "globalJdk26": "Existing Mockito/Byte Buddy incompatibility; rerun passed using pinned JDK21"
+  },
+  "publicReleasePublished": false,
+  "uiFinalCopyVerification": [
+    {
+      "test": "Stage5UiTest",
+      "scale": "1.0",
+      "result": "PASS",
+      "log": "build/stage7-final-Stage5UiTest.log"
+    },
+    {
+      "test": "Stage7UiTest",
+      "scale": "1.0",
+      "result": "PASS",
+      "log": "build/stage7-final-Stage7UiTest.log"
+    }
+  ]
+}

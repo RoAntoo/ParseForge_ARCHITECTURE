@@ -72,6 +72,23 @@ means untested, not failure.
 
 ## Results and errors
 
+### Stage 7 acceptance (pending)
+
+- [ ] Select a short digital PDF: pages, size, text detection and recommendation appear.
+- [ ] Drop a PDF from Windows Explorer: the same preflight starts.
+- [ ] Select scanned/mixed/blank/corrupt PDFs and verify appropriate advice or actionable errors.
+- [ ] Change the PDF during analysis; old results never replace the current document.
+- [ ] Scanned + MarkItDown remains selected but conversion is blocked with an OCR explanation; **Usar Marker** changes it explicitly.
+- [ ] Convert digital with MarkItDown and scanned/mixed with Marker; inspect the generated Markdown.
+- [ ] Real large scanned book: sample/card, OCR and long-document warnings; complete conversion and verify output.
+- [ ] During a long conversion scroll the workspace: engine, actual state, elapsed time and Cancelar remain visible.
+- [ ] Cancel Marker and MarkItDown; cancellation is not an error and no private processes remain.
+- [ ] Test actual Windows scaling 100%, 125%, 150%, small window and long paths/messages.
+- [ ] Inconclusive analysis (for example protected PDF) allows an engine attempt after failure/timeout.
+
+Host JavaFX scale tests and synthetic dragboard handler tests do not replace
+Windows Explorer drag-and-drop or actual display scaling on a clean VM.
+
 Not executed. Record actual errors, logs and screenshots here. The setup is
 unsigned; record any SmartScreen prompt separately from functional failures.
 Commercial model-use terms must be reviewed for the intended deployment.

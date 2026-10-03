@@ -55,6 +55,31 @@ they are not quality scores. **Forzar OCR** belongs only to Marker's details.
 Each card provides installation, cancellation, verification, repair and removal.
 Removing either engine does not remove the other's private runtime.
 
+## Document preflight (Stage 7)
+
+Selecting or dropping a PDF starts local background inspection. A compact card
+shows pages, size, estimated digital/scanned/mixed/unknown type, selectable text,
+OCR advice and a suggested engine. Suggestions never change your selection;
+use the explicit **Usar Marker / Usar MarkItDown** button. Image-only documents
+require Marker because MarkItDown has no OCR. Mixed documents warn that
+MarkItDown may omit scanned content. Marker handles OCR automatically; **Forzar
+OCR** remains a manual Marker option.
+
+Inspection reads all pages up to 20, otherwise 20 evenly distributed pages.
+It performs no OCR and uploads nothing. Documents of 200+ pages show a duration
+warning. Analysis times out after eight seconds and allows conversion when its
+failure is inconclusive; clearly unreadable/invalid files are blocked. Scanned
+classification is heuristic, especially for sparse text and decorative images.
+
+The conversion sidebar keeps the actual engine, elapsed time and Cancelar visible
+while scrolling. Progress remains indeterminate; no estimated completion time
+or unverified page/OCR phase is displayed. Technical details are available in
+the log panel and local rotating logs; the panel retains its latest 200k characters.
+
+See [Stage 7 result and limitations](docs/release/STAGE_7_RESULT.md). Run
+`Stage7UiTest` with the same native UI options below. The release build uses the
+pinned JDK 21; the installed global JDK 26 is incompatible with this Mockito version.
+
 ## Download and install (0.1.0 candidate)
 
 The candidate is **PACKAGE BUILT — VM VALIDATION PENDING**. It has not been
@@ -75,8 +100,8 @@ installation with the [official Microsoft download](https://aka.ms/vs/17/release
 Optional native health checks validate compatibility; clean Windows validation is pending.
 
 Click **Instalar Marker** in the sidebar, wait for **Listo**, then
-select/drop a PDF, choose output folder and press **Convertir**. Use **Forzar OCR**
-for scanned pages. Downloads show actual bytes/smoothed speed and a per-file ETA only when
+select/drop a PDF, choose output folder and press **Convertir**. Marker applies OCR automatically when needed; **Forzar OCR**
+remains available as a manual option. Downloads show actual bytes/smoothed speed and a per-file ETA only when
 the measurement is stable; other phases show elapsed time without a percentage.
 Times depend on connection and hardware. Marker uses ~3.2 GB and needs at least
 7 GB free while preparing/repairing.

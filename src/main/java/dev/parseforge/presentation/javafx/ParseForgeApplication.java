@@ -75,7 +75,8 @@ public final class ParseForgeApplication extends Application {
                 new CancelEngineOperationUseCase(engineManager),
                 List.of(EngineProfile.marker(), EngineProfile.markItDown(markItDownManifest.manifest().path("installedBytes").asLong())),
                 settings,
-                override != null && !override.isBlank() && java.nio.file.Files.isRegularFile(Path.of(override)));
+                override != null && !override.isBlank() && java.nio.file.Files.isRegularFile(Path.of(override)),
+                new AnalyzeDocumentUseCase(new dev.parseforge.infrastructure.document.PdfBoxDocumentPreflight()));
 
         var screen = javafx.stage.Screen.getPrimary().getVisualBounds();
         Scene scene = new Scene(controller.view(), Math.min(1100, screen.getWidth() - 32),
@@ -95,6 +96,7 @@ public final class ParseForgeApplication extends Application {
 
     @Override
     public void stop() {
+        if (controller != null) controller.close();
         if (cancelConversion != null) {
             cancelConversion.cancel();
         }

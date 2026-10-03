@@ -4,6 +4,7 @@ import dev.parseforge.application.port.out.*;
 import dev.parseforge.domain.model.*;
 import dev.parseforge.domain.exception.EngineInstallException;
 import dev.parseforge.domain.exception.ConversionException;
+import dev.parseforge.domain.exception.ErrorCode;
 import dev.parseforge.infrastructure.engine.CancellableProcessRunner;
 import dev.parseforge.infrastructure.engine.ConversionOutputWorkspace;
 import java.nio.file.*;
@@ -35,14 +36,15 @@ public final class MarkItDownEngine implements ConversionEngine {
                     listener.onEvent(new ConversionEvent.LogReceived(stream == ProcessStream.STDOUT
                             ? ConversionEvent.Stream.STDOUT : ConversionEvent.Stream.STDERR, line)), token);
             listener.onEvent(new ConversionEvent.EngineStopped(result.exitCode()));
-            if (result.cancelled()) return result(ConversionStatus.CANCELLED, result, "Conversión cancelada");
-            if (result.timedOut()) return result(ConversionStatus.FAILED, result, "MarkItDown excedió el tiempo máximo.");
-            if (result.exitCode() != 0) return result(ConversionStatus.FAILED, result, "MarkItDown terminó con código " + result.exitCode());
+            if (result.cancelled()) return result(ConversionStatus.CANCELLED, result, "Conversión cancelada", ErrorCode.USER_CANCELLED);
+            if (result.timedOut()) return result(ConversionStatus.FAILED, result, "MarkItDown excedió el tiempo máximo.", ErrorCode.PROCESS_TIMEOUT);
+            if (result.exitCode() != 0) return result(ConversionStatus.FAILED, result, "MarkItDown terminó con código " + result.exitCode(), ErrorCode.PROCESS_CRASHED);
             Path output;
+            listener.onEvent(new ConversionEvent.PhaseChanged("Guardando Markdown..."));
             try {
                 output = workspace.publish(ManagedMarkItDownRuntime.output(workspace.request())).getFirst();
             } catch (ConversionException error) {
-                return result(ConversionStatus.FAILED, result, error.getMessage());
+                return result(ConversionStatus.FAILED, result, error.getMessage(), error.code());
             }
             listener.onEvent(new ConversionEvent.OutputCreated(output));
             return new ConversionResult(ConversionStatus.COMPLETED, 0, List.of(output), null, result.duration());
@@ -51,8 +53,8 @@ public final class MarkItDownEngine implements ConversionEngine {
             return new ConversionResult(ConversionStatus.CANCELLED, -1, List.of(), "Conversión cancelada", Duration.between(start, Instant.now()));
         } finally { active.compareAndSet(token, null); }
     }
-    private static ConversionResult result(ConversionStatus status, ProcessResult process, String detail) {
-        return new ConversionResult(status, process.exitCode(), List.of(), detail, process.duration());
+    private static ConversionResult result(ConversionStatus status, ProcessResult process, String detail, ErrorCode code) {
+        return new ConversionResult(status, process.exitCode(), List.of(), detail, process.duration(), code);
     }
     public void cancel() { var token = active.get(); if (token != null) token.cancel(); executor.cancel(); }
 }

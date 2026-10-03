@@ -140,7 +140,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
             diskLock = fileLock(request.engineId());
             if (diskLock == null) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, manifests.descriptor().displayName() + " está en uso por otra ventana de ParseForge.");
             state = installedState(request.engineId());
-            if (state != EngineState.READY) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED,
+            if (state != EngineState.READY) throw new ConversionException(state == EngineState.BROKEN ? ErrorCode.ENGINE_CORRUPTED : ErrorCode.ENGINE_NOT_INSTALLED,
                     state == EngineState.BROKEN ? manifests.descriptor().displayName() + " necesita reparación. Abrí Motores de conversión." : "Instalá " + manifests.descriptor().displayName() + " desde Motores de conversión.");
             ProcessSpec command = runtimes.create(paths.engine(request.engineId()), manifests.manifest()).conversion(request);
             LifecycleFileLock lease = diskLock;
@@ -153,7 +153,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
         catch (IOException error) {
             if (diskLock != null) diskLock.close();
             lifecycle.unlock();
-            throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, manifests.descriptor().displayName() + " necesita reparación.", error);
+            throw new ConversionException(ErrorCode.ENGINE_CORRUPTED, manifests.descriptor().displayName() + " necesita reparación.", error);
         }
     }
     private LifecycleFileLock fileLock(EngineId id) throws IOException {

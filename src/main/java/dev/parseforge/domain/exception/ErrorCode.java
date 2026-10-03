@@ -1,6 +1,9 @@
 package dev.parseforge.domain.exception;
 
 public enum ErrorCode {
+    PDF_INVALID,
+    FILE_INACCESSIBLE,
+    DISK_SPACE_LOW,
     ENGINE_NOT_INSTALLED,
     ENGINE_CORRUPTED,
     PROCESS_START_FAILED,

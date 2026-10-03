@@ -8,6 +8,8 @@ not Marker, MarkItDown, Python, llama.cpp, wheels, fonts or inference models.
 
 | Component | Version | License / source |
 | --- | --- | --- |
+| Apache PDFBox / PDFBox IO / FontBox | 3.0.8 | Apache-2.0; https://pdfbox.apache.org/ |
+| Apache Commons Logging | 1.4.0 | Apache-2.0; https://commons.apache.org/proper/commons-logging/ |
 | Eclipse Temurin / OpenJDK | 21.0.12.1+1 | GPLv2 with Classpath Exception; runtime/legal includes terms; https://adoptium.net/about/ |
 | OpenJFX | 21.0.6 | GPLv2 with Classpath Exception; https://github.com/openjdk/jfx21u/tree/21.0.6%2B3 |
 | Jackson annotations/core/databind | 2.18.2 | Apache-2.0; https://github.com/FasterXML/jackson |

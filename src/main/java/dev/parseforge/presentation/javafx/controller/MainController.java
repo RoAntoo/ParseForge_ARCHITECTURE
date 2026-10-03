@@ -3,6 +3,10 @@ package dev.parseforge.presentation.javafx.controller;
 import dev.parseforge.application.port.out.ConversionEvent;
 import dev.parseforge.application.port.out.UserSettingsRepository;
 import dev.parseforge.application.settings.UserSettings;
+import dev.parseforge.application.settings.DocumentAdvice;
+import dev.parseforge.application.settings.ConversionMessages;
+import dev.parseforge.domain.model.DocumentPreflightResult;
+import dev.parseforge.domain.exception.ErrorCode;
 import dev.parseforge.application.usecase.*;
 import dev.parseforge.domain.exception.ConversionException;
 import dev.parseforge.domain.model.ConversionRequest;
@@ -62,6 +66,7 @@ public final class MainController {
     private final Label systemState = new Label();
     private final VBox conversionStatus = new VBox(12);
     private final VBox dropZone = new VBox(18);
+    private javafx.scene.layout.StackPane uploadIcon;
     private final TextField outputDirectoryField = new TextField();
     private final Button convertButton = new Button("CONVERTIR");
     private final CheckBox forceOcr = new CheckBox("Forzar OCR");
@@ -72,6 +77,23 @@ public final class MainController {
     private final Label elapsedLabel = new Label("Tiempo transcurrido: 00:00:00");
     private final TextArea logs = new TextArea();
     private final Timeline elapsedTimer;
+    private final AnalyzeDocumentUseCase analyzeDocument;
+    private enum PreflightState { IDLE, ANALYZING, READY, FAILED }
+    private PreflightState preflightState = PreflightState.IDLE;
+    private DocumentPreflightResult document;
+    private ErrorCode preflightBlock;
+    private long selectionRevision;
+    private final VBox documentCard = new VBox(8);
+    private final Label documentSummary = new Label();
+    private final Label documentAdvice = new Label();
+    private final Label documentWarning = new Label();
+    private final Label conversionSummary = new Label();
+    private final Button useSuggestedEngine = new Button();
+    private final Label runningEngine = new Label();
+    private final Label runningAdvice = new Label();
+    private final Label completedOutput = new Label();
+    private final VBox liveStatus = new VBox(8);
+    private boolean cancelling;
 
     private Path selectedPdf;
     private Instant conversionStartedAt;
@@ -93,21 +115,24 @@ public final class MainController {
             CancelEngineOperationUseCase cancelEngine,
             EngineId selectedEngineId,
             UserSettings settings,
-            boolean developmentOverrideAvailable
+            boolean developmentOverrideAvailable,
+            AnalyzeDocumentUseCase analyzeDocument
     ) {
         this(stage, startConversion, cancelConversion, settingsRepository, installEngine, repairEngine, uninstallEngine,
-                checkEngine, cancelEngine, java.util.List.of(dev.parseforge.application.settings.EngineProfile.marker()), settings, developmentOverrideAvailable);
+                checkEngine, cancelEngine, java.util.List.of(dev.parseforge.application.settings.EngineProfile.marker()), settings, developmentOverrideAvailable, analyzeDocument);
     }
     public MainController(Stage stage, StartConversionUseCase startConversion, CancelConversionUseCase cancelConversion,
             UserSettingsRepository settingsRepository, InstallEngineUseCase installEngine, RepairEngineUseCase repairEngine,
             UninstallEngineUseCase uninstallEngine, CheckEngineStatusUseCase checkEngine, CancelEngineOperationUseCase cancelEngine,
-            java.util.List<dev.parseforge.application.settings.EngineProfile> profiles, UserSettings settings, boolean developmentOverrideAvailable) {
+            java.util.List<dev.parseforge.application.settings.EngineProfile> profiles, UserSettings settings, boolean developmentOverrideAvailable,
+            AnalyzeDocumentUseCase analyzeDocument) {
         this.stage = Objects.requireNonNull(stage, "stage");
         this.startConversion = Objects.requireNonNull(startConversion, "startConversion");
         this.cancelConversion = Objects.requireNonNull(cancelConversion, "cancelConversion");
         this.settingsRepository = Objects.requireNonNull(settingsRepository, "settingsRepository");
         this.developmentOverrideAvailable = developmentOverrideAvailable;
         this.settings = settings;
+        this.analyzeDocument = Objects.requireNonNull(analyzeDocument);
 
         lastInputDirectory = settings.lastInputDirectory();
         for (var profile : profiles) {
@@ -160,7 +185,7 @@ public final class MainController {
         actionHint.setId("conversion-hint"); actionHint.setWrapText(true);
         actionHint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         actionHint.setMaxWidth(Double.MAX_VALUE); actionHint.setAlignment(Pos.CENTER);
-        VBox conversionAction = new VBox(12, convertButton, actionHint);
+        VBox conversionAction = new VBox(12, liveStatus, convertButton, actionHint);
         conversionAction.getStyleClass().add("conversion-action");
         BorderPane sidebar = new BorderPane(engineScroll, header, null, conversionAction, null);
         sidebar.getStyleClass().add("sidebar"); sidebar.setPrefWidth(300); sidebar.setMinWidth(300); sidebar.setMaxWidth(300);
@@ -187,7 +212,8 @@ public final class MainController {
         VBox destination = new VBox(12, destinationTitle, destinationRow, outputDirectoryField);
         destination.getStyleClass().add("destination-panel"); destination.setMinWidth(0);
         forceOcr.setTooltip(new Tooltip("Activá OCR para reconocer texto en páginas escaneadas."));
-        VBox content = new VBox(24, dropZone, destination, buildStatusPanel());
+        forceOcr.selectedProperty().addListener((o, before, after) -> refreshDocument());
+        VBox content = new VBox(24, dropZone, buildDocumentCard(), destination, buildStatusPanel());
         content.setMinWidth(0); content.getStyleClass().add("workspace");
         ScrollPane workspaceScroll = scrollPane(content, "workspace-scroll");
         workspaceScroll.setId("workspace-scroll");
@@ -217,7 +243,7 @@ public final class MainController {
         selectedPdfLabel.setMaxWidth(Double.MAX_VALUE);
         selectedPdfLabel.setAlignment(Pos.CENTER); selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
         selectedPdfLabel.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
-        javafx.scene.layout.StackPane uploadIcon = new javafx.scene.layout.StackPane(
+        uploadIcon = new javafx.scene.layout.StackPane(
                 icon("M16 24 L16 3 M8 11 L16 3 L24 11 M3 20 L3 29 L29 29 L29 20", "upload-icon"));
         uploadIcon.getStyleClass().add("upload-circle");
         uploadIcon.setMinSize(72, 72); uploadIcon.setMaxSize(72, 72);
@@ -235,7 +261,12 @@ public final class MainController {
     private VBox buildStatusPanel() {
         progress.setVisible(false);
         progress.setPrefSize(34, 34);
-        HBox state = new HBox(12, progress, new VBox(4, phaseLabel, elapsedLabel));
+        runningEngine.setId("conversion-engine"); elapsedLabel.setId("conversion-elapsed");
+        runningAdvice.setId("conversion-advice"); runningAdvice.setWrapText(true);
+        runningAdvice.setMinHeight(Region.USE_PREF_SIZE);
+        VBox stateText = new VBox(4, runningEngine, phaseLabel, elapsedLabel);
+        stateText.setMinWidth(0); HBox.setHgrow(stateText, Priority.ALWAYS);
+        HBox state = new HBox(12, progress, stateText);
         state.setAlignment(Pos.CENTER_LEFT);
 
         logs.setEditable(false);
@@ -246,21 +277,117 @@ public final class MainController {
 
         cancelButton.setDisable(true);
         cancelButton.setOnAction(ignored -> {
+            cancelling = true;
             phaseLabel.setText("Cancelando...");
             cancelButton.setDisable(true);
             cancelConversion.cancel();
         });
         openOutputButton.setOnAction(ignored -> openOutputDirectory());
-        HBox actions = new HBox(10, cancelButton, openOutputButton);
+        HBox actions = new HBox(10, openOutputButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
         phaseLabel.setWrapText(true); phaseLabel.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         VBox panel = new VBox(10, conversionStatus, details);
-        conversionStatus.getChildren().setAll(state, actions);
+        completedOutput.setId("conversion-output"); completedOutput.setWrapText(true);
+        completedOutput.setMinHeight(Region.USE_PREF_SIZE);
+        conversionStatus.getChildren().setAll(completedOutput, actions);
         conversionStatus.setVisible(false); conversionStatus.setManaged(false);
+        liveStatus.getChildren().setAll(state, runningAdvice, cancelButton);
+        liveStatus.setVisible(false); liveStatus.setManaged(false);
         panel.getStyleClass().add("status-panel");
         return panel;
     }
+
+    private VBox buildDocumentCard() {
+        documentCard.setId("document-card"); documentCard.getStyleClass().add("destination-panel");
+        documentSummary.setId("document-summary"); documentAdvice.setId("document-advice");
+        documentWarning.setId("document-warning"); conversionSummary.setId("conversion-summary");
+        for (Label label : java.util.List.of(documentSummary, documentAdvice, documentWarning, conversionSummary)) {
+            label.setWrapText(true); label.setMinWidth(0); label.setMaxWidth(Double.MAX_VALUE);
+            label.setMinHeight(Region.USE_PREF_SIZE);
+        }
+        useSuggestedEngine.setId("use-suggested-engine");
+        useSuggestedEngine.setOnAction(ignored -> {
+            if (document != null) {
+                String id = advice().suggestedEngine();
+                if (!id.isBlank()) selectEngine(new EngineId(id));
+            }
+        });
+        documentCard.getChildren().setAll(documentSummary, documentAdvice, documentWarning, useSuggestedEngine, conversionSummary);
+        documentCard.setVisible(false); documentCard.setManaged(false);
+        return documentCard;
+    }
+
+    private DocumentAdvice advice() {
+        var lightweight = engineCards.get(new EngineId("markitdown"));
+        return DocumentAdvice.forDocument(document, selectedEngineId, lightweight != null && lightweight.ready());
+    }
+
+    private void refreshDocument() {
+        documentCard.setVisible(selectedPdf != null); documentCard.setManaged(selectedPdf != null);
+        useSuggestedEngine.setVisible(false); useSuggestedEngine.setManaged(false);
+        documentWarning.setText("");
+        if (preflightState == PreflightState.ANALYZING) {
+            documentSummary.setText("Analizando documento..."); documentAdvice.setText("El análisis se realiza localmente.");
+        } else if (preflightState == PreflightState.READY && document != null) {
+            String size = document.fileSize() < 1048576 ? "%.1f KB".formatted(document.fileSize() / 1024.0)
+                    : "%.1f MB".formatted(document.fileSize() / 1048576.0);
+            documentSummary.setText("Documento · %d páginas · %s\n%s (estimación)\nTexto seleccionable: %s".formatted(
+                    document.pageCount(), size, documentTypeName(),
+                    document.selectableTextDetected() ? "detectado" : "no detectado")
+                    + (document.sampled() ? "\nMuestra de " + document.sampledPages() + " páginas distribuidas." : ""));
+            var advice = advice(); documentAdvice.setText(advice.message());
+            documentWarning.setText(document.longDocument() ? "Documento largo. El tiempo de conversión dependerá del motor y del rendimiento del equipo." : "");
+            if (!advice.suggestedEngine().isBlank()) {
+                var id = new EngineId(advice.suggestedEngine()); var card = engineCards.get(id);
+                boolean available = card != null && card.ready() && !id.equals(selectedEngineId);
+                useSuggestedEngine.setText("Usar " + engineName(id));
+                useSuggestedEngine.setVisible(available); useSuggestedEngine.setManaged(available);
+                useSuggestedEngine.setDisable(conversionBusy || engineBusy);
+            }
+        } else if (preflightState == PreflightState.FAILED) {
+            documentSummary.setText("Análisis previo no disponible");
+            documentAdvice.setText(preflightBlock == null
+                    ? "No se pudo analizar previamente el documento. Podés intentar convertirlo igualmente."
+                    : ConversionMessages.forCode(preflightBlock));
+        }
+        String ocr = selectedEngineId != null && selectedEngineId.value().equals("marker")
+                ? forceOcr.isSelected() ? "OCR: forzado manualmente" : document != null && document.likelyNeedsOcr()
+                    ? "OCR: automático cuando Marker lo necesite" : "OCR: automático" : "OCR: no disponible en MarkItDown";
+        conversionSummary.setText("Motor: " + engineName(selectedEngineId) + " · " + ocr);
+        documentWarning.setVisible(!documentWarning.getText().isBlank());
+        documentWarning.setManaged(documentWarning.isVisible());
+    }
+
+    private String documentTypeName() {
+        return switch (document.type()) {
+            case DIGITAL -> "PDF digital"; case SCANNED -> "PDF escaneado";
+            case MIXED -> "PDF mixto"; case UNKNOWN -> "Tipo indeterminado";
+        };
+    }
+    private static String engineName(EngineId id) {
+        return id == null ? "Sin seleccionar" : id.value().equals("marker") ? "Marker" : "MarkItDown";
+    }
+    private void beginPreflight() {
+        long revision = ++selectionRevision;
+        document = null; preflightBlock = null; preflightState = PreflightState.ANALYZING;
+        updateConvertState();
+        analyzeDocument.analyze(selectedPdf).whenComplete((result, error) -> Platform.runLater(() -> {
+            if (revision != selectionRevision) return;
+            if (error == null) { document = result; preflightState = PreflightState.READY; }
+            else {
+                preflightState = PreflightState.FAILED;
+                Throwable cause = unwrap(error);
+                if (cause instanceof ConversionException failure && (failure.code() == ErrorCode.PDF_INVALID || failure.code() == ErrorCode.FILE_INACCESSIBLE))
+                    preflightBlock = failure.code();
+                appendLog("PREFLIGHT", cause.toString());
+                org.slf4j.LoggerFactory.getLogger(getClass()).debug("Preflight unavailable", cause);
+            }
+            updateConvertState();
+        }));
+    }
+
+    public void close() { selectionRevision++; analyzeDocument.close(); elapsedTimer.stop(); }
 
     private ScrollPane scrollPane(VBox content, String style) {
         ScrollPane scroll = new ScrollPane(content);
@@ -314,13 +441,19 @@ public final class MainController {
             Files.createDirectories(output);
         } catch (IOException error) {
             showAlert(Alert.AlertType.ERROR, "Carpeta no disponible",
-                    "No fue posible crear la carpeta de salida.");
+                    ConversionMessages.forCode(ErrorCode.PERMISSION_DENIED));
             return;
         }
 
         if (selectedEngineId == null && developmentOverrideAvailable) selectedEngineId = new EngineId("marker");
         saveSettings();
         setBusy(true);
+        cancelling = false;
+        liveStatus.setVisible(true); liveStatus.setManaged(true);
+        runningEngine.setText("Motor: " + engineName(selectedEngineId));
+        runningAdvice.setText(document != null && document.likelyNeedsOcr() && selectedEngineId.value().equals("marker")
+                ? "Este documento puede necesitar OCR y tardar bastante. El motor sigue trabajando mientras no finalice o lo canceles." : "");
+        completedOutput.setText("");
         conversionStatus.setVisible(true); conversionStatus.setManaged(true);
         logs.clear();
         appendLog("SYSTEM", "Iniciando conversión de " + selectedPdf.getFileName());
@@ -339,7 +472,7 @@ public final class MainController {
         switch (event) {
             case ConversionEvent.EngineStarted started ->
                     appendLog("SYSTEM", "Motor iniciado: " + started.engineName());
-            case ConversionEvent.PhaseChanged phase -> phaseLabel.setText(phase.phase());
+            case ConversionEvent.PhaseChanged phase -> { if (!cancelling) phaseLabel.setText(phase.phase()); }
             case ConversionEvent.LogReceived log -> appendLog(log.stream().name(), log.message());
             case ConversionEvent.OutputCreated output ->
                     appendLog("SYSTEM", "Archivo creado: " + output.path());
@@ -349,21 +482,24 @@ public final class MainController {
     }
 
     private void finishConversion(ConversionResult result, Throwable error) {
+        updateElapsedTime();
         elapsedTimer.stop();
         setBusy(false);
         if (error != null) {
             Throwable cause = unwrap(error);
-            String detail = cause instanceof ConversionException conversionError
-                    ? conversionError.getMessage()
-                    : "Ocurrió un error inesperado al convertir el documento.";
+            String detail = ConversionMessages.forError(cause);
             phaseLabel.setText("Conversión fallida");
             appendLog("ERROR", cause.toString());
+            org.slf4j.LoggerFactory.getLogger(getClass()).error("Conversion failed", cause);
             showAlert(Alert.AlertType.ERROR, "No fue posible completar la conversión", detail);
             return;
         }
 
         if (result.status() == ConversionStatus.COMPLETED) {
             phaseLabel.setText("Conversión completada");
+            completedOutput.setText(result.outputFiles().isEmpty() ? "Revisá la carpeta de salida."
+                    : "Archivo generado: " + result.outputFiles().getFirst().getFileName() + "\n" + result.outputFiles().getFirst());
+            completedOutput.setTooltip(new Tooltip(completedOutput.getText()));
             appendLog("SYSTEM", result.outputFiles().isEmpty()
                     ? "El motor finalizó correctamente. Revisá la carpeta de salida."
                     : "Conversión completada.");
@@ -374,16 +510,19 @@ public final class MainController {
             phaseLabel.setText("Conversión fallida");
             String message = result.error().orElse("El motor no pudo completar la conversión.");
             appendLog("ERROR", message);
-            showAlert(Alert.AlertType.ERROR, "El motor finalizó con un error", message);
+            showAlert(Alert.AlertType.ERROR, "No se pudo completar la conversión", ConversionMessages.forCode(result.errorCode()));
         }
     }
 
     private String validateInputs() {
-        if (selectedPdf == null || !Files.isRegularFile(selectedPdf) || !Files.isReadable(selectedPdf)
-                || !selectedPdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
+        if (selectedPdf == null || !selectedPdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
             return "Seleccioná un archivo PDF válido.";
         }
-        return validOutputDirectory() ? null : "Seleccioná una carpeta de destino disponible.";
+        if (!Files.isRegularFile(selectedPdf) || !Files.isReadable(selectedPdf)) return ConversionMessages.forCode(ErrorCode.FILE_INACCESSIBLE);
+        if (preflightBlock != null) return ConversionMessages.forCode(preflightBlock);
+        if (preflightState == PreflightState.ANALYZING) return "Analizando documento...";
+        if (document != null && advice().incompatible()) return "Este PDF requiere OCR. Elegí Marker para convertirlo.";
+        return validOutputDirectory() ? null : ConversionMessages.forCode(ErrorCode.PERMISSION_DENIED);
     }
 
     private void setBusy(boolean busy) {
@@ -451,6 +590,7 @@ public final class MainController {
         actionHint.setText(reason);
         systemState.setText(conversionBusy ? "● CONVIRTIENDO DOCUMENTO" : engineBusy ? "● COMPROBANDO / PREPARANDO MOTOR"
                 : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ INSTALÁ UN MOTOR PARA COMENZAR");
+        refreshDocument();
     }
 
     private void acceptPdfDrag(DragEvent event, VBox dropZone) {
@@ -500,17 +640,22 @@ public final class MainController {
         selectedPdfLabel.setTooltip(new Tooltip(selectedPdf.toString()));
         selectedPdfLabel.setVisible(true); selectedPdfLabel.setManaged(true);
         dropTitle.setText("PDF seleccionado"); dropHint.setText("Podés elegir otro archivo antes de convertir.");
+        uploadIcon.setVisible(false); uploadIcon.setManaged(false);
+        dropHint.setVisible(false); dropHint.setManaged(false);
+        dropZone.prefHeightProperty().unbind(); dropZone.setMinHeight(220); dropZone.setPrefHeight(220);
         dropZone.getStyleClass().remove("drop-zone-invalid");
         selectPdfButton.setText("CAMBIAR ARCHIVO");
-        updateConvertState();
+        beginPreflight();
         saveSettings();
     }
 
     private void invalidPdf() {
+        selectionRevision++; analyzeDocument.cancel(); document = null; preflightBlock = null; preflightState = PreflightState.IDLE;
         selectedPdf = null;
         selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
         dropTitle.setText("Elegí un archivo PDF válido");
         dropHint.setText("No se pudo seleccionar ese archivo. Revisá que sea un PDF accesible en tu equipo.");
+        dropHint.setVisible(true); dropHint.setManaged(true);
         selectPdfButton.setText("SELECCIONAR ARCHIVO");
         if (!dropZone.getStyleClass().contains("drop-zone-invalid")) dropZone.getStyleClass().add("drop-zone-invalid");
         updateConvertState();
@@ -538,7 +683,9 @@ public final class MainController {
     }
 
     private void appendLog(String source, String message) {
+        org.slf4j.LoggerFactory.getLogger(getClass()).info("[{}] {}", source, message);
         logs.appendText("[" + source + "] " + message + System.lineSeparator());
+        if (logs.getLength() > 200_000) logs.deleteText(0, logs.getLength() - 150_000);
     }
 
     private void updateElapsedTime() {
