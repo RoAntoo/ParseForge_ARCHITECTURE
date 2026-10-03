@@ -114,3 +114,7 @@
 .dialog-pane > .header-panel { -fx-background-color: #e9cea0; }
 .welcome-title { -fx-font-size: 23px; -fx-font-weight: bold; }
 .tooltip { -fx-background-color: #233e60; -fx-text-fill: #fff0d6; -fx-font-size: 12px; }
+.engine-capacity { -fx-font-size: 12px; -fx-text-fill: #596578; }
+.engine-chevron { -fx-font-size: 15px; -fx-padding: 2 9; -fx-background-color: transparent; }
+.engine-card:selected .engine-chevron { -fx-text-fill: #f6dfb6; -fx-border-color: #ac9978; }
+.engine-card:selected .check-box, .engine-card:selected .hyperlink { -fx-text-fill: #f6dfb6; }

@@ -1,8 +1,8 @@
 # Clean Windows release validation
 
 Status: **VM VALIDATION PENDING**. No clean-VM result is claimed.
-Candidate: ParseForge 0.1.0 with Stage 5 UI. Date: 2026-10-01, America/Buenos_Aires.
-The host build and smoke results are in STAGE_4_RESULT.md and STAGE_5_RESULT.md, separate from this checklist.
+Candidate: ParseForge 0.1.0 with Stage 6 MarkItDown and accordion UI. Date: 2026-10-01, America/Buenos_Aires.
+The user will run the clean VM validation manually. Host evidence is in STAGE_6_RESULT.md.
 
 Record before execution:
 
@@ -27,7 +27,10 @@ means untested, not failure.
 - [ ] Launch ParseForge.exe from shortcut; no Java/native launcher error.
 - [ ] First launch shows the welcome dialog; close it and use the app normally.
 - [ ] Select "No volver a mostrar al iniciar"; restart retains the preference.
-- [ ] Main window has the Marker sidebar, PDF drop area and destination folder.
+- [ ] Main window shows compact Marker + MarkItDown cards, PDF drop area and destination folder.
+- [ ] Chevrons expand details independently of radio selection; at most one card expands.
+- [ ] Tab / Shift+Tab / Space / Enter support selection, expansion and lifecycle actions.
+- [ ] Ligero / Avanzado indicators and explanatory tooltip are readable.
 - [ ] Drop a real PDF, replace it and verify a non-PDF gets understandable feedback.
 - [ ] Long PDF names/output paths truncate with tooltips; no horizontal overflow.
 - [ ] At 800x500, scroll to every control; conversion action/footer remain visible.
@@ -48,6 +51,21 @@ means untested, not failure.
 - [ ] Repair Marker reaches READY; failed/cancelled repair preserves prior engine.
 - [ ] Uninstall Marker reaches NOT_INSTALLED; user documents/outputs survive.
 - [ ] Reinstall Marker reaches READY.
+- [ ] MarkItDown starts NOT_INSTALLED and can expand even while unavailable.
+- [ ] Install MarkItDown; progress uses actual per-file bytes or indeterminate preparation.
+- [ ] MarkItDown reaches READY without global Python/Java, Marker or llama.cpp.
+- [ ] Select MarkItDown; Forzar OCR is absent from its details.
+- [ ] Convert a digital PDF and a multipage PDF with spaced/Unicode paths; verify expected .md content/name/destination.
+- [ ] Corrupt PDF reports failure; controls return to usable state.
+- [ ] Switch Marker → MarkItDown → Marker; conversion uses the selected engine.
+- [ ] Restart retains MarkItDown selection when READY; unavailable selection falls back safely.
+- [ ] Cancel a long MarkItDown conversion; private Python terminates without orphans.
+- [ ] Force-close ParseForge during MarkItDown conversion; no private processes remain.
+- [ ] Cancel MarkItDown installation; no partial READY runtime or orphan process remains.
+- [ ] Verify / repair MarkItDown; it returns READY.
+- [ ] Uninstall MarkItDown; Marker and user PDFs/Markdown remain usable.
+- [ ] Reinstall MarkItDown; uninstall Marker; MarkItDown still converts.
+- [ ] Reinstall Marker; both runtimes remain independent.
 - [ ] Reinstall setup over the same destination; config/engines/models survive.
 - [ ] Uninstall app; app files/shortcuts removed; documents/settings/engines survive.
 - [ ] Reinstall app; retained Marker/config are discovered.

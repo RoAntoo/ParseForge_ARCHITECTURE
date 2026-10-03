@@ -13,6 +13,8 @@ import dev.parseforge.presentation.javafx.controller.MainController;
 import dev.parseforge.application.usecase.*;
 import dev.parseforge.infrastructure.engine.*;
 import dev.parseforge.infrastructure.engine.marker.*;
+import dev.parseforge.infrastructure.engine.markitdown.*;
+import dev.parseforge.application.settings.EngineProfile;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -25,7 +27,7 @@ import java.util.concurrent.Executors;
 public final class ParseForgeApplication extends Application {
     private ExecutorService backgroundExecutor;
     private CancelConversionUseCase cancelConversion;
-    private ManagedEngineManager engineManager;
+    private MultiEngineManager engineManager;
     private ExecutorService engineExecutor;
     MainController controller;
 
@@ -40,7 +42,14 @@ public final class ParseForgeApplication extends Application {
         var verifier = new MarkerEngineVerifier(manifests, checksums, new LocalProcessExecutor());
         var installer = new MarkerInstaller(paths, manifests, new HttpsDownloadClient(checksums),
                 verifier, new LocalProcessExecutor());
-        engineManager = new ManagedEngineManager(paths, manifests, installer, verifier);
+        var markerManager = new ManagedEngineManager(paths, manifests, installer, verifier);
+        var markItDownManifest = new EngineManifestRepository("markitdown");
+        var markItDownVerifier = new MarkItDownEngineVerifier(markItDownManifest, checksums, new LocalProcessExecutor());
+        var markItDownInstaller = new MarkItDownInstaller(paths, markItDownManifest, new HttpsDownloadClient(checksums),
+                markItDownVerifier, new LocalProcessExecutor());
+        var markItDownManager = new ManagedEngineManager(paths, markItDownManifest, markItDownInstaller, markItDownVerifier,
+                ManagedMarkItDownRuntime::new);
+        engineManager = new MultiEngineManager(List.of(markerManager, markItDownManager));
         LocalProcessExecutor processExecutor = new LocalProcessExecutor();
         String override = System.getProperty("parseforge.marker.override");
         MarkerEngine markerEngine = override == null || override.isBlank()
@@ -51,7 +60,7 @@ public final class ParseForgeApplication extends Application {
         backgroundExecutor = Executors.newSingleThreadExecutor(Thread.ofVirtual()
                 .name("conversion-worker-", 0).factory());
         StartConversionUseCase startConversion = new StartConversionUseCase(
-                new SimpleEngineRegistry(List.of(markerEngine)), backgroundExecutor);
+                new SimpleEngineRegistry(List.of(markerEngine, new MarkItDownEngine(new LocalProcessExecutor(), engineManager))), backgroundExecutor);
         cancelConversion = new CancelConversionUseCase(startConversion);
 
         controller = new MainController(
@@ -64,7 +73,7 @@ public final class ParseForgeApplication extends Application {
                 new UninstallEngineUseCase(engineManager, engineExecutor),
                 new CheckEngineStatusUseCase(engineManager, engineExecutor),
                 new CancelEngineOperationUseCase(engineManager),
-                MarkerEngine.ID,
+                List.of(EngineProfile.marker(), EngineProfile.markItDown(markItDownManifest.manifest().path("installedBytes").asLong())),
                 settings,
                 override != null && !override.isBlank() && java.nio.file.Files.isRegularFile(Path.of(override)));
 
@@ -92,7 +101,7 @@ public final class ParseForgeApplication extends Application {
         if (backgroundExecutor != null) {
             backgroundExecutor.shutdownNow();
         }
-        if (engineManager != null) engineManager.cancelCurrentOperation(MarkerEngine.ID);
+        if (engineManager != null) engineManager.availableEngines().forEach(engine -> engineManager.cancelCurrentOperation(engine.id()));
         if (engineExecutor != null) engineExecutor.shutdownNow();
     }
 

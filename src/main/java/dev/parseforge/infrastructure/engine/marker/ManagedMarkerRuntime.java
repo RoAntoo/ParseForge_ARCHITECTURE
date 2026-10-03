@@ -8,7 +8,7 @@ import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
 
-public final class ManagedMarkerRuntime {
+public final class ManagedMarkerRuntime implements dev.parseforge.infrastructure.engine.ManagedPythonRuntime {
     public static final String ENTRYPOINT = "from marker.scripts.convert_single import convert_single_cli; convert_single_cli()";
     private final Path root;
     private final JsonNode manifest;

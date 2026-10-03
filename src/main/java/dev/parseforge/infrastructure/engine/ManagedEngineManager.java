@@ -19,12 +19,18 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
     private final EngineManifestRepository manifests;
     private final EngineInstaller installer;
     private final EngineVerifier verifier;
+    private final ManagedPythonRuntime.Factory runtimes;
     private final ReentrantLock lifecycle = new ReentrantLock();
     private volatile EngineState state = EngineState.NOT_INSTALLED;
     private volatile OperationCancellation current;
     public ManagedEngineManager(EnginePathResolver paths, EngineManifestRepository manifests,
                                 EngineInstaller installer, EngineVerifier verifier) {
+        this(paths, manifests, installer, verifier, ManagedMarkerRuntime::new);
+    }
+    public ManagedEngineManager(EnginePathResolver paths, EngineManifestRepository manifests,
+                                EngineInstaller installer, EngineVerifier verifier, ManagedPythonRuntime.Factory runtimes) {
         this.paths = paths; this.manifests = manifests; this.installer = installer; this.verifier = verifier;
+        this.runtimes = runtimes;
     }
     private EngineDescriptor require(EngineId id) {
         if (!manifests.descriptor().id().equals(id)) throw new IllegalArgumentException("Motor no disponible: " + id);
@@ -92,7 +98,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
         log.info("Engine lifecycle operation started; engine={}, operation={}", id, operation);
         try {
             diskLock = fileLock(id);
-            if (diskLock == null) throw new IllegalStateException("Marker está en uso por otra ventana de ParseForge.");
+            if (diskLock == null) throw new IllegalStateException(manifests.descriptor().displayName() + " está en uso por otra ventana de ParseForge.");
             recover(id);
             state = operation == 2 ? EngineState.REMOVING : EngineState.INSTALLING;
             EngineProgressListener progress = event -> {
@@ -128,15 +134,15 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
     }
     @Override public EngineRuntime acquire(ConversionRequest request) {
         require(request.engineId());
-        if (!lifecycle.tryLock()) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, "Marker está ocupado. Esperá a que termine la operación.");
+        if (!lifecycle.tryLock()) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, manifests.descriptor().displayName() + " está ocupado. Esperá a que termine la operación.");
         LifecycleFileLock diskLock = null;
         try {
             diskLock = fileLock(request.engineId());
-            if (diskLock == null) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, "Marker está en uso por otra ventana de ParseForge.");
+            if (diskLock == null) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, manifests.descriptor().displayName() + " está en uso por otra ventana de ParseForge.");
             state = installedState(request.engineId());
             if (state != EngineState.READY) throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED,
-                    state == EngineState.BROKEN ? "Marker necesita reparación. Abrí Configuración > Motores." : "Instalá Marker desde Configuración > Motores.");
-            ProcessSpec command = new ManagedMarkerRuntime(paths.engine(request.engineId()), manifests.manifest()).conversion(request);
+                    state == EngineState.BROKEN ? manifests.descriptor().displayName() + " necesita reparación. Abrí Motores de conversión." : "Instalá " + manifests.descriptor().displayName() + " desde Motores de conversión.");
+            ProcessSpec command = runtimes.create(paths.engine(request.engineId()), manifests.manifest()).conversion(request);
             LifecycleFileLock lease = diskLock;
             return new EngineRuntime() {
                 private boolean closed;
@@ -147,7 +153,7 @@ public final class ManagedEngineManager implements EngineManager, EngineRuntimeL
         catch (IOException error) {
             if (diskLock != null) diskLock.close();
             lifecycle.unlock();
-            throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, "Marker necesita reparación.", error);
+            throw new ConversionException(ErrorCode.ENGINE_NOT_INSTALLED, manifests.descriptor().displayName() + " necesita reparación.", error);
         }
     }
     private LifecycleFileLock fileLock(EngineId id) throws IOException {

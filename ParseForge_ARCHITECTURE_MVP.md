@@ -1700,3 +1700,15 @@ Markdown
 ```
 
 funcione de forma confiable, local y sin que el usuario tenga que abrir una terminal.
+
+## Implementación de Stage 6 (0.1.0)
+
+El contrato `ConversionEngine` tiene ahora implementaciones reales Marker y
+MarkItDown. `MultiEngineManager` enruta operaciones a gestores independientes,
+con locks y leases por motor. `PinnedPythonEngineInstaller` conserva el staging,
+hashes y commit atómico existente; cada adaptador aporta su propio runtime.
+MarkItDown instala CPython 3.12.10 y `markitdown[pdf]==0.1.8` bajo su directorio,
+sin compartir archivos con Marker. La interfaz depende de perfiles/casos de uso,
+no de Python, pip, flags o rutas internas. Selección y expansión son independientes;
+solo motores READY pueden seleccionarse y la selección persiste con fallback.
+El alcance continúa siendo PDF → Markdown local. Ver `docs/release/STAGE_6_RESULT.md`.

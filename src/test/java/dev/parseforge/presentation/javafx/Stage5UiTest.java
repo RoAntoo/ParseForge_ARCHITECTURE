@@ -131,10 +131,13 @@ class Stage5UiTest {
                 ((RadioButton)stage.getScene().lookup("#marker-selection")).fire();
                 assertTrue(((RadioButton)stage.getScene().lookup("#marker-selection")).isSelected());
                 snapshot(stage.getScene(), "ready");
+                button("expand-marker").fire();
+                stage.getScene().getRoot().applyCss(); stage.getScene().getRoot().layout();
                 var card = stage.getScene().lookup("#marker-card");
                 assertTrue(card.getBoundsInLocal().getHeight() < 230, "La tarjeta debe conservar su altura natural");
                 assertTrue(label("engine-state").localToScene(label("engine-state").getBoundsInLocal()).getMinY() >= 95,
                         "El estado del motor debe quedar visible debajo del encabezado");
+                button("expand-marker").fire();
                 controller.selectPdf(pdf); assertFalse(button("convert-pdf").isDisabled());
                 String longPath = temporary.resolve("carpeta-de-destino-".repeat(7)).toString();
                 ((TextField)stage.getScene().lookup("#output-directory")).setText(longPath);

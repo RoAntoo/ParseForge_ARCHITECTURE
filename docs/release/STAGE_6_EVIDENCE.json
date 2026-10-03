@@ -1,0 +1,239 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-01",
+  "timezone": "America/Buenos_Aires",
+  "status": "PACKAGE BUILT - HOST VALIDATED - VM VALIDATION PENDING",
+  "releaseCommand": ".\\scripts\\release.ps1",
+  "releaseLog": "build/stage6-release.log",
+  "releaseResult": "PASS",
+  "maven": {
+    "testsDiscovered": 96,
+    "testsPassed": 94,
+    "skipped": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipReason": "Stage5UiTest and Stage6UiTest opt-in; both passed separately at all three scales"
+  },
+  "markitdown": {
+    "version": "0.1.8",
+    "pythonVersion": "3.12.10",
+    "pipVersion": "25.0.1",
+    "privatePythonBytes": 31400978,
+    "packagesAndBootstrapBytes": 162137280,
+    "installedBytes": 193538258,
+    "downloadedBytes": 80164780,
+    "dependencyWheelCount": 32,
+    "installationSeconds": 29.25,
+    "entrypoint": "import sys; from pdfminer.pdfparser import PDFParser; from pdfminer.pdfdocument import PDFDocument; f=open(sys.argv[1],'rb'); PDFDocument(PDFParser(f)); f.close(); from markitdown.__main__ import main; main()",
+    "manifestSha256": "d9a409e0b74287e9e2191aad181f710d014b42f8744f67a2ad05aa14bbc7b31c",
+    "lockSha256": "dc54defb7a5f6b5587e22c36e6ae2db2ef0774980c3bd5804a337648cd31586f",
+    "artifactHashes": "src/main/resources/engines/markitdown-windows-x64.json",
+    "spike": "docs/spikes/STAGE_6_MARKITDOWN_SPIKE.json"
+  },
+  "ui": [
+    {
+      "requestedScale": "1.0",
+      "observedScale": "1.0",
+      "result": "PASS",
+      "fixtureEngines": true,
+      "snapshots": "build/stage6-ui/1.0",
+      "snapshotCount": 6
+    },
+    {
+      "requestedScale": "1.25",
+      "observedScale": "1.25",
+      "result": "PASS",
+      "fixtureEngines": true,
+      "snapshots": "build/stage6-ui/1.25",
+      "snapshotCount": 6
+    },
+    {
+      "requestedScale": "1.5",
+      "observedScale": "1.5",
+      "result": "PASS",
+      "fixtureEngines": true,
+      "snapshots": "build/stage6-ui/1.5",
+      "snapshotCount": 6
+    }
+  ],
+  "stage5UiRegression": {
+    "result": "PASS",
+    "scales": [
+      "1.0",
+      "1.25",
+      "1.5"
+    ]
+  },
+  "host": {
+    "uiInstallSeconds": 17.2785132,
+    "uiInstall": "PASS",
+    "digital": {
+      "result": "PASS",
+      "output": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-host\\output ñ\\digital.md"
+    },
+    "multipageUnicode": {
+      "result": "PASS",
+      "output": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-host\\output ñ\\varias páginas ñ.md"
+    },
+    "fullIntegrityAndHealth": "PASS",
+    "restartPersistence": "PASS",
+    "uiRepair": "PASS",
+    "invalidPdf": "PASS",
+    "uiCancellation": "PASS",
+    "orphansAfterCancellation": 0,
+    "uiUninstall": "PASS",
+    "uiReinstall": "PASS",
+    "afterReinstall": {
+      "result": "PASS",
+      "output": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-host\\output ñ\\digital.md"
+    },
+    "markerUnchanged": "Marker absent in isolated root; real Marker regression recorded separately",
+    "windowsJob": true,
+    "dataRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-host",
+    "installedBytesIncludingMetadataAndLogs": 193565874
+  },
+  "forcedClose": {
+    "privatePythonTerminated": true,
+    "forcedJvmClose": "PASS",
+    "pythonPid": 1360,
+    "orphanProcesses": 0
+  },
+  "markerRegression": {
+    "existingMarkerReady": true,
+    "digital": {
+      "seconds": 89.504,
+      "outputFiles": [
+        "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-marker-regression\\digital\\digital\\digital.md"
+      ],
+      "status": "COMPLETED"
+    },
+    "ocr": {
+      "seconds": 115.604,
+      "outputFiles": [
+        "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\stage6-marker-regression\\ocr\\digital\\digital.md"
+      ],
+      "status": "COMPLETED"
+    },
+    "cancel": {
+      "seconds": 8.533,
+      "outputFiles": [],
+      "status": "CANCELLED"
+    },
+    "orphans": 0,
+    "markerRoot": "C:\\Users\\rochi\\AppData\\Local\\ParseForge\\engines\\marker"
+  },
+  "packagedJarMatchesVerifiedBuild": true,
+  "packagedJarSha256": "4d4af2dc0826bc7d7ee0de05e18d80054be4f52419aa2fe66e18e6b40fa3e58b",
+  "startupSmoke": {
+    "source": "build/smoke/c5d7cb0c-549c-4049-8ad0-80721a8b5347/smoke.json",
+    "result": "PASS",
+    "javaVersion": "21.0.12.1",
+    "javaHome": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\app-image\\ParseForge\\runtime",
+    "dataRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\c5d7cb0c-549c-4049-8ad0-80721a8b5347\\data",
+    "configFile": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\c5d7cb0c-549c-4049-8ad0-80721a8b5347\\data\\config\\config.json",
+    "logs": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\c5d7cb0c-549c-4049-8ad0-80721a8b5347\\data\\logs",
+    "windowsJob": true,
+    "uiOpened": false,
+    "settingsPersisted": true,
+    "settingsReadable": true,
+    "smokeSettingsFile": "C:\\Users\\rochi\\AppData\\Local\\Temp\\ParseForge-smoke-settings-5652459260617647222.json",
+    "markerRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\c5d7cb0c-549c-4049-8ad0-80721a8b5347\\data\\engines\\marker",
+    "manifestLoaded": "2.0.0"
+  },
+  "windowSmoke": {
+    "source": "build/smoke/fa596dce-ab22-45e6-8057-a55d24aa4c99/smoke.json",
+    "result": "PASS",
+    "javaVersion": "21.0.12.1",
+    "javaHome": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\app-image\\ParseForge\\runtime",
+    "dataRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\fa596dce-ab22-45e6-8057-a55d24aa4c99\\data",
+    "configFile": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\fa596dce-ab22-45e6-8057-a55d24aa4c99\\data\\config\\config.json",
+    "logs": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\fa596dce-ab22-45e6-8057-a55d24aa4c99\\data\\logs",
+    "windowsJob": true,
+    "uiOpened": true,
+    "settingsPersisted": true,
+    "smokeSettingsFile": "C:\\Users\\rochi\\AppData\\Local\\Temp\\ParseForge-smoke-settings-340250880013685178.json",
+    "settingsReadable": true,
+    "markerRoot": "C:\\Users\\rochi\\Documents\\GitHub\\ParseForge_ARCHITECTURE\\build\\smoke\\fa596dce-ab22-45e6-8057-a55d24aa4c99\\data\\engines\\marker",
+    "manifestLoaded": "2.0.0"
+  },
+  "screenshots": [
+    "docs/release/images/app-window.png",
+    "docs/release/images/stage6-compact.png",
+    "docs/release/images/stage6-expanded.png"
+  ],
+  "vm": {
+    "status": "PENDING",
+    "owner": "User",
+    "manualValidationRequestedByUser": true,
+    "checklist": "docs/release/VM_VALIDATION.md"
+  },
+  "publicReleasePublished": false,
+  "followUps": [
+    {
+      "date": "2026-10-02",
+      "change": "Select ready engines by clicking the card; preserve internal control actions",
+      "nativeUi": {
+        "result": "PASS",
+        "scale": "1.0",
+        "log": "build/stage6-card-click-ui.log",
+        "coverage": [
+          "card background",
+          "engine name",
+          "capacity label",
+          "state label",
+          "unavailable engine guard",
+          "independent internal controls"
+        ]
+      },
+      "releaseLog": "build/stage6-card-click-release.log",
+      "releaseResult": "PASS",
+      "testsPassed": 101,
+      "skipped": 2,
+      "failures": 0,
+      "errors": 0,
+      "previousPdfSuffixFixIncluded": true,
+      "packagedUiSmoke": {
+        "source": "build/smoke/a5dc5d6f-50b3-4347-b93b-a6a6abf96570/smoke.json",
+        "result": "PASS"
+      },
+      "packagedJarSha256": "4d4af2dc0826bc7d7ee0de05e18d80054be4f52419aa2fe66e18e6b40fa3e58b",
+      "releaseArtifacts": [
+        {
+          "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+          "bytes": 51616020,
+          "sha256": "18d0fc46c61b1390a351867900ffe6ebc1feaf455e26120533b5045d001b0674"
+        },
+        {
+          "file": "build/release/ParseForge-Setup-0.1.0.exe",
+          "bytes": 49501620,
+          "sha256": "f5026697db9e628f1ceee450b0e42eca62d0108fc29be1a93d3111d2fd90072a"
+        }
+      ]
+    }
+  ],
+  "initialReleaseArtifacts": [
+    {
+      "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+      "bytes": 51615485,
+      "sha256": "a382e7a8560a77b4a443d15d0de85f4df08975afe7b612a5a9d78fd90a07dfef"
+    },
+    {
+      "file": "build/release/ParseForge-Setup-0.1.0.exe",
+      "bytes": 49501030,
+      "sha256": "ed9fb093a7f0110914f1bd9c0c75efe945527ecc8cd98ef5d4cb94a5b71e038e"
+    }
+  ],
+  "releaseArtifacts": [
+    {
+      "file": "build/release/ParseForge-0.1.0-win-x64.zip",
+      "bytes": 51616020,
+      "sha256": "18d0fc46c61b1390a351867900ffe6ebc1feaf455e26120533b5045d001b0674"
+    },
+    {
+      "file": "build/release/ParseForge-Setup-0.1.0.exe",
+      "bytes": 49501620,
+      "sha256": "f5026697db9e628f1ceee450b0e42eca62d0108fc29be1a93d3111d2fd90072a"
+    }
+  ],
+  "lastRebuilt": "2026-10-02"
+}
