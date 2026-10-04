@@ -1,0 +1,21 @@
+{
+  "engine": "markitdown",
+  "case": "cancel-many-pages",
+  "status": "CANCELLED",
+  "exitCode": 0,
+  "seconds": 2.078,
+  "source": "<REPO>\\build\\stage9-progress\\1791063671045944500\\cancel-15000.pdf",
+  "sourceSha256": "69b3e196d3b6ead96d086b66675a70947d38bcbc76373758a169e04c2fe71745",
+  "limitSeconds": 2,
+  "outputs": {},
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\cancel-many-pages",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/cancel-many-pages",
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "processSnapshots": 1,
+  "inventoryChanges": 1
+}

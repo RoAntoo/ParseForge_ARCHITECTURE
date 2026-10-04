@@ -1,0 +1,21 @@
+{
+  "engine": "markitdown",
+  "case": "corrupt",
+  "status": "FAILED",
+  "exitCode": 1,
+  "seconds": 1.39,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\corrupt.pdf",
+  "sourceSha256": "952900690268304407739cf0ee71792f672f789c4a4943853cccea3bc8ad4404",
+  "limitSeconds": 120,
+  "outputs": {},
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\corrupt",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "0df8361b8c5da0646667d0edc6928925eef620596134d17e8e6e4404a2ad41de"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/corrupt",
+  "stdoutBytes": 0,
+  "stderrBytes": 372,
+  "processSnapshots": 1,
+  "inventoryChanges": 1
+}

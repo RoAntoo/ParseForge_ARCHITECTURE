@@ -1,0 +1,26 @@
+{
+  "engine": "markitdown",
+  "case": "digital-short",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 1.547,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-text.pdf",
+  "sourceSha256": "5c181803a743fb96534102cab930c5cab30e2264b40ba4465ed566ce3f710910",
+  "limitSeconds": 120,
+  "outputs": {
+    "digital-text.md": {
+      "bytes": 169,
+      "sha256": "9becd99869c200d17c165767fb4e574958eebe0766a1ef41122f68c075f63998"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\markitdown\\digital-short",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/markitdown/digital-short",
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "processSnapshots": 1,
+  "inventoryChanges": 1
+}

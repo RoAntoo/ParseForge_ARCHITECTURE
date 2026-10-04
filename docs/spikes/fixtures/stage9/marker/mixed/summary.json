@@ -1,0 +1,30 @@
+{
+  "engine": "marker",
+  "case": "mixed",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 107.125,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\mixed.pdf",
+  "sourceSha256": "a9a37d22b2bf796f12aaa2988f210adc95eb63b4a0bd48b077f85a7774eeaa8d",
+  "limitSeconds": 240,
+  "outputs": {
+    "mixed/mixed.md": {
+      "bytes": 622,
+      "sha256": "18474c38cb3b8a0be74091b3396667ab11e14117911ebf8086a79a4b9a909dba"
+    },
+    "mixed/mixed_meta.json": {
+      "bytes": 985,
+      "sha256": "a84f4b0492cc00c909227e05f08e54e7c5e7f8ead5c4585fff8f50ce0ad2755b"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\mixed",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "0c722567cc5ab80acc5a099b6eba7f83f0a672bc718fb212f57f8c0337bd3dc8"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/mixed",
+  "stdoutBytes": 0,
+  "stderrBytes": 251,
+  "processSnapshots": 45,
+  "inventoryChanges": 1
+}

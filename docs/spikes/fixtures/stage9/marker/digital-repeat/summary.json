@@ -1,0 +1,30 @@
+{
+  "engine": "marker",
+  "case": "digital-repeat",
+  "status": "COMPLETED",
+  "exitCode": 0,
+  "seconds": 77.64,
+  "source": "<REPO>\\build\\stage7-host\\fixtures\\digital-text.pdf",
+  "sourceSha256": "5c181803a743fb96534102cab930c5cab30e2264b40ba4465ed566ce3f710910",
+  "limitSeconds": 240,
+  "outputs": {
+    "digital-text/digital-text.md": {
+      "bytes": 164,
+      "sha256": "3865359644b0c55b68c63e0b28d7b6344bc10d3b3b2fbb14f0ce16c7908b5225"
+    },
+    "digital-text/digital-text_meta.json": {
+      "bytes": 1103,
+      "sha256": "de4e76125b9617c020d7dae8fe450c0f82bf55457304275c4e09ba279297b75d"
+    }
+  },
+  "logDirectory": "build\\stage9-progress\\1791063671045944500\\marker\\digital-repeat",
+  "rawStreamHashes": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "fac9658f68e134792ef6948d8908c6569cd432f8c5f3b634512d3dd17348eca2"
+  },
+  "fixtureDirectory": "docs/spikes/fixtures/stage9/marker/digital-repeat",
+  "stdoutBytes": 0,
+  "stderrBytes": 268,
+  "processSnapshots": 32,
+  "inventoryChanges": 1
+}
