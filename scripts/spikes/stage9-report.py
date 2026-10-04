@@ -14,6 +14,7 @@ assert len(SUMMARY) in (11, 12), 'Wait for the entire matrix before reporting'
 assert any(e['engine'] == 'markitdown' and e['status'] == 'CANCELLED' for e in SUMMARY), 'An actual cancellation is required, not a fast completion'
 ARCHIVE = REPO / 'docs/spikes/fixtures/stage9'
 ARCHIVE.mkdir(parents=True, exist_ok=True)
+archive_outputs = set()
 ROOT = Path(os.environ['LOCALAPPDATA']) / 'ParseForge/engines'
 
 
@@ -36,6 +37,8 @@ def digest(path):
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(value, encoding='utf-8', newline='\n')
+    if path.is_relative_to(ARCHIVE):
+        archive_outputs.add(path)
 
 
 versions = {}
@@ -43,6 +46,16 @@ for engine, packages in [('marker', ['marker-pdf', 'surya-ocr', 'tqdm']), ('mark
     code = 'import sys,json,importlib.metadata as m; print(json.dumps(dict(python=sys.version, packages={x:m.version(x) for x in ' + repr(packages) + '})))'
     result = subprocess.run([str(ROOT / engine / 'runtime/python/python.exe'), '-I', '-X', 'utf8', '-u', '-B', '-c', code], capture_output=True, text=True, check=True, timeout=30)
     versions[engine] = json.loads(result.stdout)
+
+marker_packages = versions['marker']['packages']
+markitdown_packages = versions['markitdown']['packages']
+engine_versions = (f"Marker {marker_packages['marker-pdf']} / Surya {marker_packages['surya-ocr']} "
+                   f"y MarkItDown {markitdown_packages['markitdown']}")
+runtime_versions = (f"Marker {marker_packages['marker-pdf']}, Surya {marker_packages['surya-ocr']}, "
+                    f"tqdm {marker_packages['tqdm']}; MarkItDown {markitdown_packages['markitdown']},\n"
+                    f"pdfminer.six {markitdown_packages['pdfminer-six']}, pdfplumber {markitdown_packages['pdfplumber']}.\n"
+                    f"Python privado de Marker: {versions['marker']['python']}.\n"
+                    f"Python privado de MarkItDown: {versions['markitdown']['python']}.\n")
 
 source_hashes = {}
 source_files = [('marker', name) for name in ['marker/scripts/convert_single.py', 'surya/common/batch_service/client.py', 'surya/common/batch_service/server.py', 'surya/ocr_error/server.py', 'surya/ocr_error/__init__.py', 'surya/fast_layout/__init__.py', 'surya/layout/__init__.py', 'surya/recognition/__init__.py', 'surya/inference/backends/openai_client.py', 'surya/inference/backends/llamacpp.py']]
@@ -83,7 +96,7 @@ for name in ['stage9-tests.log', 'stage9-ui.log']:
     write(ARCHIVE / 'tests' / name, sanitize(content))
 
 evidence = dict(date='2026-10-03', timezone='America/Buenos_Aires', stage=9, decision='NO-GO', result='ABORTED BY DESIGN', scope='Installed versions and CPU/llamacpp managed profile only', productionChanges=False, releaseRun=False, versions=versions, sourceHashes=source_hashes, runs=SUMMARY, longProbeLimitSeconds=240, limitations=['Synthetic PDFs; not a representative corpus of scanned books.', 'TIMEOUT_INCOMPLETE means bounded observation, not a completed conversion.', 'COMPLETED describes CLI exit 0, not ParseForge output validation.', 'Shared server logs contain prior invocations and are not job-scoped.', 'CIM snapshots every approximately 2-3 seconds can miss short-lived children.', 'No full book throughput, clean-VM or ETA validation claimed.'], tests={'functional': {'passed': 39, 'failed': 0, 'log': 'build/stage9-tests.log'}, 'ui': {'passed': 1, 'failed': 0, 'suite': 'Stage7UiTest', 'scale': '1.0', 'log': 'build/stage9-ui.log'}}, signals=[{'signal': 'Marker main stdout/stderr', 'classification': 'PARTIALLY_RELIABLE', 'use': 'Terminal saved/time messages, errors; no current/total'}, {'signal': 'OCR-error tqdm', 'classification': 'UNRELIABLE', 'use': 'Disabled by installed server; not exposed in actual managed execution'}, {'signal': 'Shared Loading weights counters', 'classification': 'UNRELIABLE', 'use': 'Real model-load counts; not document progress, not job-scoped, includes history'}, {'signal': 'Child server presence', 'classification': 'PARTIALLY_RELIABLE', 'use': 'Service readiness/lifecycle only; not active processing phase or percent'}, {'signal': 'llama tokens/slots', 'classification': 'UNRELIABLE', 'use': 'Variable generation work; max tokens is a ceiling, not total required work'}, {'signal': 'Temp/output sizes', 'classification': 'UNRELIABLE', 'use': 'No proven deterministic relation to conversion completion'}, {'signal': 'MarkItDown successful CLI', 'classification': 'UNRELIABLE', 'use': 'Silent during processing; no current/total'}])
-archive_hashes = {p.relative_to(REPO).as_posix(): digest(p) for p in ARCHIVE.rglob('*') if p.is_file()}
+archive_hashes = {p.relative_to(REPO).as_posix(): digest(p) for p in sorted(archive_outputs)}
 evidence['fixtureHashes'] = archive_hashes
 process_query = "$ErrorActionPreference='Stop'; @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith('" + str(ROOT).replace("'", "''") + "\\', [StringComparison]::OrdinalIgnoreCase) } | Select-Object ProcessId,ParentProcessId,ExecutablePath,CreationDate) | ConvertTo-Json -Compress"
 audit = subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', process_query], capture_output=True, text=True, check=True, timeout=30)
@@ -102,19 +115,21 @@ no sólo en la ausencia de mensajes durante una espera.
 
 ## Versiones y método
 
-Marker 2.0.0, Surya 0.22.1, tqdm 4.70.1; MarkItDown 0.1.8,
-pdfminer.six 20260107, pdfplumber 0.11.10; CPython privado 3.12.10 x64.
+''' + runtime_versions + '''
 CPU con llama.cpp y modelos locales, sin instalar nuevas dependencias. Se conserva
 HF_HUB_OFFLINE=1 y la comunicación local con servidores del motor; no se realizó
 una auditoría de tráfico de red.
-Se usaron los entrypoints, argumentos y entorno de los runtimes administrados de
-ParseForge. Un Windows Job Object con kill-on-close contiene cada árbol de procesos.
+Se usan los argumentos y entorno de los runtimes administrados de ParseForge.
+El spike actual invoca directamente el CLI de MarkItDown sin la prevalidación de
+PDFMiner que conserva producción. Las matrices anteriores pueden incluirla: los
+comandos exactos usados en cada ejecución están en events.jsonl.
+Un Windows Job Object con kill-on-close contiene cada árbol de procesos.
 Es un spike directo del CLI: no certifica publicación de resultados por la aplicación.
 
 Fixtures sintéticas de Stage 7: digital corto, escaneado corto y mixto de 2 páginas;
 digital largo y escaneado largo de 240 páginas; PDF corrupto. Digital corto repetido
 en Marker y 240 páginas repetidas en MarkItDown para observar consistencia.
-Captura de pipes binaria, chunks con timestamps, stdout/stderr separados, snapshots
+Captura de pipes binaria, líneas sanitizadas con timestamps, stdout/stderr separados, snapshots
 CIM de procesos (identidad, padre y comando) e inventario temporal/salidas.
 Los logs sanitizados preservan CR y ruido; los originales binarios permanecen en build.
 Las capturas CIM no son un censo perfecto de procesos de vida muy breve.
@@ -218,7 +233,7 @@ write(REPO / 'docs/release/STAGE_9_RESULT.md', '''# ParseForge — resultado de 
 2026-10-03 · America/Buenos_Aires · versión 0.1.0.
 
 **NO-GO — ABORTED BY DESIGN.** No continuar con porcentaje de conversión ni ETA
-para Marker 2.0.0 / Surya 0.22.1 y MarkItDown 0.1.8 en los perfiles actuales.
+para ''' + engine_versions + ''' en los perfiles actuales.
 
 No se implementó una barra 1–100 porque el motor no expone una señal suficientemente
 fiable. ParseForge conserva progreso indeterminado para evitar mostrar información falsa.

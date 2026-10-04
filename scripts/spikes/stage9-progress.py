@@ -1,7 +1,7 @@
 """Read-only production-code spike; installed runtimes, synthetic fixtures, no downloads.
 
 Run with development Python on Windows. Captures raw pipe bytes (including CR),
-timestamped sanitized chunks, process identities and temp/output inventory changes.
+timestamped sanitized lines, process identities and temp/output inventory changes.
 Long Marker probes are bounded, and explicitly reported as incomplete on timeout.
 Child processes belong to a kill-on-close Windows Job, like the production executor.
 """
@@ -19,7 +19,41 @@ import time
 
 REPO = Path(__file__).resolve().parents[2]
 MARKER = "from marker.scripts.convert_single import convert_single_cli; convert_single_cli()"
-MD = "import sys; from pdfminer.pdfparser import PDFParser; from pdfminer.pdfdocument import PDFDocument; f=open(sys.argv[1],'rb'); PDFDocument(PDFParser(f)); f.close(); from markitdown.__main__ import main; main()"
+MD = "from markitdown.__main__ import main; main()"
+
+
+def read_stream(pipe, destination, stream, sanitize, emit):
+    """Sanitize complete UTF-8 lines, preserving CR/LF and an unterminated tail."""
+    with (destination / (stream + '.raw')).open('wb') as raw, (destination / (stream + '.log')).open('w', encoding='utf-8', newline='') as clean:
+        pending = b''
+
+        def flush_lines(final=False):
+            nonlocal pending
+            while pending:
+                endings = [i for separator in (b'\r', b'\n') if (i := pending.find(separator)) >= 0]
+                if not endings:
+                    if not final:
+                        break
+                    end = len(pending)
+                else:
+                    end = min(endings) + 1
+                    if pending[end - 1:end] == b'\r':
+                        if end == len(pending) and not final:
+                            break  # Wait for a possible LF in the next chunk.
+                        if pending[end:end + 1] == b'\n':
+                            end += 1
+                value = sanitize(pending[:end].decode('utf-8', errors='replace'))
+                pending = pending[end:]
+                clean.write(value)
+                clean.flush()
+                emit(stream, value)
+
+        while chunk := os.read(pipe.fileno(), 4096):
+            raw.write(chunk)
+            raw.flush()
+            pending += chunk
+            flush_lines()
+        flush_lines(final=True)
 
 
 class IO(c.Structure):
@@ -105,17 +139,7 @@ def run(engine, case, source, base, limit, cancel=False):
     job.assign(process)
     emit('start', dict(pid=process.pid, command=[sanitize(x) for x in command]))
 
-    def reader(pipe, stream):
-        with (destination / (stream + '.raw')).open('wb') as raw, (destination / (stream + '.log')).open('w', encoding='utf-8', newline='') as clean:
-            while chunk := os.read(pipe.fileno(), 4096):
-                raw.write(chunk)
-                raw.flush()
-                value = sanitize(chunk.decode('utf-8', errors='replace'))
-                clean.write(value)
-                clean.flush()
-                emit(stream, value)
-
-    readers = [threading.Thread(target=reader, args=(pipe, name)) for pipe, name in ((process.stdout, 'stdout'), (process.stderr, 'stderr'))]
+    readers = [threading.Thread(target=read_stream, args=(pipe, destination, name, sanitize, emit)) for pipe, name in ((process.stdout, 'stdout'), (process.stderr, 'stderr'))]
     for thread in readers:
         thread.start()
     stop = threading.Event()
