@@ -10,9 +10,34 @@ import java.time.Duration;
 import java.util.*;
 
 public final class ManagedMarkItDownRuntime implements ManagedPythonRuntime {
-    // The upstream CLI can fall back to text for malformed PDFs. Validate the
-    // PDF container first, then use its documented CLI and explicit output.
-    public static final String ENTRYPOINT = "import sys; from pdfminer.pdfparser import PDFParser; from pdfminer.pdfdocument import PDFDocument; f=open(sys.argv[1],'rb'); PDFDocument(PDFParser(f)); f.close(); from markitdown.__main__ import main; main()";
+    // Prevent malformed binary documents falling back to successful plain text.
+    public static final String ENTRYPOINT = """
+            import sys, zipfile
+            from pathlib import Path
+            path = sys.argv[1]
+            ext = Path(path).suffix.lower()
+            if ext == '.pdf':
+                from pdfminer.pdfparser import PDFParser
+                from pdfminer.pdfdocument import PDFDocument
+                with open(path, 'rb') as f: PDFDocument(PDFParser(f))
+            if ext in ('.docx', '.pptx', '.xlsx', '.epub', '.zip'):
+                with zipfile.ZipFile(path) as z:
+                    if z.testzip() is not None: raise ValueError('Corrupt ZIP container')
+                    required = {'.docx':'word/document.xml', '.pptx':'ppt/presentation.xml', '.xlsx':'xl/workbook.xml', '.epub':'META-INF/container.xml'}
+                    if ext in required and required[ext] not in z.namelist(): raise ValueError('Invalid document container')
+                    if ext == '.epub' and ('mimetype' not in z.namelist() or z.read('mimetype').strip() != b'application/epub+zip'): raise ValueError('Invalid EPUB')
+            if ext == '.xls':
+                import xlrd
+                book = xlrd.open_workbook(path, on_demand=True)
+                book.release_resources()
+            if ext == '.msg':
+                import olefile
+                if not olefile.isOleFile(path): raise ValueError('Invalid OLE container')
+                with olefile.OleFileIO(path) as ole:
+                    if ext == '.msg' and not any(p[0].startswith('__substg1.0_') for p in ole.listdir()): raise ValueError('Invalid MSG')
+            from markitdown.__main__ import main
+            main()
+            """;
     private final Path root;
     private final JsonNode manifest;
     public ManagedMarkItDownRuntime(Path root, JsonNode manifest) throws IOException {
@@ -40,8 +65,8 @@ public final class ManagedMarkItDownRuntime implements ManagedPythonRuntime {
     }
     public static Path output(ConversionRequest request) {
         String filename = request.inputFile().getFileName().toString();
-        String stem = filename.toLowerCase(Locale.ROOT).endsWith(".pdf")
-                ? filename.substring(0, filename.length() - 4) : filename;
+        int dot = filename.lastIndexOf('.');
+        String stem = dot > 0 ? filename.substring(0, dot) : filename;
         return request.outputDirectory().toAbsolutePath().normalize().resolve(stem + ".md");
     }
     public ProcessSpec conversion(ConversionRequest request) throws IOException {

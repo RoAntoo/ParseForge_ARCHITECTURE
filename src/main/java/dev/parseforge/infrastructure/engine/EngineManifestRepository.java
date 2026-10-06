@@ -36,7 +36,7 @@ public final class EngineManifestRepository {
         return new EngineDescriptor(new EngineId(manifest.path("id").asText()),
                 manifest.path("displayName").asText(), manifest.path("engineVersion").asText(),
                 "marker".equals(manifest.path("id").asText())
-                    ? Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.OCR, EngineCapability.LOCAL_PROCESSING)
-                    : Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.LOCAL_PROCESSING));
+                    ? Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.IMAGE_TO_MARKDOWN, EngineCapability.OCR, EngineCapability.LOCAL_PROCESSING)
+                    : Set.of(EngineCapability.PDF_TO_MARKDOWN, EngineCapability.DOCUMENT_TO_MARKDOWN, EngineCapability.LOCAL_PROCESSING));
     }
 }

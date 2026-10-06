@@ -101,7 +101,7 @@ public final class EngineSettingsController {
             catch (Exception error) { operation.setText("Descarga oficial: https://aka.ms/vs/17/release/vc_redist.x64.exe"); }
         });
         Label verification = new Label("Los archivos se comprueban siempre. Si omitís la prueba, "
-                + "el funcionamiento se comprobará al convertir el primer PDF.");
+                + "el funcionamiento se comprobará al convertir el primer documento.");
         verification.setWrapText(true); verification.setMinHeight(Region.USE_PREF_SIZE);
         healthCheck.setWrapText(true);
         healthCheck.setMinHeight(Region.USE_PREF_SIZE);
@@ -129,7 +129,7 @@ public final class EngineSettingsController {
         quickInstall.setOnAction(ignored -> { openSettings.accept(this); installButton.fire(); });
         attention.setId("attention-" + id);
         attention.setOnAction(ignored -> openSettings.accept(this));
-        Label brief = new Label(profile.ocr() ? "OCR y documentos complejos" : "PDFs digitales");
+        Label brief = new Label(profile.ocr() ? "OCR y documentos complejos" : "Office, EPUB y PDF digital");
         brief.setWrapText(true); brief.setMinHeight(Region.USE_PREF_SIZE);
         card.getChildren().setAll(heading, capacity, brief, state, quickInstall, attention);
         card.setMaxWidth(Double.MAX_VALUE); card.setMinWidth(0);

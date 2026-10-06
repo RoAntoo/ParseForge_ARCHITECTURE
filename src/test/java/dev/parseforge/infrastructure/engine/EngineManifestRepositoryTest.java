@@ -35,11 +35,11 @@ class EngineManifestRepositoryTest {
     @Test void missingOrUnsupportedManifestFailsClosed() {
         assertThrows(java.io.IOException.class, () -> new EngineManifestRepository("{\"schemaVersion\":99}".getBytes(), new byte[0]));
     }
-    @Test void markItDownUsesOnlyPinnedPdfPackagesAndHasNoOcrOrMarkerArtifacts() throws Exception {
+    @Test void markItDownUsesPinnedOfflineDocumentPackagesAndHasNoOcrOrMarkerArtifacts() throws Exception {
         var repository = new EngineManifestRepository("markitdown");
         var manifest = repository.manifest();
         String lock = new String(repository.lock(), StandardCharsets.UTF_8);
-        assertTrue(lock.contains("markitdown[pdf]==0.1.8")); assertFalse(lock.contains("[all]"));
+        assertTrue(lock.contains("markitdown[pdf,docx,pptx,xlsx,xls,outlook]==0.1.8")); assertFalse(lock.contains("[all]"));
         assertFalse(lock.contains("marker-pdf")); assertFalse(lock.contains("openai=="));
         assertFalse(manifest.has("models")); assertFalse(manifest.has("llamaCpp"));
         assertFalse(repository.descriptor().capabilities().contains(dev.parseforge.domain.model.EngineCapability.OCR));

@@ -41,7 +41,7 @@ public final class MarkItDownEngineVerifier implements EngineVerifier {
             }
             if (runHealthCheck) {
                 var runtime = new ManagedMarkItDownRuntime(root, expected);
-                String audit = "import sys,importlib.metadata as m,markitdown,pdfminer; from pathlib import Path; r=Path.cwd().resolve(); "
+                String audit = "import sys,importlib.metadata as m,markitdown,pdfminer,mammoth,lxml,pptx,pandas,openpyxl,xlrd,olefile; from pathlib import Path; r=Path.cwd().resolve(); "
                         + "assert all(Path(p).resolve().is_relative_to(r) for p in [sys.executable,sys.prefix,sys.base_prefix,*sys.path]); "
                         + "assert m.version('markitdown')=='" + descriptor.version() + "'; print('MarkItDown privado listo')";
                 Path log = tree.resolve("logs/health-check.log"); Files.createDirectories(log.getParent());

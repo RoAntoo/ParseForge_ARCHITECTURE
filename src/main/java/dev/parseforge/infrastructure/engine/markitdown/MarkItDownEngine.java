@@ -24,6 +24,7 @@ public final class MarkItDownEngine implements ConversionEngine {
     public EngineState state() { return locator.state(ID); }
     public ConversionResult convert(ConversionRequest request, ConversionEventListener listener) {
         if (!ID.equals(request.engineId())) throw new IllegalArgumentException("Motor incorrecto");
+        dev.parseforge.domain.model.DocumentFormats.requireSupported(request);
         var token = new OperationCancellation();
         if (!active.compareAndSet(null, token)) throw new IllegalStateException("MarkItDown está ocupado.");
         Instant start = Instant.now();
@@ -31,7 +32,7 @@ public final class MarkItDownEngine implements ConversionEngine {
              var runtime = locator.acquire(workspace.request())) {
             token.check();
             listener.onEvent(new ConversionEvent.EngineStarted("MarkItDown"));
-            listener.onEvent(new ConversionEvent.PhaseChanged("Procesando PDF digital con MarkItDown..."));
+            listener.onEvent(new ConversionEvent.PhaseChanged("Procesando documento con MarkItDown..."));
             var result = CancellableProcessRunner.execute(executor, runtime.command(), (stream, line) ->
                     listener.onEvent(new ConversionEvent.LogReceived(stream == ProcessStream.STDOUT
                             ? ConversionEvent.Stream.STDOUT : ConversionEvent.Stream.STDERR, line)), token);

@@ -51,8 +51,8 @@ class MarkItDownEngineTest {
     }
     @ParameterizedTest
     @CsvSource({"document.pdf,document.md", "document.PDF,document.md", "document.PdF,document.md",
-            "document.txt,document.txt.md", "document,document.md", "a,a.md", "document.pdf.txt,document.pdf.txt.md"})
-    void outputRemovesOnlyCaseInsensitivePdfSuffix(String filename, String expected) {
+            "document.txt,document.md", "document,document.md", "a,a.md", "document.pdf.txt,document.pdf.md"})
+    void outputRemovesFinalDocumentExtension(String filename, String expected) {
         var input = new ConversionRequest(temp.resolve(filename), request.outputDirectory(), MarkItDownEngine.ID, OutputFormat.MARKDOWN);
         assertEquals(request.outputDirectory().resolve(expected), ManagedMarkItDownRuntime.output(input));
     }
