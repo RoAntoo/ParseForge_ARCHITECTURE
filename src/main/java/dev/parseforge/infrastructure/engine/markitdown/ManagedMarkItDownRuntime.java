@@ -25,7 +25,7 @@ public final class ManagedMarkItDownRuntime implements ManagedPythonRuntime {
                     if z.testzip() is not None: raise ValueError('Corrupt ZIP container')
                     required = {'.docx':'word/document.xml', '.pptx':'ppt/presentation.xml', '.xlsx':'xl/workbook.xml', '.epub':'META-INF/container.xml'}
                     if ext in required and required[ext] not in z.namelist(): raise ValueError('Invalid document container')
-                    if ext == '.epub' and z.read('mimetype').strip() != b'application/epub+zip': raise ValueError('Invalid EPUB')
+                    if ext == '.epub' and ('mimetype' not in z.namelist() or z.read('mimetype').strip() != b'application/epub+zip'): raise ValueError('Invalid EPUB')
             if ext == '.xls':
                 import xlrd
                 book = xlrd.open_workbook(path, on_demand=True)

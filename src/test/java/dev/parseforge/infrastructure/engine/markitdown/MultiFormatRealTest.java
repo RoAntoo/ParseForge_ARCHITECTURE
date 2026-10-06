@@ -16,6 +16,30 @@ import static org.mockito.Mockito.*;
 @EnabledIfSystemProperty(named = "parseforge.multiformatTests", matches = "true")
 class MultiFormatRealTest {
     @TempDir Path output;
+    @Test void missingOrInvalidEpubMimetypeReportsInvalidEpub() throws Exception {
+        Path root = Path.of("build/multiformat").toAbsolutePath();
+        var runtime = new ManagedMarkItDownRuntime(root, new EngineManifestRepository("markitdown").manifest());
+        for (boolean missing : List.of(true, false)) {
+            Path epub = output.resolve(missing ? "missing.epub" : "invalid.epub");
+            try (var zip = new java.util.zip.ZipOutputStream(Files.newOutputStream(epub))) {
+                zip.putNextEntry(new java.util.zip.ZipEntry("META-INF/container.xml"));
+                zip.write("<container/>".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                zip.closeEntry();
+                if (!missing) {
+                    zip.putNextEntry(new java.util.zip.ZipEntry("mimetype"));
+                    zip.write("text/plain".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    zip.closeEntry();
+                }
+            }
+            var request = new ConversionRequest(epub, output, MarkItDownEngine.ID, OutputFormat.MARKDOWN);
+            var logs = new StringBuilder();
+            var result = new LocalProcessExecutor().execute(runtime.conversion(request), (stream, line) -> logs.append(line).append('\n'));
+            assertNotEquals(0, result.exitCode());
+            assertTrue(logs.toString().contains("ValueError: Invalid EPUB"), logs.toString());
+            assertFalse(logs.toString().contains("KeyError"), logs.toString());
+            assertFalse(Files.exists(ManagedMarkItDownRuntime.output(request)));
+        }
+    }
     @Test void convertsOfflineFixturesAndPreservesPreviousOutputOnCorruption() throws Exception {
         Path root = Path.of("build/multiformat").toAbsolutePath();
         var runtime = new ManagedMarkItDownRuntime(root, new EngineManifestRepository("markitdown").manifest());

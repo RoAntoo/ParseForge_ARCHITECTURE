@@ -4,6 +4,7 @@ XLS generation uses xlwt installed only in build/multiformat/fixture-tools.
 The Outlook fixture is from the upstream Microsoft MarkItDown test suite.
 """
 from pathlib import Path
+import hashlib
 import sys
 import subprocess
 import urllib.request
@@ -54,7 +55,9 @@ for extension, content in {
 with zipfile.ZipFile(target('zip'), 'w') as z:
     z.write(target('docx'), 'documento.docx')
     z.write(target('txt'), 'documento.txt')
-urllib.request.urlretrieve('https://raw.githubusercontent.com/microsoft/markitdown/main/packages/markitdown/tests/test_files/test_outlook_msg.msg', target('msg'))
+urllib.request.urlretrieve('https://raw.githubusercontent.com/microsoft/markitdown/c73afcffeadfbc116ff0260df6f720a804bb9675/packages/markitdown/tests/test_files/test_outlook_msg.msg', target('msg'))
+if hashlib.sha256(target('msg').read_bytes()).hexdigest() != '028d84ffe67e1865009669d13d4c12682943b32eccf7f84a8da1899db63b0131':
+    raise ValueError('MSG fixture SHA-256 mismatch')
 image = Image.new('RGB', (1000, 300), 'white')
 ImageDraw.Draw(image).text((50, 80), 'ParseForge image OCR', fill='black', font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf', 48))
 image.save(target('png'))
