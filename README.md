@@ -1,6 +1,6 @@
 # ParseForge
 
-ParseForge is a Windows-first desktop app that converts PDFs to Markdown using
+ParseForge is a Windows-first desktop app that converts documents to Markdown using
 Marker or MarkItDown. Documents are processed locally.
 
 Conversions use a temporary folder inside the selected output directory. Only a
@@ -10,6 +10,21 @@ leaves previous exports intact. Successful exports replace matching files. If
 saving the generated files fails, the error identifies a retained temporary
 folder for recovery. Marker checks only the current conversion's output instead
 of scanning all previously exported documents.
+
+## Supported inputs → Markdown
+
+ParseForge accepts the union of its bundled engine profiles through the file chooser and drag/drop. The selected engine must support the document; the home offers a compatible ready engine when a switch is needed.
+
+| Engine | Available local inputs |
+| --- | --- |
+| Marker | PDF; PNG, JPG/JPEG, GIF, BMP, TIF/TIFF, WEBP images with OCR |
+| MarkItDown | PDF with selectable text; DOCX, EPUB, PPTX, XLSX, XLS, HTML/HTM, TXT, MD, CSV, JSON, XML, Outlook MSG, ZIP |
+
+For multi-frame GIF/TIFF images, the upstream Marker image provider processes the first frame only.
+
+The PDF analysis (page count, digital/scanned estimate, OCR advice) runs only for PDFs. Other inputs go directly to the appropriate converter. ZIP conversion uses MarkItDown's upstream archive converter. Legacy Word DOC, ODT, RTF, audio/video and cloud services are not enabled in these local profiles. Marker Office/EPUB providers require extra native rendering dependencies and are served through MarkItDown here.
+
+Existing MarkItDown installations from the PDF-only profile need **Ajustes → MarkItDown → Reparar motor** once to acquire the new pinned dependencies. The verifier detects missing Office components; existing documents and outputs are retained. New installations include all these dependencies automatically.
 
 ## Managed Marker
 
@@ -38,11 +53,10 @@ remain independent of the engine directory.
 
 ## Managed MarkItDown and engine selection
 
-**MarkItDown 0.1.8** is the lightweight profile for digital PDFs with selectable
-text. Use **Instalar** on its card or **Ajustes → MarkItDown → Instalar MarkItDown**. Its private CPython
+**MarkItDown 0.1.8** is the lightweight profile for digital PDFs, Office documents, EPUB and text formats. Use **Instalar** on its card or **Ajustes → MarkItDown → Instalar MarkItDown**. Its private CPython
 3.12.10 runtime is physically independent of Marker. The measured footprint is
-approximately **194 MB installed**, **80 MB downloaded**; allow **500 MB free**
-for staging. Exact PDF-only packages, artifacts and hashes are pinned. Core
+approximately **245 MB installed**, **96 MB downloaded**; allow **500 MB free**
+for staging. Exact PDF and Office packages, artifacts and hashes are pinned. Core
 Magika/ONNX detection dependencies are included; there is no OCR support, cloud
 service or external plugin. See the [measured spike](docs/spikes/STAGE_6_MARKITDOWN_SPIKE.md).
 
@@ -62,7 +76,7 @@ engine's runtime intact.
 
 ## Visual redesign (Stage 8)
 
-The home follows engine → PDF → document advice → destination → options → conversion.
+The home follows engine → document → document advice → destination → options → conversion.
 **Forzar OCR** stays beside this conversion flow and appears only for Marker; its
 meaning and persistence are unchanged. The main **Convertir a Markdown** action
 uses coral **#F63A48** with white text and distinct hover, pressed, disabled and focus
@@ -121,7 +135,7 @@ installation with the [official Microsoft download](https://aka.ms/vs/17/release
 Optional native health checks validate compatibility; clean Windows validation is pending.
 
 Click **Instalar** on the Marker card, wait for **LISTO**, then
-select/drop a PDF, choose output folder and press **Convertir a Markdown**. Marker applies OCR automatically when needed; **Forzar OCR**
+select/drop a compatible document, choose output folder and press **Convertir a Markdown**. Marker applies OCR automatically when needed; **Forzar OCR**
 remains available as a manual option. Downloads show actual bytes/smoothed speed and a per-file ETA only when
 the measurement is stable; other phases show elapsed time without a percentage.
 Times depend on connection and hardware. Marker uses ~3.2 GB and needs at least

@@ -1,6 +1,7 @@
 package dev.parseforge.domain.exception;
 
 public enum ErrorCode {
+    FORMAT_UNSUPPORTED,
     PDF_INVALID,
     FILE_INACCESSIBLE,
     DISK_SPACE_LOW,

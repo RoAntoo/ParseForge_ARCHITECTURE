@@ -14,6 +14,7 @@ import dev.parseforge.domain.model.ConversionResult;
 import dev.parseforge.domain.model.ConversionStatus;
 import dev.parseforge.domain.model.EngineId;
 import dev.parseforge.domain.model.OutputFormat;
+import dev.parseforge.domain.model.DocumentFormats;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -56,10 +57,10 @@ public final class MainController {
     private EngineId selectedEngineId;
 
     private final BorderPane root = new BorderPane();
-    private final Label selectedPdfLabel = new Label("Ningún PDF seleccionado");
-    private final Label dropTitle = new Label("Arrastrá tu archivo PDF");
+    private final Label selectedDocumentLabel = new Label("Ningún documento seleccionado");
+    private final Label dropTitle = new Label("Arrastrá tu documento");
     private final Label dropHint = new Label("Soltá el documento acá o buscá el archivo en tu equipo.");
-    private final Button selectPdfButton = new Button("SELECCIONAR ARCHIVO");
+    private final Button selectDocumentButton = new Button("SELECCIONAR ARCHIVO");
     private final Button changeDirectoryButton = new Button("CAMBIAR");
     private final Label destinationLabel = new Label();
     private final Label actionHint = new Label();
@@ -98,7 +99,7 @@ public final class MainController {
     private final VBox liveStatus = new VBox(8);
     private boolean cancelling;
 
-    private Path selectedPdf;
+    private Path selectedDocument;
     private Instant conversionStartedAt;
     private String lastInputDirectory;
     private boolean conversionBusy;
@@ -237,7 +238,7 @@ public final class MainController {
         footer.getStyleClass().add("footer");
         root.setCenter(new BorderPane(workspaceScroll, null, null, footer, null));
         // Enter and Space activate every action; Tab traversal stays native JavaFX.
-        for (Button button : java.util.List.of(settingsButton, selectPdfButton, changeDirectoryButton,
+        for (Button button : java.util.List.of(settingsButton, selectDocumentButton, changeDirectoryButton,
                 convertButton, cancelButton, openOutputButton, useSuggestedEngine)) {
             button.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
                 if (event.getCode() == javafx.scene.input.KeyCode.ENTER && !button.isDisabled()) {
@@ -299,24 +300,24 @@ public final class MainController {
         dropHint.getStyleClass().add("muted"); dropHint.setWrapText(true);
         dropHint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         dropTitle.setAlignment(Pos.CENTER); dropHint.setAlignment(Pos.CENTER);
-        selectPdfButton.setId("select-pdf"); selectPdfButton.getStyleClass().add("primary-button");
-        selectPdfButton.setOnAction(ignored -> choosePdf());
-        selectedPdfLabel.setId("selected-pdf"); selectedPdfLabel.setMinWidth(0);
-        selectedPdfLabel.setMaxWidth(Double.MAX_VALUE);
-        selectedPdfLabel.setAlignment(Pos.CENTER); selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
-        selectedPdfLabel.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
+        selectDocumentButton.setId("select-pdf"); selectDocumentButton.getStyleClass().add("primary-button");
+        selectDocumentButton.setOnAction(ignored -> chooseDocument());
+        selectedDocumentLabel.setId("selected-pdf"); selectedDocumentLabel.setMinWidth(0);
+        selectedDocumentLabel.setMaxWidth(Double.MAX_VALUE);
+        selectedDocumentLabel.setAlignment(Pos.CENTER); selectedDocumentLabel.setVisible(false); selectedDocumentLabel.setManaged(false);
+        selectedDocumentLabel.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
         uploadIcon = new javafx.scene.layout.StackPane(
                 icon("M16 24 L16 3 M8 11 L16 3 L24 11 M3 20 L3 29 L29 29 L29 20", "upload-icon"));
         uploadIcon.getStyleClass().add("upload-circle");
         uploadIcon.setMinSize(72, 72); uploadIcon.setMaxSize(72, 72);
-        dropZone.getChildren().setAll(uploadIcon, dropTitle, dropHint, selectPdfButton, selectedPdfLabel);
+        dropZone.getChildren().setAll(uploadIcon, dropTitle, dropHint, selectDocumentButton, selectedDocumentLabel);
         dropZone.setId("pdf-drop-zone"); dropZone.setMinWidth(0);
         dropZone.setMinHeight(240); dropZone.setPrefHeight(300);
         dropZone.setAlignment(Pos.CENTER);
         dropZone.getStyleClass().add("drop-zone");
-        dropZone.setOnDragOver(event -> acceptPdfDrag(event, dropZone));
+        dropZone.setOnDragOver(event -> acceptDocumentDrag(event, dropZone));
         dropZone.setOnDragExited(event -> dropZone.getStyleClass().remove("drop-zone-active"));
-        dropZone.setOnDragDropped(event -> receivePdfDrop(event, dropZone));
+        dropZone.setOnDragDropped(event -> receiveDocumentDrop(event, dropZone));
         return dropZone;
     }
 
@@ -370,7 +371,9 @@ public final class MainController {
         }
         useSuggestedEngine.setId("use-suggested-engine");
         useSuggestedEngine.setOnAction(ignored -> {
-            if (document != null) {
+            if (document == null && selectedDocument != null) {
+                selectEngine(new EngineId(DocumentFormats.isImage(selectedDocument) ? "marker" : "markitdown"));
+            } else if (document != null) {
                 String id = advice().suggestedEngine();
                 if (!id.isBlank()) selectEngine(new EngineId(id));
             }
@@ -386,7 +389,7 @@ public final class MainController {
     }
 
     private void refreshDocument() {
-        documentCard.setVisible(selectedPdf != null); documentCard.setManaged(selectedPdf != null);
+        documentCard.setVisible(selectedDocument != null); documentCard.setManaged(selectedDocument != null);
         useSuggestedEngine.setVisible(false); useSuggestedEngine.setManaged(false);
         documentWarning.setText("");
         if (preflightState == PreflightState.ANALYZING) {
@@ -407,6 +410,23 @@ public final class MainController {
                 useSuggestedEngine.setVisible(available); useSuggestedEngine.setManaged(available);
                 useSuggestedEngine.setDisable(conversionBusy || engineBusy);
             }
+        } else if (preflightState == PreflightState.READY && selectedDocument != null) {
+            documentSummary.setText("Documento · " + DocumentFormats.extension(selectedDocument).toUpperCase(java.util.Locale.ROOT));
+            documentAdvice.setText(DocumentFormats.isImage(selectedDocument)
+                    ? "Marker reconocerá el texto de la imagen mediante OCR."
+                    : "Conversión directa a Markdown. El análisis de páginas y OCR previo se aplica a PDF.");
+            if (java.util.List.of("gif", "tif", "tiff").contains(DocumentFormats.extension(selectedDocument)))
+                documentWarning.setText("En imágenes con varios cuadros o páginas, Marker procesa el primer cuadro.");
+            if (selectedEngineId != null && !DocumentFormats.supports(selectedEngineId, selectedDocument)) {
+                EngineId compatible = new EngineId(DocumentFormats.isImage(selectedDocument) ? "marker" : "markitdown");
+                documentWarning.setText("Este formato requiere " + engineName(compatible) + ".");
+                var card = engineCards.get(compatible);
+                if (card != null && card.ready()) {
+                    useSuggestedEngine.setText("Usar " + engineName(compatible));
+                    useSuggestedEngine.setVisible(true); useSuggestedEngine.setManaged(true);
+                    useSuggestedEngine.setDisable(conversionBusy || engineBusy);
+                }
+            }
         } else if (preflightState == PreflightState.FAILED) {
             documentSummary.setText("Análisis previo no disponible");
             documentAdvice.setText(preflightBlock == null
@@ -416,7 +436,8 @@ public final class MainController {
         String ocr = selectedEngineId != null && selectedEngineId.value().equals("marker")
                 ? forceOcr.isSelected() ? "OCR: forzado manualmente" : document != null && document.likelyNeedsOcr()
                     ? "OCR: automático cuando Marker lo necesite" : "OCR: automático" : "OCR: no disponible en MarkItDown";
-        conversionSummary.setText("Motor: " + engineName(selectedEngineId) + " · " + ocr);
+        conversionSummary.setText("Motor: " + engineName(selectedEngineId)
+                + (DocumentFormats.isPdf(selectedDocument) || DocumentFormats.isImage(selectedDocument) ? " · " + ocr : ""));
         documentWarning.setVisible(!documentWarning.getText().isBlank());
         documentWarning.setManaged(documentWarning.isVisible());
     }
@@ -432,9 +453,16 @@ public final class MainController {
     }
     private void beginPreflight() {
         long revision = ++selectionRevision;
-        document = null; preflightBlock = null; preflightState = PreflightState.ANALYZING;
+        document = null; preflightBlock = null;
+        analyzeDocument.cancel();
+        if (!DocumentFormats.isPdf(selectedDocument)) {
+            preflightState = PreflightState.READY;
+            updateConvertState();
+            return;
+        }
+        preflightState = PreflightState.ANALYZING;
         updateConvertState();
-        analyzeDocument.analyze(selectedPdf).whenComplete((result, error) -> Platform.runLater(() -> {
+        analyzeDocument.analyze(selectedDocument).whenComplete((result, error) -> Platform.runLater(() -> {
             if (revision != selectionRevision) return;
             if (error == null) { document = result; preflightState = PreflightState.READY; }
             else {
@@ -463,14 +491,17 @@ public final class MainController {
         return icon;
     }
 
-    private void choosePdf() {
+    private void chooseDocument() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Seleccionar documento PDF");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Documentos PDF", "*.pdf"));
+        chooser.setTitle("Seleccionar documento");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Documentos compatibles",
+                DocumentFormats.allExtensions().stream().map(ext -> "*." + ext).toList()));
+        if (selectedEngineId != null) chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(
+                "Formatos de " + engineName(selectedEngineId), DocumentFormats.extensions(selectedEngineId).stream().map(ext -> "*." + ext).toList()));
         chooser.setInitialDirectory(validDirectory(lastInputDirectory));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
-            selectPdf(file.toPath());
+            selectDocument(file.toPath());
         }
     }
 
@@ -518,14 +549,14 @@ public final class MainController {
         completedOutput.setText("");
         conversionStatus.setVisible(true); conversionStatus.setManaged(true);
         logs.clear();
-        appendLog("SYSTEM", "Iniciando conversión de " + selectedPdf.getFileName());
+        appendLog("SYSTEM", "Iniciando conversión de " + selectedDocument.getFileName());
         conversionStartedAt = Instant.now();
         phaseLabel.setText("Procesando documento...");
         elapsedLabel.setText("Tiempo transcurrido: 00:00:00");
         elapsedTimer.playFromStart();
 
         ConversionRequest request = new ConversionRequest(
-                selectedPdf, output, selectedEngineId, OutputFormat.MARKDOWN, selectedEngineId.value().equals("marker") && forceOcr.isSelected());
+                selectedDocument, output, selectedEngineId, OutputFormat.MARKDOWN, selectedEngineId.value().equals("marker") && forceOcr.isVisible() && forceOcr.isSelected());
         startConversion.start(request, event -> Platform.runLater(() -> handleEvent(event)))
                 .whenComplete((result, error) -> Platform.runLater(() -> finishConversion(result, error)));
     }
@@ -577,10 +608,13 @@ public final class MainController {
     }
 
     private String validateInputs() {
-        if (selectedPdf == null || !selectedPdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
-            return "Seleccioná un archivo PDF válido.";
+        if (selectedDocument == null || !DocumentFormats.supported(selectedDocument)) {
+            return "Seleccioná un documento compatible.";
         }
-        if (!Files.isRegularFile(selectedPdf) || !Files.isReadable(selectedPdf)) return ConversionMessages.forCode(ErrorCode.FILE_INACCESSIBLE);
+        if (!Files.isRegularFile(selectedDocument) || !Files.isReadable(selectedDocument)) return ConversionMessages.forCode(ErrorCode.FILE_INACCESSIBLE);
+        if (selectedEngineId != null && !DocumentFormats.supports(selectedEngineId, selectedDocument))
+            return "Este formato no está disponible en " + engineName(selectedEngineId) + ". Elegí "
+                    + (DocumentFormats.isImage(selectedDocument) ? "Marker" : "MarkItDown") + ".";
         if (preflightBlock != null) return ConversionMessages.forCode(preflightBlock);
         if (preflightState == PreflightState.ANALYZING) return "Analizando documento...";
         if (document != null && advice().incompatible()) return "Este PDF requiere OCR. Elegí Marker para convertirlo.";
@@ -594,9 +628,9 @@ public final class MainController {
         cancelButton.setDisable(!busy);
         progress.setVisible(busy);
         progress.setManaged(busy);
-        selectPdfButton.setDisable(busy); changeDirectoryButton.setDisable(busy);
+        selectDocumentButton.setDisable(busy); changeDirectoryButton.setDisable(busy);
         openOutputButton.setDisable(busy); forceOcr.setDisable(busy);
-        dropTitle.setText(busy ? "Procesando tu PDF" : selectedPdf == null ? "Arrastrá tu archivo PDF" : "PDF seleccionado");
+        dropTitle.setText(busy ? "Procesando tu documento" : selectedDocument == null ? "Arrastrá tu documento" : "Documento seleccionado");
     }
 
     private boolean validOutputDirectory() {
@@ -644,21 +678,25 @@ public final class MainController {
         if (conversionBusy) reason = "CONVERSIÓN EN CURSO";
         else if (engineBusy) reason = "ESPERÁ A QUE TERMINE LA OPERACIÓN DEL MOTOR";
         else if (!ready && !developmentOverrideAvailable) reason = "INSTALÁ O REPARÁ UN MOTOR PARA CONTINUAR";
-        else if (validationError != null) reason = selectedPdf == null ? "SELECCIONÁ UN PDF PARA CONTINUAR" : validationError;
+        else if (validationError != null) reason = selectedDocument == null ? "SELECCIONÁ UN DOCUMENTO PARA CONTINUAR" : validationError;
         else reason = "TODO LISTO PARA CONVERTIR";
         boolean enabled = !conversionBusy && !engineBusy && !startConversion.hasActiveConversion()
                 && (ready || developmentOverrideAvailable) && validationError == null;
         convertButton.setDisable(!enabled);
         convertButton.setVisible(!conversionBusy); convertButton.setManaged(!conversionBusy);
-        forceOcr.setVisible(selectedEngineId != null && selectedEngineId.value().equals("marker"));
+        forceOcr.setVisible(selectedEngineId != null && selectedEngineId.value().equals("marker")
+                && (selectedDocument == null || DocumentFormats.isPdf(selectedDocument) || DocumentFormats.isImage(selectedDocument)));
         forceOcr.setManaged(forceOcr.isVisible());
         actionHint.setText(reason);
         systemState.setText(conversionBusy ? "● CONVIRTIENDO DOCUMENTO" : engineBusy ? "● COMPROBANDO / PREPARANDO MOTOR"
                 : ready || developmentOverrideAvailable ? "● LISTO PARA PROCESAR LOCALMENTE" : "○ INSTALÁ UN MOTOR PARA COMENZAR");
+        if (selectedDocument == null) dropHint.setText("Formatos disponibles: " + String.join(", ",
+                selectedEngineId == null ? DocumentFormats.allExtensions() : DocumentFormats.extensions(selectedEngineId)) + ".");
+        selectDocumentButton.setTooltip(new Tooltip("Disponibles entre ambos motores: " + String.join(", ", DocumentFormats.allExtensions())));
         refreshDocument();
     }
 
-    private void acceptPdfDrag(DragEvent event, VBox dropZone) {
+    private void acceptDocumentDrag(DragEvent event, VBox dropZone) {
         if (!conversionBusy && event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
             event.acceptTransferModes(TransferMode.COPY);
             if (!dropZone.getStyleClass().contains("drop-zone-active")) {
@@ -668,60 +706,63 @@ public final class MainController {
         event.consume();
     }
 
-    private void receivePdfDrop(DragEvent event, VBox dropZone) {
-        Path pdf = firstPdf(event.getDragboard());
+    private void receiveDocumentDrop(DragEvent event, VBox dropZone) {
+        Path pdf = firstDocument(event.getDragboard());
         if (!conversionBusy && pdf != null) {
-            selectPdf(pdf);
+            selectDocument(pdf);
             event.setDropCompleted(true);
         } else {
             event.setDropCompleted(false);
-            if (!conversionBusy) invalidPdf();
+            if (!conversionBusy) invalidDocument();
         }
         dropZone.getStyleClass().remove("drop-zone-active");
         event.consume();
     }
 
-    private Path firstPdf(Dragboard dragboard) {
+    private Path firstDocument(Dragboard dragboard) {
         if (!dragboard.hasFiles()) {
             return null;
         }
         return dragboard.getFiles().stream()
                 .map(File::toPath)
                 .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().toLowerCase().endsWith(".pdf"))
+                .filter(DocumentFormats::supported)
                 .findFirst()
                 .orElse(null);
     }
 
-    public void selectPdf(Path pdf) {
+    /** Compatibility entrypoint for existing callers. */
+    public void selectPdf(Path file) { selectDocument(file); }
+
+    public void selectDocument(Path pdf) {
         if (conversionBusy) return;
         if (pdf == null || !Files.isRegularFile(pdf) || !Files.isReadable(pdf)
-                || !pdf.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
-            invalidPdf(); return;
+                || !DocumentFormats.supported(pdf)) {
+            invalidDocument(); return;
         }
-        selectedPdf = pdf.toAbsolutePath().normalize();
-        lastInputDirectory = selectedPdf.getParent().toString();
-        selectedPdfLabel.setText(selectedPdf.getFileName().toString());
-        selectedPdfLabel.setTooltip(new Tooltip(selectedPdf.toString()));
-        selectedPdfLabel.setVisible(true); selectedPdfLabel.setManaged(true);
-        dropTitle.setText("PDF seleccionado"); dropHint.setText("Podés elegir otro archivo antes de convertir.");
+        selectedDocument = pdf.toAbsolutePath().normalize();
+        lastInputDirectory = selectedDocument.getParent().toString();
+        selectedDocumentLabel.setText(selectedDocument.getFileName().toString());
+        selectedDocumentLabel.setTooltip(new Tooltip(selectedDocument.toString()));
+        selectedDocumentLabel.setVisible(true); selectedDocumentLabel.setManaged(true);
+        dropTitle.setText("Documento seleccionado"); dropHint.setText("Podés elegir otro archivo antes de convertir.");
         uploadIcon.setVisible(false); uploadIcon.setManaged(false);
         dropHint.setVisible(false); dropHint.setManaged(false);
         dropZone.prefHeightProperty().unbind(); dropZone.setMinHeight(180); dropZone.setPrefHeight(180);
         dropZone.getStyleClass().remove("drop-zone-invalid");
-        selectPdfButton.setText("CAMBIAR ARCHIVO");
+        selectDocumentButton.setText("CAMBIAR ARCHIVO");
         beginPreflight();
         saveSettings();
     }
 
-    private void invalidPdf() {
+    private void invalidDocument() {
         selectionRevision++; analyzeDocument.cancel(); document = null; preflightBlock = null; preflightState = PreflightState.IDLE;
-        selectedPdf = null;
-        selectedPdfLabel.setVisible(false); selectedPdfLabel.setManaged(false);
-        dropTitle.setText("Elegí un archivo PDF válido");
-        dropHint.setText("No se pudo seleccionar ese archivo. Revisá que sea un PDF accesible en tu equipo.");
+        selectedDocument = null;
+        selectedDocumentLabel.setVisible(false); selectedDocumentLabel.setManaged(false);
+        dropTitle.setText("Elegí un documento compatible");
+        dropHint.setText("Elegí un documento accesible de los formatos disponibles.");
         dropHint.setVisible(true); dropHint.setManaged(true);
-        selectPdfButton.setText("SELECCIONAR ARCHIVO");
+        selectDocumentButton.setText("SELECCIONAR ARCHIVO");
         if (!dropZone.getStyleClass().contains("drop-zone-invalid")) dropZone.getStyleClass().add("drop-zone-invalid");
         updateConvertState();
     }
@@ -774,9 +815,9 @@ public final class MainController {
         welcome.initOwner(stage); welcome.setTitle("Bienvenido a ParseForge");
         welcome.getDialogPane().setId("welcome-dialog");
         Label title = new Label("Bienvenido a ParseForge"); title.getStyleClass().add("welcome-title"); title.setWrapText(true);
-        Label message = new Label("Convertí tus documentos PDF a Markdown en tu equipo.\n\n"
+        Label message = new Label("Convertí tus documentos a Markdown en tu equipo.\n\n"
                 + "ParseForge utiliza motores de conversión instalables. Para comenzar, instalá un motor desde el panel Motores de conversión.\n\n"
-                + "Marker permite estructura avanzada y OCR. MarkItDown es ligero y está orientado a PDFs digitales con texto seleccionable. Elegí un motor listo para convertir.\n\n"
+                + "Marker permite estructura avanzada y OCR. MarkItDown admite PDF digital, Word, EPUB, presentaciones, planillas y texto. Elegí un motor listo para convertir.\n\n"
                 + "Tus documentos se procesan localmente. Internet solo es necesario para instalar o reparar el motor.");
         message.setWrapText(true); message.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         CheckBox hide = new CheckBox("No volver a mostrar al iniciar"); hide.setId("hide-welcome"); hide.setWrapText(true);

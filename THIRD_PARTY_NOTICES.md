@@ -47,7 +47,7 @@ bundle is distributed in this candidate installer. Retain wheel license files.
 
 MarkItDown 0.1.8 is MIT licensed (https://github.com/microsoft/markitdown).
 It has a separate embedded CPython 3.12.10 runtime (PSF terms) and pip 25.0.1
-bootstrap (MIT). Only the PDF extra is requested. The exact 32 wheels and their
+bootstrap (MIT). Only the PDF extra is requested. The exact 44 wheels and their
 license metadata are listed in `docs/release/MARKITDOWN_LICENSE_INVENTORY.md`;
 versions/artifact hashes are fixed by `markitdown-requirements.lock` and its
 Windows manifest. This includes Magika/ONNX Runtime's bundled dependencies and

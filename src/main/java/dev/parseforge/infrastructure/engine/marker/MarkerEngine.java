@@ -74,6 +74,7 @@ public final class MarkerEngine implements ConversionEngine {
     @Override
     public ConversionResult convert(ConversionRequest request, ConversionEventListener listener) {
         if (!ID.equals(request.engineId())) throw new IllegalArgumentException("Motor incorrecto");
+        dev.parseforge.domain.model.DocumentFormats.requireSupported(request);
         try (var workspace = new ConversionOutputWorkspace(request)) {
             return convertInWorkspace(workspace, listener);
         }

@@ -1,6 +1,6 @@
-# MarkItDown PDF wheel license inventory
+# MarkItDown document wheel license inventory
 
-Derived from the exact Stage 6 private runtime wheels; 2026-10-01. These 32 components are downloaded separately, not bundled in the setup. CPython 3.12.10 (PSF) and bootstrap pip 25.0.1 (MIT) are additional runtime components. Native/bundled third-party terms remain installed alongside each package.
+Derived from the exact private runtime wheels; 2026-10-05. These 44 components are downloaded separately, not bundled in the setup. CPython 3.12.10 (PSF) and bootstrap pip 25.0.1 (MIT) are additional runtime components. Native/bundled third-party terms remain installed alongside each package.
 
 | Name | Version | License metadata |
 | --- | --- | --- |
@@ -9,19 +9,26 @@ Derived from the exact Stage 6 private runtime wheels; 2026-10-01. These 32 comp
 | cffi | 2.1.1 | MIT-0 |
 | charset-normalizer | 3.5.2 | MIT |
 | click | 8.5.0 | BSD-3-Clause |
+| cobble | 0.1.4 | License :: OSI Approved :: BSD License |
 | coloredlogs | 15.0.1 | MIT |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause |
 | defusedxml | 0.7.1 | PSFL |
+| et_xmlfile | 2.0.0 | MIT |
 | flatbuffers | 25.12.19 | Apache 2.0 |
 | humanfriendly | 10.0 | MIT |
 | idna | 3.20 | BSD-3-Clause |
+| lxml | 6.1.3 | BSD-3-Clause |
 | magika | 0.6.3 | Apache-2.0 |
+| mammoth | 1.11.0 | BSD-2-Clause |
 | markdownify | 1.2.3 | License :: OSI Approved :: MIT License |
 | markitdown | 0.1.8 | MIT |
 | mpmath | 1.3.0 | BSD |
 | numpy | 2.5.3 | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 |
+| olefile | 0.47 | BSD |
 | onnxruntime | 1.20.1 | MIT License |
+| openpyxl | 3.1.5 | MIT |
 | packaging | 26.3 | Apache-2.0 OR BSD-2-Clause |
+| pandas | 3.0.6 | BSD 3-Clause License Copyright (c) 2008-2011, AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team All rights reserved. Copyright (c) 2011-2026, Open source contributors. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. * Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. |
 | pdfminer.six | 20260107 | MIT |
 | pdfplumber | 0.11.10 | License :: OSI Approved :: MIT License |
 | pillow | 12.3.0 | MIT-CMU |
@@ -29,10 +36,15 @@ Derived from the exact Stage 6 private runtime wheels; 2026-10-01. These 32 comp
 | pycparser | 3.0 | BSD-3-Clause |
 | pypdfium2 | 5.13.0 | BSD-3-Clause, Apache-2.0, dependency licenses |
 | pyreadline3 | 3.5.6 | BSD |
+| python-dateutil | 2.9.0.post0 | Dual License |
 | python-dotenv | 1.2.4 | BSD-3-Clause |
+| python-pptx | 1.0.2 | MIT |
 | requests | 2.34.2 | Apache-2.0 |
 | six | 1.17.0 | MIT |
 | soupsieve | 2.10 | MIT |
 | sympy | 1.14.0 | BSD |
 | typing_extensions | 4.16.0 | PSF-2.0 |
+| tzdata | 2026.5 | Apache-2.0 |
 | urllib3 | 2.8.0 | MIT |
+| xlrd | 2.0.2 | BSD |
+| xlsxwriter | 3.2.9 | BSD-2-Clause |

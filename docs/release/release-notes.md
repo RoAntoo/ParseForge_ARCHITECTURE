@@ -2,6 +2,8 @@
 
 Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been published.
 
+- Document inputs: DOCX, EPUB, PPTX, XLSX/XLS, HTML, text, Outlook MSG and ZIP via MarkItDown; image OCR via Marker. File chooser, drag/drop, engine compatibility and output naming support all enabled formats.
+- Existing PDF-only MarkItDown installations need one repair to install the new verified offline dependencies.
 - Stage 8: clean header with Ajustes, compact engine cards and a document-first home.
 - Separate engine settings dialog with per-state actions, version and size details; uninstall confirmation retained.
 - Main Convertir a Markdown CTA uses #F63A48, white text and distinct interaction states.
@@ -17,10 +19,10 @@ Status: PACKAGE BUILT — VM VALIDATION PENDING. No public release has been publ
 - Install/repair Marker or MarkItDown from Ajustes with verified downloads.
 - Compact engine cards with exclusive ready-engine selection, separate technical settings and persisted safe fallback.
 - Select a ready engine by clicking its card or radio; internal controls keep their own actions.
-- MarkItDown 0.1.8 uses independent private CPython 3.12.10 and locked PDF dependencies (~194 MB installed, ~80 MB downloaded).
+- MarkItDown 0.1.8 uses independent private CPython 3.12.10 and locked PDF and Office dependencies (~245 MB installed).
 - Ligero / Avanzado indicate scope/resources. Forzar OCR is available in the conversion flow when Marker is selected.
 - Digital, Unicode/spaced-path PDF conversion, malformed PDF detection and cancellation for MarkItDown.
-- Cream/navy workspace with PDF drop area and destination path tooltips.
+- Cream/navy workspace with document drop area and destination path tooltips.
 - First-start welcome dialog with a persisted "No volver a mostrar" preference.
 - Independent vertical scroll for the workspace/sidebar; Convertir is reachable by scrolling; Cancelar stays visible during conversion.
 - Convertir reflects engine, input, destination and operation readiness.

@@ -18,6 +18,7 @@ public final class ConversionMessages {
     public static String forCode(ErrorCode code) {
         if (code == null) code = ErrorCode.PROCESS_CRASHED;
         return switch (code) {
+            case FORMAT_UNSUPPORTED -> "El motor seleccionado no admite este formato. Elegí un motor compatible o un archivo de los formatos disponibles.";
             case PDF_INVALID -> "No se pudo leer el PDF. El archivo podría estar dañado o no ser un PDF válido.";
             case FILE_INACCESSIBLE -> "ParseForge no puede acceder al archivo seleccionado. Verificá que siga existiendo y que no esté bloqueado por otra aplicación.";
             case PERMISSION_DENIED -> "No se puede escribir en la carpeta de destino. Elegí otra ubicación o revisá los permisos.";

@@ -8,7 +8,7 @@
     <artifactId>parseforge</artifactId>
     <version>0.1.0</version>
     <name>ParseForge</name>
-    <description>Local-first PDF conversion desktop application</description>
+    <description>Local-first document conversion desktop application</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
